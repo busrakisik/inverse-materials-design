@@ -38,3 +38,12 @@ An enterprise-grade, LLM-powered Inverse Materials Design platform deployed on G
 ├── app.py               # Streamlit UI & Pymatgen validation logic
 ├── requirements.txt     # System dependencies
 └── README.md            # Project documentation
+
+## 🔮 Limitations & Future Roadmap
+
+This project is currently a **Proof of Concept (PoC)** focused on software engineering and pipeline integration. To evolve into a full-scale research framework, the following steps are planned:
+
+- [ ] **Surrogate Relaxation & Energy Prediction:** Integrate MLIPs (CHGNet / M3GNet) for structural relaxation and formation energy evaluation instead of pure rule-based validation.
+- [ ] **Property-Conditioned Generation:** Allow users to input target properties (e.g., `Band Gap = 2.0 eV`, `Density < 4 g/cm³`) alongside chemical formulas.
+- [ ] **Closed-Loop Feedback:** Implement active learning / reinforcement learning loops between validation metrics and the generative model.
+- [ ] **Benchmarking:** Comprehensive evaluation of LLM success rates, structural novelty, and diversity against domain baselines (e.g., MatterGen, MatGen).
