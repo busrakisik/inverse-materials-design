@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MaterialValidationFeedback",
+  "type": "object",
+  "required": ["iteration", "structure_id", "is_valid", "formula", "errors", "summary"],
+  "properties": {
+    "iteration": { "type": "integer" },
+    "structure_id": { "type": "string" },
+    "formula": { "type": "string" },
+    "is_valid": { "type": "boolean" },
+    "errors": { "type": "array" },
+    "warnings": { "type": "array" },
+    "summary": { "type": "string" }
+  }
+}

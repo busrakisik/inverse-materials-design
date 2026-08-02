@@ -1,0 +1,342 @@
+[
+  {
+    "system": "LiFePO4",
+    "space_group": "Pnma",
+    "class": "Battery Cathode",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Na3V2(PO4)3",
+    "space_group": "R-3c",
+    "class": "Na-ion Cathode",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "SrTiO3",
+    "space_group": "Pm-3m",
+    "class": "Perovskite",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "BaTiO3",
+    "space_group": "P4mm",
+    "class": "Ferroelectric",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "LiCoO2",
+    "space_group": "R-3m",
+    "class": "Battery Cathode",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "YBa2Cu3O7",
+    "space_group": "Pmmm",
+    "class": "Superconductor",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "TiO2",
+    "space_group": "P42/mnm",
+    "class": "Oxide",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "CsPbI3",
+    "space_group": "Pm-3m",
+    "class": "Halide Perovskite",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Li10GeP2S12",
+    "space_group": "P42/nmc",
+    "class": "Solid Electrolyte",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "NaFePO4",
+    "space_group": "Pnma",
+    "class": "Na-ion Cathode",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "La2CuO4",
+    "space_group": "I4/mmm",
+    "class": "Cuprate",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "MgFe2O4",
+    "space_group": "Fd-3m",
+    "class": "Spinel",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "LiMn2O4",
+    "space_group": "Fd-3m",
+    "class": "Spinel Cathode",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "ZnO",
+    "space_group": "P63mc",
+    "class": "Semiconductor",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Al2O3",
+    "space_group": "R-3c",
+    "class": "Ceramic",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Graphene_C",
+    "space_group": "P6/mmm",
+    "class": "2D Material",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "MoS2",
+    "space_group": "P63/mmc",
+    "class": "2D Dichalcogenide",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Li3N",
+    "space_group": "P6/mmm",
+    "class": "Solid Electrolyte",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Bi2Se3",
+    "space_group": "R-3m",
+    "class": "Topological Insulator",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  },
+  {
+    "system": "Cu2O",
+    "space_group": "Pn-3m",
+    "class": "Photovoltaic",
+    "metrics": {
+      "bhs_full_steps": 4,
+      "ablation_no_bayes_steps": 11,
+      "ablation_fixed_budget_steps": 8,
+      "random_baseline_steps": 22,
+      "gpu_hours_saved_pct": {
+        "value": "%81.8",
+        "provenance": "Derived",
+        "source": "1 - (BHS_GPU_Hours / Random_GPU_Hours)",
+        "uncertainty": null
+      }
+    }
+  }
+]
