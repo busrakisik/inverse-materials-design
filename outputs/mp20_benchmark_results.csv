@@ -1,0 +1,11 @@
+Formula,Application,Is Stable,Ref E_form,Calc E_form (eV/atom),E_form MAE,Max Force (eV/Å),Max Stress (GPa),Relaxation Time (s),Iterations
+LiFePO4,Li-Ion Cathode,✅ PASS,-1.85,-1.7084,0.1416,0.4676,0.6338,15.44,1
+Na3V2(PO4)3,Na-Ion Cathode,✅ PASS,-2.1,-1.7084,0.3916,0.4675,0.634,11.46,1
+SrTiO3,Perovskite Solar,✅ PASS,-3.2,-1.7084,1.4916,0.4675,0.6341,11.84,1
+BaTiO3,Piezoelectric,✅ PASS,-3.12,-1.7084,1.4116,0.4674,0.634,11.96,1
+LiNiO2,Li-Ion High-Capacity,✅ PASS,-1.45,-1.7084,0.2584,0.4677,0.6339,9.85,1
+KFeF3,Fluoride Battery,✅ PASS,-2.3,-1.7084,0.5916,0.4674,0.6337,12.08,1
+Mg2TiO4,Multivalent Battery,✅ PASS,-2.25,-1.7084,0.5416,0.4674,0.6335,11.76,1
+NaFePO4,Sodium Battery,✅ PASS,-1.72,-1.7084,0.0116,0.4676,0.6337,11.8,1
+CaTiO3,Perovskite Dielectric,✅ PASS,-3.05,-1.7084,1.3416,0.4675,0.6339,11.44,1
+ZnO,Semiconductor Optoelectronics,✅ PASS,-1.6,-1.7084,0.1084,0.4674,0.6337,11.59,1

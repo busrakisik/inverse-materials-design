@@ -1,0 +1,32 @@
+[
+  {
+    "step_name": "Wyckoff Atomic Clash Evaluation",
+    "winning_hypothesis": "H1_Olivine_Pnma",
+    "allocated_budget": {
+      "value": "6.82 GPU-hours",
+      "provenance": "Derived",
+      "source": "Dynamic Budget Function: Base * (1 + gamma * P)",
+      "uncertainty": null
+    },
+    "posteriors": {
+      "H1_Olivine_Pnma": {
+        "value": 0.7903,
+        "provenance": "Derived",
+        "source": "Sequential Bayes Update via Wyckoff Atomic Clash Evaluation",
+        "uncertainty": null
+      },
+      "H2_Spinel_Fd3m": {
+        "value": 0.1597,
+        "provenance": "Derived",
+        "source": "Sequential Bayes Update via Wyckoff Atomic Clash Evaluation",
+        "uncertainty": null
+      },
+      "H3_NASICON_R3c": {
+        "value": 0.0499,
+        "provenance": "Derived",
+        "source": "Sequential Bayes Update via Wyckoff Atomic Clash Evaluation",
+        "uncertainty": null
+      }
+    }
+  }
+]

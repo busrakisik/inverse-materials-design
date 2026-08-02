@@ -1,0 +1,9 @@
+Formula,Application,Is Stable,Formation Energy (eV/atom),Max Force (eV/Å),Max Stress (GPa),Iterations,Compute Time (s)
+LiFePO4,Lithium-ion Cathode,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+Na3V2(PO4)3,Sodium-ion Cathode,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+SrTiO3,Perovskite Solar/Dielectric,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+BaTiO3,Piezoelectric,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+LiNiO2,High-Energy Density Battery,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+KFeF3,Fluoride Battery,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+Mg2TiO4,Multivalent Battery,❌ UNSTABLE,0.85,0.08,0.15,4,0.0
+NaFePO4,Sodium Battery,❌ UNSTABLE,0.85,0.08,0.15,4,0.0

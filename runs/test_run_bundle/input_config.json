@@ -1,0 +1,20 @@
+{
+  "experiment_name": "LiFePO4_Reconstruction_Validation",
+  "mode": "Reconstruction",
+  "target_composition": "LiFePO4",
+  "space_group": "Pnma",
+  "priors": {
+    "H1_Olivine_Pnma": 0.5,
+    "H2_Spinel_Fd3m": 0.3,
+    "H3_NASICON_R3c": 0.2
+  },
+  "physical_constraints": {
+    "max_e_hull_ev": 0.05,
+    "min_soap_distance": 0.0,
+    "fmax_relaxation": 0.05
+  },
+  "budget": {
+    "max_mcts_steps": 5,
+    "base_gpu_hours": 4.0
+  }
+}

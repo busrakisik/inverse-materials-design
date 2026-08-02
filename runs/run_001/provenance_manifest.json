@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-08-02 19:24:09",
+  "experiment_name": "LiFePO4_Reconstruction_Validation",
+  "mode": "Reconstruction",
+  "target": "LiFePO4",
+  "reproducibility_status": "REPRODUCIBLE",
+  "final_metrics": {
+    "formation_energy": {
+      "value": -7.654123306274414,
+      "provenance": "Measured",
+      "source": "MLFF Energy Output (CHGNet Relaxation Succeeded)",
+      "uncertainty": 0.008
+    },
+    "relaxation_time": {
+      "value": 6.766,
+      "provenance": "Measured",
+      "source": "Execution wall-clock time in seconds",
+      "uncertainty": null
+    },
+    "atom_count": {
+      "value": 2,
+      "provenance": "Retrieved",
+      "source": "PyMatGen Structure Site Count",
+      "uncertainty": null
+    }
+  }
+}
