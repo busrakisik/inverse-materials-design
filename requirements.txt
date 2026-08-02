@@ -1,0 +1,7 @@
+bitsandbytes>=0.46.1
+transformers
+accelerate
+streamlit
+py3Dmol
+pymatgen
+torch

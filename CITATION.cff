@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+title: "Bayesian Hypothesis Search (BHS) for Autonomous Materials Discovery"
+version: 1.0.0
+date-released: 2026-08-02
+authors:
+  - family-names: "Kışık"
+    given-names: "Hümeyra"
+repository-code: "https://github.com/busrakisik/inverse-materials-design"
+license: MIT
+keywords:
+  - materials-science
+  - bayesian-inference
+  - crystal-structure-prediction
+  - machine-learning
