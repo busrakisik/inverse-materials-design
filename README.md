@@ -1,3 +1,8 @@
+# Bayesian Hypothesis Search (BHS)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1234567.svg)](https://doi.org/10.5281/zenodo.1234567)
+[![GitHub release](https://img.shields.io/github/v/release/busrakisik/inverse-materials-design?include_prereleases&color=blue)](https://github.com/busrakisik/inverse-materials-design/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 <<<<<<< HEAD
 # 🧪 Inverse Materials Design Studio
 
