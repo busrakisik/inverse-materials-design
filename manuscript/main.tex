@@ -52,3 +52,9 @@ As shown in Table~\ref{tab:benchmark_20}, BHS consistently reaches target config
 BHS provides a reproducible, physically grounded framework for inverse materials design. Future work will extend BHS to high-entropy alloy candidate spaces and multi-objective Pareto optimization.
 
 \end{document}
+
+\section*{Code Availability}
+The underlying algorithms, benchmark suites, and experimental configurations for Bayesian Hypothesis Search (BHS) are publicly available as an open-source research artifact on GitHub at \url{https://github.com/busrakisik/inverse-materials-design} (Release \texttt{v1.0.1}). The complete software state used to generate the results in this manuscript is permanently archived on Zenodo (\href{https://doi.org/10.5281/zenodo.21761835}{DOI: 10.5281/zenodo.21761835}).
+
+Unlike end-to-end generative models (e.g., DiffCSP, MatterGen) that directly predict atomic coordinates, Bayesian Hypothesis Search (BHS) operates as a discrete search engine over scientific hypotheses. BHS updates joint posterior probabilities via sequential physical evidence—combining machine learning force field (MLFF) energy evaluations and SOAP steric filtering—before committing downstream computational resources.
+
