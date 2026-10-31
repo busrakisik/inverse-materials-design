@@ -1,35 +1,4 @@
-"""BHS command-line entry point for a transparent Bayesian-update demonstration.
 
-This CLI deliberately performs NO crystal-structure validation, CHGNet
-relaxation, GPU computation, or autonomous material discovery.
-
-The illustrative likelihoods are examples, not scientifically calibrated
-evidence. Actual materials-workflow execution requires a separate,
-validated pipeline with physical inputs and reproducibility checks.
-"""
-
-import argparse
-from pathlib import Path
-import math
-
-import yaml
-
-from bhs.search.bayesian_engine import BayesianHypothesisSearchEngine
-from bhs.provenance.bundle import ProvenanceBundleSaver
-
-
-# These are illustrative numbers reused from the old demonstration code.
-# They are NOT physical likelihoods obtained from experiments or MLFF.
-ILLUSTRATIVE_LIKELIHOODS = {
-    "H1_Olivine_Pnma": 0.95,
-    "H2_Spinel_Fd3m": 0.32,
-    "H3_NASICON_R3c": 0.15,
-}
-
-
-def _validate_priors(priors):
-    if not isinstance(priors, dict) or not priors:
-        raise ValueError("Config must provide a nonempty 'priors' mapping.")
     if set(priors) != set(ILLUSTRATIVE_LIKELIHOODS):
         raise ValueError(
             "The demonstration supports exactly H1_Olivine_Pnma, "
@@ -94,3 +63,49 @@ def run_pipeline(config_path: str, out_dir: str, *, demo: bool = False) -> str:
             "physical_validation": "NOT_RUN",
             "gpu_hours_allocated": None,
         }
+    ]
+    metrics = {
+        "status": "DEMO_ONLY_NOT_VERIFIED",
+        "evidence_provenance": "ILLUSTRATIVE",
+        "posteriors_from_illustrative_inputs": posterior_probabilities,
+        "physical_relaxation": "NOT_RUN",
+        "energy_ev_per_atom": None,
+        "GPU_hours_measured": None,
+        "materials_discovered": None,
+    }
+    saved = ProvenanceBundleSaver.create_run_bundle(
+        out_dir=out_dir,
+        config=config_record,
+        run_history=history,
+        final_metrics=metrics,
+    )
+    print(
+        "ILLUSTRATIVE DEMO completed. No physical experiment or materials "
+        f"discovery was performed. NOT_VERIFIED records saved to: {Path(saved).resolve()}"
+    )
+    return saved
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="BHS illustrative Bayesian-update demo; not a validated materials workflow."
+    )
+    parser.add_argument("--config", required=True, help="YAML configuration with priors")
+    parser.add_argument("--out-dir", default="./runs/demo_001", help="Output directory")
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Explicitly permit illustrative likelihood updates with no physics run",
+    )
+    args = parser.parse_args(argv)
+    try:
+        run_pipeline(args.config, args.out_dir, demo=args.demo)
+    except (ValueError, FileNotFoundError, yaml.YAMLError) as exc:
+        parser.exit(2, f"ERROR: {exc}\n")
+
+
+if __name__ == "__main__":
+    main()
+
+# END OF COMPLETE BHS CLI FILE — CHECK THIS LINE ON GITHUB
+
