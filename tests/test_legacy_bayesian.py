@@ -96,7 +96,7 @@ def test_unknown_mcts_hypothesis_fails_clearly():
     with pytest.raises(KeyError):
         BayesianHypothesisSearchEngine().compute_uct("no-such-hypothesis")
 
-ef test_caller_defined_prior_has_unverified_provenance():
+def test_caller_defined_prior_has_unverified_provenance():
     engine = BayesianHypothesisSearchEngine({"A": 0.8, "B": 0.2})
     result = engine.accumulate_sequential_evidence("Example", {"A": 0.1, "B": 0.4})
     assert result["prior_provenance"] == "CALLER_SUPPLIED_NOT_VERIFIED"
