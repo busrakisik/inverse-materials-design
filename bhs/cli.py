@@ -1,49 +1,96 @@
-# bhs/cli.py
+"""BHS command-line entry point for a transparent Bayesian-update demonstration.
+
+This CLI deliberately performs NO crystal-structure validation, CHGNet
+relaxation, GPU computation, or autonomous material discovery.
+
+The illustrative likelihoods are examples, not scientifically calibrated
+evidence. Actual materials-workflow execution requires a separate,
+validated pipeline with physical inputs and reproducibility checks.
+"""
 
 import argparse
+from pathlib import Path
+import math
+
 import yaml
-import os
+
 from bhs.search.bayesian_engine import BayesianHypothesisSearchEngine
-from bhs.physics.relaxer import PhysicsRelaxationEngine
-from bhs.evidence.likelihoods import LikelihoodEngine
 from bhs.provenance.bundle import ProvenanceBundleSaver
-from pymatgen.core import Structure, Lattice
 
-def run_pipeline(config_path: str, out_dir: str):
-    print(f"🚀 Launching BHS Pipeline via Config: {config_path}")
-    
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
 
-    # Initialize Engine with Yaml Priors
-    engine = BayesianHypothesisSearchEngine(initial_priors=config.get("priors"))
-    
-    # Step 1: Wyckoff Clash Evidence Update
-    record1 = engine.accumulate_evidence(
-        step_name="Wyckoff Atomic Clash Evaluation",
-        likelihoods={"H1_Olivine_Pnma": 0.95, "H2_Spinel_Fd3m": 0.32, "H3_NASICON_R3c": 0.15}
+# These are illustrative numbers reused from the old demonstration code.
+# They are NOT physical likelihoods obtained from experiments or MLFF.
+ILLUSTRATIVE_LIKELIHOODS = {
+    "H1_Olivine_Pnma": 0.95,
+    "H2_Spinel_Fd3m": 0.32,
+    "H3_NASICON_R3c": 0.15,
+}
+
+
+def _validate_priors(priors):
+    if not isinstance(priors, dict) or not priors:
+        raise ValueError("Config must provide a nonempty 'priors' mapping.")
+    if set(priors) != set(ILLUSTRATIVE_LIKELIHOODS):
+        raise ValueError(
+            "The demonstration supports exactly H1_Olivine_Pnma, "
+            "H2_Spinel_Fd3m and H3_NASICON_R3c. "
+            "It does not silently invent likelihoods for other hypotheses."
+        )
+    for name, probability in priors.items():
+        if (
+            isinstance(probability, bool)
+            or not isinstance(probability, (int, float))
+            or not math.isfinite(probability)
+            or probability <= 0
+        ):
+            raise ValueError(f"Invalid prior probability for {name!r}.")
+    if not math.isclose(sum(priors.values()), 1.0, rel_tol=0, abs_tol=1e-7):
+        raise ValueError("Priors must sum to 1.0.")
+
+
+def run_pipeline(config_path: str, out_dir: str, *, demo: bool = False) -> str:
+    """Save a NOT_VERIFIED Bayesian demo bundle; never claim a material result."""
+    if not demo:
+        raise ValueError(
+            "A validated physical discovery pipeline is not implemented. "
+            "Run with --demo for illustrative Bayesian calculations only."
+        )
+
+    with Path(config_path).open("r", encoding="utf-8") as file:
+        source_config = yaml.safe_load(file)
+    if not isinstance(source_config, dict):
+        raise ValueError("YAML configuration must be a mapping.")
+    priors = source_config.get("priors")
+    _validate_priors(priors)
+
+    engine = BayesianHypothesisSearchEngine(initial_priors=dict(priors))
+    record = engine.accumulate_evidence(
+        step_name="ILLUSTRATIVE evidence update — no physical measurement",
+        likelihoods=dict(ILLUSTRATIVE_LIKELIHOODS),
     )
-    
-    # Step 2: Dummy Physical Relaxation for winning hypothesis
-    lattice = Lattice.cubic(4.0)
-    dummy_struct = Structure(lattice, ["Fe", "O"], [[0, 0, 0], [0.5, 0.5, 0.5]])
-    _, phys_metrics = PhysicsRelaxationEngine.run_chgnet_relaxation(dummy_struct)
-    
-    # Step 3: Bundle Outputs
-    final_dir = ProvenanceBundleSaver.create_run_bundle(
-        out_dir=out_dir,
-        config=config,
-        run_history=engine.history,
-        final_metrics=phys_metrics
-    )
-    
-    print(f"✅ Single Run Completed Successfully! Bundle saved at: {os.path.abspath(final_dir)}")
+    # Do not store the engine's illustrative GPU-hour budget as an allocation.
+    posterior_probabilities = {
+        name: float(value.value) for name, value in record["posteriors"].items()
+    }
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bayesian Hypothesis Search (BHS) CLI")
-    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
-    parser.add_argument("--out-dir", type=str, default="./runs/run_001", help="Output directory for reproducibility bundle")
-    
-    args = parser.parse_args()
-    # ⬇️ BURADAKİ TİREYİ ALT ÇİZGİ (out_dir) YAPIYORUZ
-    run_pipeline(args.config, args.out_dir)
+    config_record = {
+        "experiment_name": "BHS_ILLUSTRATIVE_BAYES_DEMO",
+        "mode": "ILLUSTRATIVE_DEMO_NOT_VERIFIED",
+        "target_composition": source_config.get("target_composition", "not specified"),
+        "source_configuration": source_config,
+        "likelihood_source": "HARDCODED_ILLUSTRATIVE_VALUES",
+        "physical_constraints_applied": False,
+        "MLFF_executed": False,
+        "search_budget_allocated": False,
+    }
+    history = [
+        {
+            "step_name": "ILLUSTRATIVE Bayesian evidence update",
+            "input_priors": dict(priors),
+            "input_likelihoods": dict(ILLUSTRATIVE_LIKELIHOODS),
+            "evidence_provenance": "ILLUSTRATIVE",
+            "posteriors": posterior_probabilities,
+            "highest_posterior_hypothesis": record["winning_hypothesis"],
+            "physical_validation": "NOT_RUN",
+            "gpu_hours_allocated": None,
+        }
