@@ -1,3 +1,5 @@
+# BEGIN OF COMPLETE BHS BAYESIAN PROVENANCE TESTS — CHECK THIS LINE ON GITHUB
+
 """Mathematical and provenance tests for the BHS Bayesian *prototype*.
 
 These tests check probabilities and defensive behavior. They do NOT establish
@@ -94,3 +96,4 @@ def test_invalid_likelihood_value_rejected(bad_value):
 
 @pytest.mark.parametrize("bad_priors", [
     {}, {"A": 0.2, "B": 0.2},
+# END OF COMPLETE BHS BAYESIAN PROVENANCE TESTS — CHECK THIS LINE ON GITHUB
