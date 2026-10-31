@@ -1,28 +1,62 @@
-from typing import Dict, Any
+
+# BEGIN OF COMPLETE BHS LEGACY SEARCH PLANNER — CHECK THIS LINE ON GITHUB
+"""Fail-closed legacy compute-budget interface for the BHS research prototype.
+
+NO GPU allocation, MLFF/DFT inference, resource booking, calibrated
+uncertainty assessment, or adaptive tree search occurs in this module.
+Calling the method cannot reserve compute resources or execute any engine.
+The legacy method name is retained for compatibility with older imports.
+"""
+
+import math
+from typing import Any, Dict
+
 
 class AdaptiveBudgetPlanner:
-    """
-    Manages computational budget across multi-branch tree search
-    and dynamically allocates MLFF / DFT resources based on model confidence.
-    """
+    """Expose caller-supplied inputs without manufacturing compute results."""
+
     @staticmethod
     def allocate_and_evaluate(candidate_uncertainty: float) -> Dict[str, Any]:
-        if candidate_uncertainty < 0.015:
-            tier = "TIER_3_FULL_ENSEMBLE_AND_DFT"
-            engines = ["CHGNet v0.3.0", "MACE-MP-0", "M3GNet Elastic", "Quantum ESPRESSO (DFT)"]
-            allocated_compute = "8.4 GPU-hours"
-        elif candidate_uncertainty < 0.035:
-            tier = "TIER_2_DUAL_MLFF"
-            engines = ["CHGNet v0.3.0", "MACE-MP-0"]
-            allocated_compute = "0.8 GPU-hours"
-        else:
-            tier = "TIER_1_FAST_SCREENING"
-            engines = ["CHGNet v0.3.0"]
-            allocated_compute = "0.05 GPU-hours"
+        """Describe a *non-executed* budget decision safely.
+
+        This API receives only a numeric uncertainty value. It does not
+        receive its unit, model calibration, provenance, available GPUs,
+        measured runtimes, model versions, or objective constraints.
+        It therefore cannot justify an execution tier or GPU-hour estimate.
+        """
+        raw = candidate_uncertainty
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            raise ValueError("candidate_uncertainty must be a finite nonnegative number.")
+        try:
+            value = float(raw)
+        except (OverflowError, ValueError) as exc:
+            raise ValueError("candidate_uncertainty cannot be represented safely.") from exc
+        if not math.isfinite(value) or value < 0:
+            raise ValueError("candidate_uncertainty must be finite and nonnegative.")
 
         return {
-            "execution_tier": tier,
-            "active_engines": engines,
-            "allocated_compute": allocated_compute,
-            "reasoning": f"Candidate uncertainty ({candidate_uncertainty:.4f} eV/atom) dictated {tier} allocation."
+            "input_candidate_uncertainty": value,
+            "uncertainty_provenance": "CALLER_SUPPLIED_NOT_VERIFIED",
+            "uncertainty_calibration_status": "NOT_VERIFIED",
+            "uncertainty_unit": None,
+            "execution_tier": None,
+            "tier_selection_status": "NOT_EVALUATED",
+            "active_engines": [],
+            "model_execution_status": "NOT_RUN",
+            "allocated_compute": None,
+            "allocated_gpu_hours": None,
+            "budget_status": "NOT_ALLOCATED",
+            "compute_reservation_status": "NOT_REQUESTED",
+            "resource_estimate_status": "NOT_EVALUATED",
+            "reasoning": (
+                "NO COMPUTE WAS ALLOCATED OR EXECUTED. The supplied uncertainty "
+                "has no verified unit or calibration and is not sufficient "
+                "to select CHGNet, MACE, M3GNet, DFT, or a GPU-hour budget. "
+                "Resource allocation requires a documented policy, actual "
+                "available resources, valid model provenance, and measured "
+                "or independently justified runtime estimates."
+            ),
         }
+
+# END OF COMPLETE BHS LEGACY SEARCH PLANNER — CHECK THIS LINE ON GITHUB
+
