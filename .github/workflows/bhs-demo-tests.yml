@@ -1,4 +1,4 @@
-# BEGIN OF COMPLETE BHS 278-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
+# BEGIN OF COMPLETE BHS 341-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
 # BHS software and scientific-claim safety tests only; no empirical materials validation.
 # Real pymatgen structures are tested; CHGNet/MLFF calculations are mocked or NOT_RUN.
 name: BHS demo and provenance checks
@@ -15,6 +15,7 @@ name: BHS demo and provenance checks
       - 'src/imd_pipeline/agents/hypothesis_engine.py'
       - 'src/imd_pipeline/agents/search_planner.py'
       - 'src/imd_pipeline/validation/real_calculators.py'
+      - 'src/imd_pipeline/validation/mlff_validator.py'
       - 'tests/test_reconstruction_run.py'
       - 'tests/test_ablation_matrix.py'
       - 'tests/test_benchmarks.py'
@@ -27,6 +28,7 @@ name: BHS demo and provenance checks
       - 'tests/test_legacy_literature.py'
       - 'tests/test_legacy_hypothesis.py'
       - 'tests/test_legacy_search_planner.py'
+      - 'tests/test_legacy_mlff.py'
       - 'configs/reconstruction_lifepo4.yaml'
       - '.github/workflows/bhs-demo-tests.yml'
   workflow_dispatch:
@@ -70,6 +72,7 @@ jobs:
             src/imd_pipeline/agents/hypothesis_engine.py \
             src/imd_pipeline/agents/search_planner.py \
             src/imd_pipeline/validation/real_calculators.py \
+            src/imd_pipeline/validation/mlff_validator.py \
             tests/test_provenance.py \
             tests/test_evidence.py \
             tests/test_physics.py \
@@ -77,9 +80,10 @@ jobs:
             tests/test_legacy_bayesian.py \
             tests/test_legacy_literature.py \
             tests/test_legacy_hypothesis.py \
-            tests/test_legacy_search_planner.py
+            tests/test_legacy_search_planner.py \
+            tests/test_legacy_mlff.py
 
-      - name: Run 278 scoped BHS software and safety tests
+      - name: Run 341 scoped BHS software and safety tests
         run: |
           python -m pytest -q \
             tests/test_reconstruction_run.py \
@@ -93,6 +97,7 @@ jobs:
             tests/test_legacy_bayesian.py \
             tests/test_legacy_literature.py \
             tests/test_legacy_hypothesis.py \
-            tests/test_legacy_search_planner.py
+            tests/test_legacy_search_planner.py \
+            tests/test_legacy_mlff.py
 
-# END OF COMPLETE BHS 278-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
+# END OF COMPLETE BHS 341-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
