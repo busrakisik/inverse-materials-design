@@ -1,59 +1,88 @@
-# src/imd_pipeline/agents/hypothesis_engine.py
+# BEGIN OF COMPLETE BHS LEGACY HYPOTHESIS ENGINE — CHECK THIS LINE ON GITHUB
+"""Safe illustrative hypothesis registry: NO physical ranking or selection.
 
-from typing import Dict, Any, List
+No formation energies, hull positions, MLFF comparisons, patent results,
+thermal measurements, diffusion barriers, or Pareto optimizations are computed.
+This file preserves the legacy API without fabricating scientific evidence.
+"""
+
+from typing import Any, Dict, List
+
+
+# Conceptual families only; NOT ranked or independently verified candidates.
+ILLUSTRATIVE_FAMILIES = (
+    ("HYP-A", "NASICON-like open-framework concept"),
+    ("HYP-B", "Spinel / disordered-rocksalt concept"),
+    ("HYP-C", "Olivine-like channel concept"),
+)
+
 
 class HypothesisAndExplainabilityEngine:
-    """
-    Evaluates competing scientific hypotheses using probabilistic scoring 
-    and generates rigorous scientific justifications.
-    """
+    """Registry for illustrative hypotheses; no autonomous discovery."""
+
     @staticmethod
     def evaluate_competing_hypotheses(targets: List[str]) -> Dict[str, Any]:
+        """List illustrative families without evaluating or selecting any.
+
+        `targets` are caller-supplied research objectives, NOT demonstrated
+        properties. All candidate quantities remain unknown until supported
+        by independently traceable calculations or measurements.
+        """
+        if not isinstance(targets, list) or not targets:
+            raise ValueError("targets must be a nonempty list of research objectives.")
+        if any(not isinstance(t, str) or not t.strip() for t in targets):
+            raise ValueError("Every research target must be nonempty text.")
+        checked_targets = [t.strip() for t in targets]
+        if len(set(checked_targets)) != len(checked_targets):
+            raise ValueError("Research targets must not be duplicated.")
+
         hypotheses = [
             {
-                "id": "HYP-A",
-                "family": "3D Open-Framework NASICON (Na3V2(PO4)3 analog)",
-                "confidence_score": 0.78,
-                "confidence_std": 0.05,
-                "pros": "Superior 3D ionic pathways, low volume expansion (<2%)",
-                "cons": "Slightly lower theoretical capacity",
-                "chosen": True,
-                "selection_reason": "Highest Pareto score when combining fast charging (>2C) and thermal stability (>700°C)."
-            },
-            {
-                "id": "HYP-B",
-                "family": "Disordered Rock-Salt / Spinel (Li-rich Mn Oxide)",
-                "confidence_score": 0.64,
-                "confidence_std": 0.08,
-                "pros": "High gravimetric energy density (>280 Wh/kg)",
-                "cons": "Oxygen release risk at >4.3V, poor cyclic stability",
+                "id": identifier,
+                "family": family,
+                "candidate_provenance": "ILLUSTRATIVE_TEMPLATE",
+                "confidence_score": None,
+                "confidence_std": None,
+                "pros": None,
+                "cons": None,
                 "chosen": False,
-                "selection_reason": "Rejected due to high thermal degradation probability under fast-charge constraints."
-            },
-            {
-                "id": "HYP-C",
-                "family": "1D Channel Olivine (LiFePO4 derivative)",
-                "confidence_score": 0.59,
-                "confidence_std": 0.04,
-                "pros": "Extremely safe, zero cobalt, low material cost ($12/kg)",
-                "cons": "Anisotropic 1D diffusion limits high C-rate capability",
-                "chosen": False,
-                "selection_reason": "Sub-optimal diffusion kinetics without heavy carbon-coating and grain-size reduction."
+                "selection_reason": None,
+                "physical_evidence_status": "NOT_VERIFIED",
+                "comparison_status": "NOT_EVALUATED",
             }
+            for identifier, family in ILLUSTRATIVE_FAMILIES
         ]
-        
         return {
+            "research_targets": checked_targets,
+            "targets_provenance": "CALLER_SUPPLIED_NOT_VERIFIED",
             "competing_hypotheses": hypotheses,
-            "chosen_hypothesis": hypotheses[0],
-            "selection_narrative": "Hypothesis A (NASICON) was autonomously selected over Spinel and Olivine branches due to optimal trade-off between 3D ionic bottleneck expansion and thermal resilience."
+            "chosen_hypothesis": None,
+            "selection_status": "NOT_EVALUATED",
+            "candidate_generation_status": "NOT_RUN",
+            "pareto_optimization_status": "NOT_RUN",
+            "selection_narrative": (
+                "NO HYPOTHESIS HAS BEEN SELECTED. These are illustrative "
+                "material-family concepts, not generated or evaluated crystal "
+                "structures. No validated performance comparison, confidence "
+                "estimate, physical calculation, or patent review exists here."
+            ),
         }
 
     @staticmethod
     def explain_why_selected(candidate_data: Dict[str, Any]) -> List[str]:
+        """Return a transparent non-selection note, not fabricated evidence.
+
+        This function does not validate or adopt claims in candidate_data.
+        It deliberately refuses to turn unverified data into a justification.
+        """
+        if not isinstance(candidate_data, dict):
+            raise ValueError("candidate_data must be a dictionary.")
         return [
-            "Formation energy sits within the top 3.1% most stable structures in the multi-phase convex hull.",
-            "Space group symmetry (Pnma) and cell volume strictly preserved after 32 relaxation iterations.",
-            "Energy discrepancy between CHGNet and MACE-MP-0 is exceptionally low (0.009 eV/atom), confirming high model consensus.",
-            "Predicted 3D lithium diffusion bottleneck radius (>2.4 Å) satisfies fast-charging rate capabilities.",
-            "Cross-database prior art scan confirmed zero patent conflicts and 89.4% structural novelty against Materials Project baselines."
+            "NOT_EVALUATED: no independently verified candidate selection.",
+            "NOT_RUN: no formation-energy or convex-hull ranking calculated.",
+            "NOT_RUN: no CHGNet/MACE comparison or relaxation verified.",
+            "NOT_RUN: no lithium diffusion, thermal, or rate performance evaluated.",
+            "NOT_CHECKED: no patent prior-art or scientific novelty search performed.",
         ]
+
+# END OF COMPLETE BHS LEGACY HYPOTHESIS ENGINE — CHECK THIS LINE ON GITHUB
