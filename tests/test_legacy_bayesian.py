@@ -1,4 +1,67 @@
+# BEGIN OF COMPLETE BHS LEGACY BAYESIAN TESTS — CHECK THIS LINE ON GITHUB
+"""Legacy Bayesian compatibility tests against the audited BHS engine.
 
+No scientific likelihood calibration, MCTS/PUCT rollout, GPU allocation,
+CHGNet inference, or materials discovery is performed by these tests.
+"""
+
+import math
+
+import pytest
+
+from src.imd_pipeline.agents.bayesian_reasoner import (
+    BayesianHypothesisSearchEngine,
+    ILLUSTRATIVE_LEGACY_PRIORS,
+)
+
+
+def _likelihoods(a=0.92, b=0.65, c=0.88):
+    return {"H1_NASICON": a, "H2_Spinel": b, "H3_Olivine": c}
+
+
+def _reference_posterior(priors, likelihoods):
+    unnormalized = {name: prior * likelihoods[name] for name, prior in priors.items()}
+    normalizer = math.fsum(unnormalized.values())
+    return {name: weight / normalizer for name, weight in unnormalized.items()}
+
+
+def test_default_priors_are_explicitly_illustrative():
+    engine = BayesianHypothesisSearchEngine()
+    assert engine.priors == ILLUSTRATIVE_LEGACY_PRIORS
+    assert engine.prior_provenance == "ILLUSTRATIVE_DEFAULTS"
+    assert engine.history == []
+
+
+def test_no_initial_mcts_rollouts_or_rewards_are_invented():
+    engine = BayesianHypothesisSearchEngine()
+    assert set(engine.mcts_nodes) == set(engine.priors)
+    assert all(node["N"] == 0 and node["Q"] is None for node in engine.mcts_nodes.values())
+    assert all(node["P"] == engine.priors[name] for name, node in engine.mcts_nodes.items())
+
+
+def test_bayes_result_matches_independently_computed_normalization():
+    engine = BayesianHypothesisSearchEngine()
+    prior = dict(engine.priors)
+    likelihoods = _likelihoods()
+    actual = engine.accumulate_sequential_evidence("Example evidence", likelihoods)
+    expected = _reference_posterior(prior, likelihoods)
+    for name, probability in expected.items():
+        assert actual["updated_posteriors"][name] == pytest.approx(probability)
+        assert engine.priors[name] == pytest.approx(probability)
+    assert actual["winning_hypothesis"] == max(expected, key=expected.get)
+    assert actual["prev_priors"] == prior
+    assert actual["likelihoods_applied"] == likelihoods
+
+
+def test_result_never_claims_mcts_or_gpu_execution():
+    result = BayesianHypothesisSearchEngine().accumulate_sequential_evidence(
+        "Synthetic inputs", _likelihoods()
+    )
+    assert result["allocated_budget"] is None
+    assert result["budget_status"] == "NOT_ALLOCATED"
+    assert result["mcts_status"] == "NOT_RUN"
+    assert result["uct_scores"] == {name: None for name in ILLUSTRATIVE_LEGACY_PRIORS}
+    assert result["evidence_verification_status"] == "NOT_VERIFIED"
     assert "No MCTS visits" in result["scientific_interpretation"]
 
 
@@ -33,8 +96,7 @@ def test_unknown_mcts_hypothesis_fails_clearly():
     with pytest.raises(KeyError):
         BayesianHypothesisSearchEngine().compute_uct("no-such-hypothesis")
 
-
-def test_caller_defined_prior_has_unverified_provenance():
+ef test_caller_defined_prior_has_unverified_provenance():
     engine = BayesianHypothesisSearchEngine({"A": 0.8, "B": 0.2})
     result = engine.accumulate_sequential_evidence("Example", {"A": 0.1, "B": 0.4})
     assert result["prior_provenance"] == "CALLER_SUPPLIED_NOT_VERIFIED"
@@ -56,7 +118,6 @@ def test_valid_zero_likelihood_disables_only_that_hypothesis():
     engine = BayesianHypothesisSearchEngine({"A": 0.5, "B": 0.5})
     result = engine.accumulate_sequential_evidence("One impossible model", {"A": 0, "B": 0.8})
     assert result["updated_posteriors"] == {"A": 0.0, "B": 1.0}
-
 
 @pytest.mark.parametrize("invalid_likelihoods", [
     {},
@@ -90,7 +151,6 @@ def test_invalid_step_name_rejected_without_mutating_state(invalid_step):
     assert engine.priors == original
     assert engine.history == []
 
-
 @pytest.mark.parametrize("invalid_priors", [
     {},
     {"A": 0.4, "B": 0.4},
@@ -114,4 +174,3 @@ def test_history_snapshot_not_overwritten_by_later_updates():
     assert engine.history[0]["mcts_status"] == "NOT_RUN"
 
 # END OF COMPLETE BHS LEGACY BAYESIAN TESTS — CHECK THIS LINE ON GITHUB
-
