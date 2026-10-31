@@ -1,0 +1,53 @@
+# Lightweight BHS prototype checks (no CHGNet, GPU, or scientific validation).
+name: BHS demo and provenance checks
+
+'on':
+  push:
+    branches:
+      - bhs-scientific-audit
+    paths:
+      - 'bhs/**'
+      - 'tests/test_ablation_matrix.py'
+      - 'tests/test_reports.py'
+      - 'tests/test_reconstruction_run.py'
+      - 'configs/reconstruction_lifepo4.yaml'
+      - '.github/workflows/bhs-demo-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install minimal demo test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest PyYAML
+
+      - name: Compile Python files needed by the demo
+        run: |
+          python -m py_compile \
+            bhs/cli.py \
+            bhs/search/bayesian_engine.py \
+            bhs/provenance/tags.py \
+            bhs/provenance/bundle.py \
+            bhs/benchmarks/suite_20.py \
+            bhs/reports/generate_artifacts.py
+
+      - name: Run focused demo and report-safety tests
+        run: |
+          python -m pytest -q \
+            tests/test_reconstruction_run.py \
+            tests/test_ablation_matrix.py \
+            tests/test_reports.py
