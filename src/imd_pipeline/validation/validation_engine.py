@@ -147,7 +147,8 @@ class ValidationEngine:
                 },
             ))
             return findings
-            if (
+            
+        if (
             not isinstance(output, dict)
             or output.get("engine") != "CHGNet"
             or output.get("execution_status") != "CHGNET_OPTIMIZER_RETURNED_OUTPUT"
