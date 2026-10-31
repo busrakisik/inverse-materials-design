@@ -1,85 +1,103 @@
-# src/imd_pipeline/agents/bayesian_reasoner.py
 
-import math
-from typing import Dict, Any, List
+# BEGIN OF COMPLETE BHS LEGACY BAYESIAN REASONER — CHECK THIS LINE ON GITHUB
+"""Compatibility adapter for the audited BHS Bayesian probability engine.
+
+This module performs *only* mathematical Bayesian updates. It does not run
+MCTS/PUCT rollouts, evaluate materials, allocate GPU hours, or calibrate
+likelihoods. Legacy default priors and caller-supplied likelihoods are
+ILLUSTRATIVE/NOT_VERIFIED until independently justified.
+
+The legacy Streamlit interface must be rewritten before its MCTS and budget
+panels can present these safe outputs. This adapter intentionally refuses
+to invent missing scientific results.
+"""
+
+from typing import Any, Dict, Optional
+
+from bhs.search.bayesian_engine import (
+    BayesianHypothesisSearchEngine as AuditedBayesianEngine,
+)
+
+
+ILLUSTRATIVE_LEGACY_PRIORS = {
+    "H1_NASICON": 0.41,
+    "H2_Spinel": 0.33,
+    "H3_Olivine": 0.26,
+}
+
 
 class BayesianHypothesisSearchEngine:
-    """
-    Mathematical Core for Bayesian Hypothesis Search (BHS) and Adaptive MCTS.
-    Calculates exact P(H_i | E_1:k) via Sequential Evidence Likelihood Decomposition
-    and Upper Confidence Bound for Trees (UCT).
-    """
-    def __init__(self):
-        # Initial Prior Distribution P(H)
-        self.priors = {
-            "H1_NASICON": 0.41,
-            "H2_Spinel": 0.33,
-            "H3_Olivine": 0.26
-        }
-        # MCTS Node Statistics: {Node: {"P": Prior, "Q": Reward, "N": Visits}}
-        self.mcts_nodes = {
-            "H1_NASICON": {"P": 0.41, "Q": 0.88, "N": 31},
-            "H2_Spinel":  {"P": 0.33, "Q": 0.54, "N": 9},
-            "H3_Olivine": {"P": 0.26, "Q": 0.42, "N": 5}
-        }
-        self.history = []
+    """Legacy method names backed by the audited Bayesian-update engine."""
 
-    def compute_uct(self, node_id: str, c_puct: float = 1.414) -> float:
-        """Calculates Upper Confidence Bound applied to Trees (UCT)."""
-        node = self.mcts_nodes[node_id]
-        total_visits = sum(n["N"] for n in self.mcts_nodes.values())
-        
-        # UCT = Q + c * P * sqrt(N_parent) / (1 + N_node)
-        exploration = c_puct * node["P"] * (math.sqrt(total_visits) / (1 + node["N"]))
-        uct_val = node["Q"] + exploration
-        return round(uct_val, 3)
+    def __init__(self, initial_priors: Optional[Dict[str, float]] = None):
+        supplied_priors = (
+            dict(ILLUSTRATIVE_LEGACY_PRIORS)
+            if initial_priors is None
+            else initial_priors
+        )
+        self._engine = AuditedBayesianEngine(initial_priors=supplied_priors)
+        self.priors = self._engine.priors
+        self.mcts_nodes = self._engine.mcts_nodes
+        self.history = []
+        self.prior_provenance = (
+            "ILLUSTRATIVE_DEFAULTS"
+            if initial_priors is None
+            else "CALLER_SUPPLIED_NOT_VERIFIED"
+        )
+
+    def compute_uct(self, node_id: str, c_puct: float = 1.414):
+        """Fail closed: PUCT scores require real evaluated rewards/visits."""
+        return self._engine.compute_uct(node_id, c_puct=c_puct)
 
     def accumulate_sequential_evidence(
-        self, 
-        step_name: str, 
-        likelihoods: Dict[str, float]
+        self, step_name: str, likelihoods: Dict[str, float]
     ) -> Dict[str, Any]:
+        """Apply validated Bayes math; report no fictional search or GPU work.
+
+        The audited engine validates exact hypothesis keys, finite likelihood
+        values in [0, 1], and nonzero evidence normalization. On failure it
+        does not mutate state. Evidence calibration is NOT_VERIFIED.
         """
-        Calculates exact Bayes Update:
-        P(H_i | E_k) = P(E_k | H_i) * P(H_i | E_{k-1}) / SUM(P(E_k | H_j) * P(H_j))
-        """
-        unnormalized = {}
-        for h_id, current_prob in self.priors.items():
-            l_k = likelihoods.get(h_id, 1.0)
-            unnormalized[h_id] = current_prob * l_k
-
-        total_evidence_prob = sum(unnormalized.values())
-        
-        posteriors = {}
-        for h_id, unnorm in unnormalized.items():
-            posteriors[h_id] = round(unnorm / total_evidence_prob, 4)
-
-        prev_priors = self.priors.copy()
-        self.priors = posteriors  # Dynamic Bayes state update
-
-        # Update MCTS priors with new posteriors
-        for h_id in posteriors:
-            self.mcts_nodes[h_id]["P"] = posteriors[h_id]
-
-        record = {
-            "step_name": step_name,
-            "likelihoods": likelihoods,
-            "prev_priors": prev_priors,
-            "posteriors": posteriors
+        previous_priors = dict(self._engine.priors)
+        audited_record = self._engine.accumulate_evidence(
+            step_name=step_name,
+            likelihoods=likelihoods,
+        )
+        posteriors = {
+            name: float(posterior.value)
+            for name, posterior in audited_record["posteriors"].items()
         }
-        self.history.append(record)
+        self.priors = self._engine.priors
 
-        winning_h = max(posteriors, key=posteriors.get)
-        
-        # Dynamic Budget Allocation: Budget = f(P(H), Uncertainty)
-        allocated_gpu_hours = round(8.0 * posteriors[winning_h] + 0.5, 2)
+        # Preserve a useful, explicitly unverified legacy history schema.
+        step_record = {
+            "step_name": step_name,
+            "prev_priors": previous_priors,
+            "likelihoods": dict(likelihoods),
+            "posteriors": dict(posteriors),
+            "evidence_verification_status": "NOT_VERIFIED",
+            "mcts_status": "NOT_RUN",
+            "budget_status": "NOT_ALLOCATED",
+        }
+        self.history.append(step_record)
 
         return {
             "step_name": step_name,
-            "prev_priors": prev_priors,
-            "likelihoods_applied": likelihoods,
+            "prev_priors": previous_priors,
+            "likelihoods_applied": dict(likelihoods),
             "updated_posteriors": posteriors,
-            "winning_hypothesis": winning_h,
-            "allocated_budget": f"{allocated_gpu_hours} GPU-hours",
-            "uct_scores": {h: self.compute_uct(h) for h in posteriors}
+            "winning_hypothesis": audited_record["winning_hypothesis"],
+            "allocated_budget": None,
+            "budget_status": "NOT_ALLOCATED",
+            "uct_scores": {name: None for name in posteriors},
+            "mcts_status": "NOT_RUN",
+            "evidence_verification_status": "NOT_VERIFIED",
+            "prior_provenance": self.prior_provenance,
+            "scientific_interpretation": (
+                "Illustrative mathematical Bayesian update from uncalibrated "
+                "caller-supplied likelihoods. No MCTS visits, rewards, "
+                "GPU allocation, physical calculation, or materials validation."
+            ),
         }
+
+# END OF COMPLETE BHS LEGACY BAYESIAN REASONER — CHECK THIS LINE ON GITHUB
