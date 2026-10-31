@@ -278,7 +278,8 @@ def test_cif_parser_roundtrip_real_pymatgen(ui_app, cif_bytes):
 def test_cif_parser_preserves_composition(ui_app, cif_bytes):
     _, app = ui_app
     structure = app.parse_user_cif(cif_bytes)
-    assert structure.composition.reduced_formula == "LiO"
+    assert structure.composition.get_atomic_fraction("Li") == pytest.approx(0.5)
+    assert structure.composition.get_atomic_fraction("O") == pytest.approx(0.5)
 
 
 def test_cif_parser_supports_utf8_sig(ui_app, cif_bytes):
