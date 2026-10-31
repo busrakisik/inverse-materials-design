@@ -1,5 +1,5 @@
-# BHS research-prototype engineering tests; no empirical material validation.
-# Real pymatgen structures are tested; CHGNet is mocked, never inferred.
+# BHS research-prototype engineering checks only.
+# No real CHGNet inference, MCTS/PUCT rollouts, GPU study, or material discovery.
 name: BHS demo and provenance checks
 
 'on':
@@ -8,16 +8,18 @@ name: BHS demo and provenance checks
       - bhs-scientific-audit
     paths:
       - 'bhs/**'
+      - 'src/imd_pipeline/agents/bayesian_reasoner.py'
       - 'src/imd_pipeline/agents/consensus_engine.py'
       - 'src/imd_pipeline/validation/real_calculators.py'
+      - 'tests/test_reconstruction_run.py'
       - 'tests/test_ablation_matrix.py'
       - 'tests/test_benchmarks.py'
       - 'tests/test_reports.py'
-      - 'tests/test_reconstruction_run.py'
       - 'tests/test_provenance.py'
       - 'tests/test_evidence.py'
       - 'tests/test_physics.py'
       - 'tests/test_consensus.py'
+      - 'tests/test_legacy_bayesian.py'
       - 'configs/reconstruction_lifepo4.yaml'
       - '.github/workflows/bhs-demo-tests.yml'
   workflow_dispatch:
@@ -55,14 +57,16 @@ jobs:
             bhs/evidence/likelihoods.py \
             bhs/physics/relaxer.py \
             bhs/reports/generate_artifacts.py \
+            src/imd_pipeline/agents/bayesian_reasoner.py \
             src/imd_pipeline/agents/consensus_engine.py \
             src/imd_pipeline/validation/real_calculators.py \
             tests/test_provenance.py \
             tests/test_evidence.py \
             tests/test_physics.py \
-            tests/test_consensus.py
+            tests/test_consensus.py \
+            tests/test_legacy_bayesian.py
 
-      - name: Run 120 demo, provenance, physics-adapter and consensus-safety tests
+      - name: Run 153 demo, provenance, physics-adapter and legacy safety tests
         run: |
           python -m pytest -q \
             tests/test_reconstruction_run.py \
@@ -72,6 +76,7 @@ jobs:
             tests/test_provenance.py \
             tests/test_evidence.py \
             tests/test_physics.py \
-            tests/test_consensus.py
+            tests/test_consensus.py \
+            tests/test_legacy_bayesian.py
 
-# END OF COMPLETE BHS 120-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
+# END OF COMPLETE BHS 153-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
