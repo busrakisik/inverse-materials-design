@@ -1,5 +1,5 @@
-# BHS research-prototype checks: illustrative/demo and adapter tests only.
-# No real CHGNet inference, GPU experiment, materials discovery, or likelihood calibration.
+# BHS research-prototype engineering tests; no empirical material validation.
+# Real pymatgen structures are tested; CHGNet is mocked, never inferred.
 name: BHS demo and provenance checks
 
 'on':
@@ -8,6 +8,8 @@ name: BHS demo and provenance checks
       - bhs-scientific-audit
     paths:
       - 'bhs/**'
+      - 'src/imd_pipeline/agents/consensus_engine.py'
+      - 'src/imd_pipeline/validation/real_calculators.py'
       - 'tests/test_ablation_matrix.py'
       - 'tests/test_benchmarks.py'
       - 'tests/test_reports.py'
@@ -15,6 +17,7 @@ name: BHS demo and provenance checks
       - 'tests/test_provenance.py'
       - 'tests/test_evidence.py'
       - 'tests/test_physics.py'
+      - 'tests/test_consensus.py'
       - 'configs/reconstruction_lifepo4.yaml'
       - '.github/workflows/bhs-demo-tests.yml'
   workflow_dispatch:
@@ -27,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check out the selected branch
+      - name: Check out selected branch
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -35,12 +38,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install minimal demo dependencies and real pymatgen for adapter tests
+      - name: Install focused test dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest PyYAML pymatgen
 
-      - name: Compile BHS modules and focused tests
+      - name: Compile audited modules and focused tests
         run: |
           python -m py_compile \
             bhs/cli.py \
@@ -52,11 +55,14 @@ jobs:
             bhs/evidence/likelihoods.py \
             bhs/physics/relaxer.py \
             bhs/reports/generate_artifacts.py \
+            src/imd_pipeline/agents/consensus_engine.py \
+            src/imd_pipeline/validation/real_calculators.py \
             tests/test_provenance.py \
             tests/test_evidence.py \
-            tests/test_physics.py
+            tests/test_physics.py \
+            tests/test_consensus.py
 
-      - name: Run 83 demo, provenance, evidence, and mocked-CHGNet adapter tests
+      - name: Run 120 demo, provenance, physics-adapter and consensus-safety tests
         run: |
           python -m pytest -q \
             tests/test_reconstruction_run.py \
@@ -65,6 +71,7 @@ jobs:
             tests/test_reports.py \
             tests/test_provenance.py \
             tests/test_evidence.py \
-            tests/test_physics.py
+            tests/test_physics.py \
+            tests/test_consensus.py
 
-# END OF BHS DEMO WORKFLOW
+# END OF COMPLETE BHS 120-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
