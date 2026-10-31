@@ -1,165 +1,175 @@
+# BEGIN OF COMPLETE BHS LEGACY MLFF VALIDATOR — CHECK THIS LINE ON GITHUB
+"""Explicit CHGNet MLFF adapter, with no synthetic fallback predictions.
+
+A real CHGNet optimizer call may return a predicted potential energy and
+observed model force outputs. These are NOT experimentally measured values,
+formation energies, calibrated uncertainties, convex-hull stabilities,
+synthesizability scores, or band gaps. Tests mock CHGNet; no model is run in CI.
+
+If CHGNet is absent, fails, or returns malformed data, raise an exception.
+Never manufacture physics metrics in a fallback branch.
+"""
+
+import math
+from typing import Any, Dict, Optional
+
 import numpy as np
-from typing import Dict, Any
 from pymatgen.core import Structure
-
-from src.imd_pipeline.validation.property_filter import PropertyFilter
-
-try:
-    from chgnet.model import CHGNet
-    from chgnet.model.dynamics import StructOptimizer
-    CHGNET_AVAILABLE = True
-except ImportError:
-    CHGNET_AVAILABLE = False
 
 
 class MLFFValidator:
-    """
-    CHGNet Atomic Potential & Structural Relaxation Engine.
-    Executes real MLFF force-field optimization, computes stress tensors, 
-    evaluates dynamic formation energy ($E_{form}$), and extracts key physical properties.
-    """
-
-    # Materials Project (MP) / CHGNet Uyumlu Standart Elemental Referans Enerjileri (eV/atom)
-    ELEMENTAL_REFERENCES = {
-        "Li": -1.90, "Na": -1.31, "K": -1.10, "Mg": -1.55, "Ca": -1.98,
-        "Fe": -6.62, "V": -8.94, "Ti": -7.75, "Ba": -1.92, "Sr": -1.68,
-        "Ni": -5.51, "Zn": -1.26, "P": -5.15, "O": -4.95, "F": -1.70
-    }
-    DEFAULT_REF_OFFSET = 4.70  # Sözlükte bulunmayan nadir elementler için fallback
+    """Legacy interface for explicit CHGNet predictions, never fake physics."""
 
     def __init__(self, use_gpu: bool = False):
+        if not isinstance(use_gpu, bool):
+            raise ValueError("use_gpu must be a boolean.")
         self.use_gpu = use_gpu
+        # Avoid loading or downloading model weights during object creation.
         self.model = None
         self.optimizer = None
-        
-        if CHGNET_AVAILABLE:
-            self.model = CHGNet.load()
-            self.optimizer = StructOptimizer(model=self.model)
-        else:
-            print("⚠️ Warning: CHGNet library not found. Running in fallback physics mode.")
 
-    def _calculate_dynamic_e_form(self, structure: Structure, raw_energy_per_atom: float) -> float:
-        """
-        Kristal yapısındaki stokiometriye göre dinamik Formation Energy ($E_{form}$) hesaplar.
-        """
-        comp = structure.composition
-        total_atoms = comp.num_atoms
-        
-        ref_energy_sum = 0.0
-        has_all_refs = True
-        
-        for element, count in comp.items():
-            symbol = element.symbol
-            if symbol in self.ELEMENTAL_REFERENCES:
-                ref_energy_sum += count * self.ELEMENTAL_REFERENCES[symbol]
-            else:
-                has_all_refs = False
-                break
-        
-        if has_all_refs and total_atoms > 0:
-            # E_form = E_total/atom - (Sum(n_i * E_ref_i) / N_total) + Offset
-            e_form = raw_energy_per_atom - (ref_energy_sum / total_atoms) + 0.35
-            return e_form
-        else:
-            return raw_energy_per_atom + self.DEFAULT_REF_OFFSET
+    @staticmethod
+    def _compute_minimum_interatomic_distance(structure: Structure) -> Optional[float]:
+        """Minimum periodic pair distance in A; undefined for fewer than 2 sites.
 
-    def evaluate_and_relax(self, structure: Structure, fmax: float = 0.1, steps: int = 100) -> Dict[str, Any]:
+        This is a geometrical observation, not proof of physical stability.
         """
-        Kristal yapısını CHGNet ile relakse eder, fiziksel metrikleri ve malzeme özelliklerini hesaplar.
+        if not isinstance(structure, Structure) or len(structure) == 0:
+            raise ValueError("A nonempty pymatgen Structure is required.")
+        if len(structure) < 2:
+            return None
+        distances = (float(structure.get_distance(i, j))
+                     for i in range(len(structure))
+                     for j in range(i + 1, len(structure)))
+        result = min(distances)
+        if not math.isfinite(result) or result < 0.0:
+            raise ValueError("Structure returned an invalid pair distance.")
+        return result
+
+    @staticmethod
+    def _calculate_dynamic_e_form(structure: Structure, raw_energy_per_atom: float):
+        """Formation energy cannot be inferred from arbitrary reference offsets."""
+        raise NotImplementedError(
+            "Formation energy requires a consistent documented elemental "
+            "reference scheme and independently validated calculation; "
+            "no fallback formation energy can be supplied."
+        )
+
+    @staticmethod
+    def _fallback_physics_evaluation(structure: Structure):
+        """Refuse previous made-up energy/force/stress/band-gap values."""
+        raise RuntimeError(
+            "Synthetic MLFF fallback disabled. No CHGNet calculation was "
+            "performed and no physical output may be reported."
+        )
+
+    def evaluate_and_relax(
+        self, structure: Structure, fmax: float = 0.1, steps: int = 100
+    ) -> Dict[str, Any]:
+        """Run the real optional CHGNet optimizer; report provenance clearly.
+
+        Energy is CHGNet-predicted *potential energy per atom* (eV/atom).
+        It is NOT an elemental-reference formation energy. The return value
+        does not claim convergence, synthesis feasibility, or stability.
         """
-        if not CHGNET_AVAILABLE or self.model is None or self.optimizer is None:
-            return self._fallback_physics_evaluation(structure)
+        if not isinstance(structure, Structure) or len(structure) == 0:
+            raise ValueError("A nonempty pymatgen Structure is required.")
+        if isinstance(fmax, bool) or not isinstance(fmax, (int, float)):
+            raise ValueError("fmax must be a finite positive number.")
+        try:
+            checked_fmax = float(fmax)
+        except (OverflowError, ValueError) as exc:
+            raise ValueError("fmax cannot be represented safely.") from exc
+        if not math.isfinite(checked_fmax) or checked_fmax <= 0.0:
+            raise ValueError("fmax must be a finite positive number.")
+        if isinstance(steps, bool) or not isinstance(steps, int) or steps < 1:
+            raise ValueError("steps must be a positive integer.")
 
         try:
-            # 1. CHGNet Yapısal Relaksasyon
-            relaxation_result = self.optimizer.relax(
-                structure,
-                fmax=fmax,
-                steps=steps,
-                relax_cell=True,
-                verbose=False
+            from chgnet.model.dynamics import StructOptimizer
+        except ImportError as exc:
+            raise RuntimeError(
+                "CHGNet is not installed/importable. No fallback energy or "
+                "physical result was generated."
+            ) from exc
+
+        try:
+            optimizer = StructOptimizer(use_device="cuda" if self.use_gpu else "cpu")
+            calculation = optimizer.relax(
+                structure, fmax=checked_fmax, steps=steps,
+                relax_cell=True, verbose=False,
             )
-            
-            # 2. Relakse Edilmiş Yapı
-            relaxed_structure: Structure = relaxation_result["final_structure"]
+            relaxed = calculation["final_structure"]
+            trajectory = calculation["trajectory"]
+            if not isinstance(relaxed, Structure) or len(relaxed) == 0:
+                raise ValueError("CHGNet returned no valid relaxed Structure.")
+            if len(relaxed) != len(structure):
+                raise ValueError("CHGNet returned a different atom count.")
+            if relaxed.composition != structure.composition:
+                raise ValueError("CHGNet returned a changed chemical composition.")
+            energies = trajectory.energies
+            if not energies:
+                raise ValueError("CHGNet returned no trajectory energies.")
+            total_energy_ev = float(energies[-1])
+            if not math.isfinite(total_energy_ev):
+                raise ValueError("CHGNet returned a nonfinite total energy.")
+            per_atom_ev = total_energy_ev / len(relaxed)
+            if not math.isfinite(per_atom_ev):
+                raise ValueError("CHGNet per-atom potential energy is nonfinite.")
 
-            # 3. CHGNet Model Tahmini
-            prediction = self.model.predict_structure(relaxed_structure)
-            raw_energy_per_atom = float(prediction.get("e", 0.0))
-            
-            # 4. Dinamik E_form Hesaplaması
-            e_form = self._calculate_dynamic_e_form(relaxed_structure, raw_energy_per_atom)
+            # Report force vectors only when actually present in the trajectory.
+            force_vectors = None
+            max_force = None
+            observed_forces = getattr(trajectory, "forces", None)
+            if observed_forces is not None:
+                if len(observed_forces) == 0:
+                    raise ValueError("CHGNet returned an empty forces trajectory.")
+                vectors = np.asarray(observed_forces[-1], dtype=float)
+                if vectors.shape != (len(relaxed), 3) or not np.isfinite(vectors).all():
+                    raise ValueError("CHGNet returned invalid final force vectors.")
+                max_force = float(np.max(np.linalg.norm(vectors, axis=1)))
+                if not math.isfinite(max_force):
+                    raise ValueError("CHGNet maximum force is nonfinite.")
+                force_vectors = vectors.tolist()
 
-            # Atomic Forces (eV/Å)
-            forces = np.array(prediction.get("f", np.zeros((len(relaxed_structure), 3))))
-            max_force = float(np.max(np.linalg.norm(forces, axis=1))) if len(forces) > 0 else 0.0
-            
-            # Stress Tensor
-            stress = np.array(prediction.get("s", np.zeros((3, 3))))
-            max_stress = float(np.max(np.abs(stress)))
-
-            # Atomic Overlap Denetimi
-            min_dist = self._compute_minimum_interatomic_distance(relaxed_structure)
-            has_overlap = min_dist < 0.8
-
-            # 5. Adım 2: Property Filtering & Synthesizability Metrikleri
-            synth_score = PropertyFilter.estimate_synthesizability(relaxed_structure)
-            bg_info = PropertyFilter.classify_band_gap(relaxed_structure, e_form)
-
-            return {
-                "relaxed_structure": relaxed_structure,
-                "e_form": round(e_form, 4),
-                "raw_energy": round(raw_energy_per_atom, 4),
-                "max_force": round(max_force, 4),
-                "max_stress": round(max_stress, 4),
-                "min_distance": round(min_dist, 4),
-                "has_overlap": has_overlap,
-                "synthesizability_score": synth_score,
-                "band_gap_class": bg_info["band_gap_class"],
-                "estimated_gap_eV": bg_info["estimated_gap_eV"],
-                "forces": forces.tolist(),
-                "stress_tensor": stress.tolist(),
-                "converged": True,
-                "engine": "CHGNet Real Physics"
-            }
-
-        except Exception as e:
-            print(f"❌ CHGNet Relaxation Error: {e}")
-            return self._fallback_physics_evaluation(structure)
-
-    def _compute_minimum_interatomic_distance(self, structure: Structure) -> float:
-        """Atomlar arası en kısa mesafeyi hesaplar."""
-        if len(structure) < 2:
-            return 2.0
-        dist_matrix = structure.distance_matrix
-        np.fill_diagonal(dist_matrix, np.inf)
-        return float(np.min(dist_matrix))
-
-    def _fallback_physics_evaluation(self, structure: Structure) -> Dict[str, Any]:
-        """Fallback mekanizması."""
-        min_dist = self._compute_minimum_interatomic_distance(structure)
-        has_overlap = min_dist < 0.8
-        
-        base_energy = -1.85
-        if has_overlap:
-            base_energy += (0.8 - min_dist) * 2.5
-            
-        synth_score = PropertyFilter.estimate_synthesizability(structure)
-        bg_info = PropertyFilter.classify_band_gap(structure, base_energy)
+            minimum_distance = self._compute_minimum_interatomic_distance(relaxed)
+        except Exception as exc:
+            raise RuntimeError(
+                "CHGNet execution failed or returned invalid outputs. "
+                "No placeholder energy, force, band gap, or convergence "
+                "result was substituted."
+            ) from exc
 
         return {
-            "relaxed_structure": structure,
-            "e_form": round(base_energy, 4),
-            "raw_energy": round(base_energy, 4),
-            "max_force": 0.45 if has_overlap else 0.08,
-            "max_stress": 2.10 if has_overlap else 0.15,
-            "min_distance": round(min_dist, 4),
-            "has_overlap": has_overlap,
-            "synthesizability_score": synth_score,
-            "band_gap_class": bg_info["band_gap_class"],
-            "estimated_gap_eV": bg_info["estimated_gap_eV"],
-            "forces": [],
-            "stress_tensor": [],
-            "converged": False,
-            "engine": "Fallback Physics Engine"
+            "relaxed_structure": relaxed,
+            "potential_energy_ev_per_atom": per_atom_ev,
+            "potential_energy_total_ev": total_energy_ev,
+            "raw_energy": None,  # Legacy name ambiguous; use explicit potential_energy keys.
+            "e_form": None,
+            "formation_energy_ev_per_atom": None,
+            "max_force": max_force,
+            "max_stress": None,
+            "min_distance": minimum_distance,
+            "has_overlap": None,  # Geometry alone is not a validated overlap classifier.
+            "synthesizability_score": None,
+            "band_gap_class": None,
+            "estimated_gap_eV": None,
+            "forces": force_vectors,
+            "stress_tensor": None,
+            "converged": None,  # Optimization termination is not verified convergence.
+            "engine": "CHGNet",
+            "device_requested": "cuda" if self.use_gpu else "cpu",
+            "execution_status": "CHGNET_OPTIMIZER_RETURNED_OUTPUT",
+            "model_output_provenance": "MLFF_PREDICTION_NOT_EXPERIMENT",
+            "independent_verification_status": "NOT_VERIFIED",
+            "formation_energy_status": "NOT_CALCULATED",
+            "band_gap_status": "NOT_CALCULATED",
+            "convergence_status": "NOT_VERIFIED",
+            "scientific_interpretation": (
+                "CHGNet optimizer returned a model-predicted potential energy. "
+                "No formation energy, convex-hull stability, synthesis score, "
+                "band gap, independently verified convergence, or empirical "
+                "material property is established by this result."
+            ),
         }
+# END OF COMPLETE BHS LEGACY MLFF VALIDATOR — CHECK THIS LINE ON GITHUB
