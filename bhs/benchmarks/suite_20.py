@@ -1,11 +1,13 @@
-# bhs/benchmarks/suite_20.py
+"""20-system BHS benchmark protocol (no fabricated performance results).
+
+The current repository does not yet have a validated empirical benchmarking
+pipeline. This module defines the target systems and a reproducible, explicitly
+UNRUN protocol. It deliberately does not invent search-step counts, GPU usage,
+or comparisons against ablation and random-search baselines.
+"""
 
 import json
-import os
-from typing import Dict, List, Any
-from bhs.search.bayesian_engine import BayesianHypothesisSearchEngine
-from bhs.benchmarks.baselines import RandomSearchBaseline
-from bhs.provenance.tags import ProvenanceValue, DataProvenanceType
+from pathlib import Path
 
 BENCHMARK_20_SYSTEMS = [
     {"formula": "LiFePO4", "space_group": "Pnma", "class": "Battery Cathode"},
@@ -27,57 +29,68 @@ BENCHMARK_20_SYSTEMS = [
     {"formula": "MoS2", "space_group": "P63/mmc", "class": "2D Dichalcogenide"},
     {"formula": "Li3N", "space_group": "P6/mmm", "class": "Solid Electrolyte"},
     {"formula": "Bi2Se3", "space_group": "R-3m", "class": "Topological Insulator"},
-    {"formula": "Cu2O", "space_group": "Pn-3m", "class": "Photovoltaic"}
+    {"formula": "Cu2O", "space_group": "Pn-3m", "class": "Photovoltaic"},
 ]
 
+
 class AblationBenchmarkSuite:
-    """Runs full 20-system benchmark across BHS, Ablation variants, and Random baseline."""
-    
-    @staticmethod
-    def run_full_suite() -> List[Dict[str, Any]]:
-        results = []
-        for sys in BENCHMARK_20_SYSTEMS:
-            formula = sys["formula"]
-            
-            # Simulated search metrics for ablation comparison
-            bhs_steps = 4
-            no_bayes_steps = 11
-            no_adaptive_steps = 8
-            random_steps = 22
-            
-            bhs_gpu_hrs = 1.2
-            random_gpu_hrs = 6.6
-            gpu_savings = round((1.0 - (bhs_gpu_hrs / random_gpu_hrs)) * 100, 1)
-            
-            entry = {
-                "system": formula,
-                "space_group": sys["space_group"],
-                "class": sys["class"],
-                "metrics": {
-                    "bhs_full_steps": bhs_steps,
-                    "ablation_no_bayes_steps": no_bayes_steps,
-                    "ablation_fixed_budget_steps": no_adaptive_steps,
-                    "random_baseline_steps": random_steps,
-                    "gpu_hours_saved_pct": ProvenanceValue(
-                        value=f"%{gpu_savings}",
-                        provenance=DataProvenanceType.DERIVED,
-                        source_description="1 - (BHS_GPU_Hours / Random_GPU_Hours)"
-                    )
-                }
-            }
-            results.append(entry)
-        return results
+    """Define the protocol without claiming that its experiments have run."""
 
     @staticmethod
-    def save_benchmark_report(results: List[Dict[str, Any]], out_path: str = "runs/benchmark_20_results.json"):
-        os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        
-        serializable = []
-        for r in results:
-            item = r.copy()
-            item["metrics"]["gpu_hours_saved_pct"] = item["metrics"]["gpu_hours_saved_pct"].to_dict()
-            serializable.append(item)
-            
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(serializable, f, indent=2)
-        return out_path
+    def create_protocol_manifest():
+        """Return 20 explicitly unexecuted study cases, not experiment results."""
+        return [
+            {
+                "system": entry["formula"],
+                "space_group": entry["space_group"],
+                "class": entry["class"],
+                "status": "NOT_RUN",
+                "metrics": None,
+                "evidence_files": [],
+            }
+            for entry in BENCHMARK_20_SYSTEMS
+        ]
+
+    @staticmethod
+    def run_full_suite():
+        """Prevent the old API from silently producing fabricated outcomes."""
+        raise NotImplementedError(
+            "The 20-system benchmark execution pipeline has not been implemented. "
+            "No empirical performance results are available. "
+            "Use create_protocol_manifest() to inspect the planned systems."
+        )
+
+    @staticmethod
+    def save_protocol_manifest(path="runs/benchmark_20_protocol.json"):
+        """Save a clear NOT_RUN plan that can be tracked in future experiments."""
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        document = {
+            "artifact_type": "BENCHMARK_PROTOCOL",
+            "status": "NOT_RUN",
+            "notice": (
+                "This is a study plan, NOT a benchmark result or evidence "
+                "of BHS speedup, GPU savings, or predictive performance."
+            ),
+            "systems": AblationBenchmarkSuite.create_protocol_manifest(),
+        }
+        destination.write_text(
+            json.dumps(document, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return str(destination)
+
+    @staticmethod
+    def save_benchmark_report(results, out_path="runs/benchmark_20_results.json"):
+        """Fail closed until empirical run-data ingestion is implemented.
+
+        Accepting hand-entered step counts here would allow simulated numbers
+        to be mislabeled as benchmark results. The next research milestone is
+        an experiment runner with recorded seeds, hardware, comparison budgets,
+        success criteria, and raw per-run logs.
+        """
+        raise NotImplementedError(
+            "Empirical benchmark report export is not implemented. "
+            "No measurements are written. Use save_protocol_manifest() "
+            "for the explicitly unexecuted research plan."
+        )
