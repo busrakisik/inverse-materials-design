@@ -1,3 +1,4 @@
+# BEGIN OF COMPLETE BHS BAYESIAN ENGINE — CHECK THIS LINE ON GITHUB
 """Validated Bayesian belief updates for the BHS research prototype.
 
 Inputs are user-supplied probabilities, NOT calibrated physical evidence.
@@ -93,4 +94,53 @@ class BayesianHypothesisSearchEngine:
             raise ValueError("Evidence step_name must be nonempty.")
         valid = _validate_likelihoods(likelihoods, self.priors)
 
-        log_weights = {
+log_weights = {
+            name: (
+                math.log(prior) + math.log(valid[name])
+                if prior > 0.0 and valid[name] > 0.0
+                else float("-inf")
+            )
+            for name, prior in self.priors.items()
+        }
+        largest = max(log_weights.values())
+        if not math.isfinite(largest):
+            raise ValueError(
+                "Evidence has zero probability under every supported hypothesis; "
+                "cannot calculate a posterior."
+            )
+        scaled = {
+            name: (math.exp(weight - largest) if math.isfinite(weight) else 0.0)
+            for name, weight in log_weights.items()
+        }
+        normalizer = math.fsum(scaled.values())
+        posteriors = {name: weight / normalizer for name, weight in scaled.items()}
+
+        # Only mutate engine state after all input and numeric checks pass.
+        self.priors = dict(posteriors)
+        for name, posterior in posteriors.items():
+            self.mcts_nodes[name]["P"] = posterior
+
+best_hypothesis = max(posteriors, key=posteriors.get)
+        record = {
+            "step_name": step_name,
+            "posteriors": {
+                name: ProvenanceValue(
+                    value=posterior,
+                    provenance=DataProvenanceType.DERIVED,
+                    source_description=(
+                        f"Sequential Bayes update from supplied likelihoods: {step_name}; "
+                        "likelihood calibration and physical evidence NOT verified"
+                    ),
+                )
+                for name, posterior in posteriors.items()
+            },
+            "winning_hypothesis": best_hypothesis,
+            "input_likelihoods": dict(valid),
+            "evidence_verification_status": "NOT_VERIFIED",
+            "allocated_budget": None,
+            "budget_status": "NOT_ALLOCATED",
+        }
+        self.history.append(record)
+        return record
+
+# END OF COMPLETE BHS BAYESIAN ENGINE — CHECK THIS LINE ON GITHUB
