@@ -1,18 +1,31 @@
-experiment_name: "LiFePO4_Reconstruction_Validation"
-mode: "Reconstruction"
-target_composition: "LiFePO4"
-space_group: "Pnma"
 
+# BEGIN OF COMPLETE BHS ILLUSTRATIVE CONFIG — CHECK THIS LINE ON GITHUB
+# Example inputs ONLY for `python -m bhs.cli --demo`.
+# No crystal reconstruction, physical validation, CHGNet run, MCTS rollout,
+# scientific likelihood calibration, or GPU-time allocation occurs.
+
+experiment_name: "LiFePO4_Illustrative_Bayesian_Update"
+mode: "ILLUSTRATIVE_DEMO_NOT_VERIFIED"
+target_composition: "LiFePO4"
+space_group: "Pnma"  # Illustrative hypothesis label; not independently validated.
+
+# These priors are user-chosen examples, NOT scientifically measured probabilities.
 priors:
   H1_Olivine_Pnma: 0.50
   H2_Spinel_Fd3m: 0.30
   H3_NASICON_R3c: 0.20
 
+# Planned parameters below are preserved for compatibility and documentation.
+# The current `bhs/cli.py --demo` does NOT enforce or execute them.
 physical_constraints:
   max_e_hull_ev: 0.05
   min_soap_distance: 0.0
   fmax_relaxation: 0.05
 
+# These values are illustrative only: no computation budget is allocated.
 budget:
   max_mcts_steps: 5
   base_gpu_hours: 4.0
+
+# END OF COMPLETE BHS ILLUSTRATIVE CONFIG — CHECK THIS LINE ON GITHUB
+
