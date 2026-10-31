@@ -94,7 +94,7 @@ class BayesianHypothesisSearchEngine:
             raise ValueError("Evidence step_name must be nonempty.")
         valid = _validate_likelihoods(likelihoods, self.priors)
 
-log_weights = {
+        log_weights = {
             name: (
                 math.log(prior) + math.log(valid[name])
                 if prior > 0.0 and valid[name] > 0.0
@@ -120,7 +120,7 @@ log_weights = {
         for name, posterior in posteriors.items():
             self.mcts_nodes[name]["P"] = posterior
 
-best_hypothesis = max(posteriors, key=posteriors.get)
+        best_hypothesis = max(posteriors, key=posteriors.get)
         record = {
             "step_name": step_name,
             "posteriors": {
