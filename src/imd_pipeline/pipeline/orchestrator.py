@@ -94,7 +94,7 @@ class Orchestrator:
                 raise ValueError("Empty composition.")
             return composition
         except Exception as exc:
-             raise ValueError("target_formula must be a valid chemical formula.") from exc
+            raise ValueError("target_formula must be a valid chemical formula.") from exc
 
     @staticmethod
     def _validate_candidate(candidate: Structure, target: Composition) -> None:
@@ -120,6 +120,12 @@ class Orchestrator:
             "No verified feedback-guided proposal/retry engine is installed."
         )
 
+    @staticmethod
+    def _checked_model_number(value: Any, name: str, *, nonnegative=False):
+        if value is None:
+            return None
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise RuntimeError(f"Invalid CHGNet {name}: expected a numeric value.")
         try:
             checked = float(value)
         except (OverflowError, ValueError) as exc:
@@ -212,8 +218,9 @@ class Orchestrator:
                     "implemented. No MLFF, DFT or experimental evidence exists."
                 ),
             )
- self._validate_candidate(initial_structure, target)
-       if not self.use_mlff:
+
+        self._validate_candidate(initial_structure, target)
+        if not self.use_mlff:
             return DiscoveryResult(
                 target_formula=canonical_formula,
                 is_stable=False,
@@ -228,7 +235,7 @@ class Orchestrator:
                 ),
             )
 
- try:
+        try:
             raw = self.mlff_validator.evaluate_and_relax(
                 initial_structure, fmax=0.1, steps=100
             )
@@ -263,7 +270,8 @@ class Orchestrator:
                     "physical result is reported."
                 ),
             )
-   checked = self._validate_model_result(raw, initial_structure)
+
+        checked = self._validate_model_result(raw, initial_structure)
         record = {
             "iteration": 1,
             "execution_status": "CHGNET_OPTIMIZER_RETURNED_OUTPUT",
@@ -289,7 +297,7 @@ class Orchestrator:
                 "No autonomous candidate generator or feedback retries ran.",
             ],
         }
-return DiscoveryResult(
+        return DiscoveryResult(
             target_formula=canonical_formula,
             is_stable=False,
             iterations_taken=1,
@@ -306,8 +314,3 @@ return DiscoveryResult(
         )
 
 # END OF COMPLETE BHS LEGACY ORCHESTRATOR — CHECK THIS LINE ON GITHUB
-
-
-
-
-                    
