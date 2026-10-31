@@ -1,4 +1,36 @@
+# BEGIN OF COMPLETE BHS CLI FILE — CHECK THIS LINE ON GITHUB
+"""BHS command-line entry point for a transparent Bayesian-update demonstration.
 
+This CLI deliberately performs NO crystal-structure validation, CHGNet
+relaxation, GPU computation, or autonomous material discovery.
+
+The illustrative likelihoods are examples, not scientifically calibrated
+evidence. Actual materials-workflow execution requires a separate,
+validated pipeline with physical inputs and reproducibility checks.
+"""
+
+import argparse
+from pathlib import Path
+import math
+
+import yaml
+
+from bhs.search.bayesian_engine import BayesianHypothesisSearchEngine
+from bhs.provenance.bundle import ProvenanceBundleSaver
+
+
+# These are illustrative numbers reused from the old demonstration code.
+# They are NOT physical likelihoods obtained from experiments or MLFF.
+ILLUSTRATIVE_LIKELIHOODS = {
+    "H1_Olivine_Pnma": 0.95,
+    "H2_Spinel_Fd3m": 0.32,
+    "H3_NASICON_R3c": 0.15,
+}
+
+
+def _validate_priors(priors):
+    if not isinstance(priors, dict) or not priors:
+        raise ValueError("Config must provide a nonempty 'priors' mapping.")
     if set(priors) != set(ILLUSTRATIVE_LIKELIHOODS):
         raise ValueError(
             "The demonstration supports exactly H1_Olivine_Pnma, "
@@ -62,7 +94,7 @@ def run_pipeline(config_path: str, out_dir: str, *, demo: bool = False) -> str:
             "highest_posterior_hypothesis": record["winning_hypothesis"],
             "physical_validation": "NOT_RUN",
             "gpu_hours_allocated": None,
-        }
+     }
     ]
     metrics = {
         "status": "DEMO_ONLY_NOT_VERIFIED",
@@ -108,4 +140,3 @@ if __name__ == "__main__":
     main()
 
 # END OF COMPLETE BHS CLI FILE — CHECK THIS LINE ON GITHUB
-
