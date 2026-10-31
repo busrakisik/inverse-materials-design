@@ -96,4 +96,50 @@ def test_invalid_likelihood_value_rejected(bad_value):
 
 @pytest.mark.parametrize("bad_priors", [
     {}, {"A": 0.2, "B": 0.2},
+    {"A": float("nan"), "B": 1.0},
+    {"A": True, "B": 0.0},
+    {"A": -0.1, "B": 1.1},
+    {"": 1.0},
+])
+def test_invalid_priors_rejected(bad_priors):
+    with pytest.raises(ValueError):
+        BayesianHypothesisSearchEngine(bad_priors)
+def test_empty_evidence_name_rejected():
+    engine = BayesianHypothesisSearchEngine({"A": 0.5, "B": 0.5})
+    with pytest.raises(ValueError, match="step_name"):
+        engine.accumulate_evidence("   ", {"A": 0.2, "B": 0.8})
+    assert engine.history == []
+
+
+def test_provenance_marks_derived_probability_without_claiming_measured_evidence():
+    engine = BayesianHypothesisSearchEngine()
+    likelihoods = {h: 0.5 for h in engine.priors}
+    record = engine.accumulate_evidence("example only", likelihoods)
+    assert record["evidence_verification_status"] == "NOT_VERIFIED"
+    assert record["input_likelihoods"] == likelihoods
+    for item in record["posteriors"].values():
+        assert item.provenance == DataProvenanceType.DERIVED
+        assert "NOT verified" in item.source_description
+
+def test_no_fabricated_gpu_budget_or_mcts_rollouts():
+    engine = BayesianHypothesisSearchEngine()
+    result = engine.accumulate_evidence(
+        "illustrative update", {h: 0.5 for h in engine.priors}
+    )
+    assert result["allocated_budget"] is None
+    assert result["budget_status"] == "NOT_ALLOCATED"
+    for node in engine.mcts_nodes.values():
+        assert node["Q"] is None
+        assert node["N"] == 0
+        assert node["P"] >= 0
+
+
+def test_puct_is_not_claimed_without_evaluated_rollouts():
+    engine = BayesianHypothesisSearchEngine()
+    node = next(iter(engine.mcts_nodes))
+    with pytest.raises(NotImplementedError, match="PUCT/MCTS"):
+        engine.compute_uct(node)
+    with pytest.raises(KeyError, match="Unknown hypothesis"):
+        engine.compute_uct("unknown")
+        
 # END OF COMPLETE BHS BAYESIAN PROVENANCE TESTS — CHECK THIS LINE ON GITHUB
