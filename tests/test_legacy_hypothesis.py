@@ -94,6 +94,7 @@ def test_research_targets_always_caller_supplied_and_unverified():
 
 def test_targets_trimmed_and_order_preserved():
     result = _evaluate(["  objective one  ", " objective two ", "third"])
+    assert result["research_targets"] == ["objective one", "objective two", "third"]
 
 def test_evaluation_never_mutates_caller_targets():
     targets = ["  target  ", "another"]
