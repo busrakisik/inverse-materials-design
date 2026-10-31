@@ -1,61 +1,57 @@
+
+# BEGIN OF COMPLETE BHS LEGACY PHYSICS SAFETY SHIM — CHECK THIS LINE ON GITHUB
+"""Fail-closed guard for an unaudited legacy Streamlit physics interface.
+
+The previous implementation manufactured 32 optimization steps, energies,
+forces, DFT scores, convergence status and provenance hashes without running
+CHGNet, ASE or DFT. Those outputs must NOT be described as calculations.
+
+This compatibility module intentionally does not emit simulation results.
+For an optional actual CHGNet adapter, see bhs.physics.relaxer. The legacy
+Streamlit app must be redesigned and independently tested before reenabling
+any physics display. This module intentionally causes the old demo path to
+stop rather than display fictional scientific evidence.
+"""
+
 import hashlib
-import time
-from datetime import datetime
-import numpy as np
-from typing import Dict, Any, Tuple
-from pymatgen.core import Structure
+from typing import Any, Dict, Tuple
+
 
 class RealPhysicsEngine:
+    """Legacy class name retained so callers receive a transparent failure."""
+
     @staticmethod
     def generate_sha256(content: str) -> str:
-        return hashlib.sha256(content.encode('utf-8')).hexdigest()[:12]
+        """Return a content digest, not a claim of simulation or verification.
+
+        Retain this general utility for older callers. Hashing arbitrary
+        input does not demonstrate that any physical calculation took place.
+        """
+        if not isinstance(content, str):
+            raise TypeError("content must be a string.")
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     @staticmethod
-    def run_chgnet_relaxation(structure: Structure) -> Tuple[Structure, Dict[str, Any]]:
-        steps_history = list(range(1, 33))
-        force_history = np.exp(-np.linspace(0.5, 3.2, 32)) * 0.42 + 0.0421
-        energy_history = -5.500 - (1 - np.exp(-np.linspace(0.1, 2.5, 32))) * 0.213
-        volume_history = 286.5 + (1 - np.exp(-np.linspace(0.2, 3.0, 32))) * 4.9
+    def run_chgnet_relaxation(structure: Any) -> Tuple[Any, Dict[str, Any]]:
+        """Refuse to simulate a real CHGNet run using invented metrics.
 
-        ase_log_text = "Step     Time          Energy         fmax         Volume\n"
-        for s, e, f, v in zip(steps_history, energy_history, force_history, volume_history):
-            ase_log_text += f"BFGS:  {s:3d}  12:00:{s:02d}   {e:.6f}   {f:.5f}   {v:.2f}\n"
+        This deprecated legacy API previously produced fake optimization logs,
+        a fixed 'formation energy', fabricated DFT scores and success status.
+        It is intentionally disabled until the Streamlit UI is refactored to
+        consume independently verified outputs from a real calculation.
 
-        stress_mat = np.array([[0.12, 0.00, 0.00], [0.00, 0.11, 0.00], [0.00, 0.00, 0.14]])
+        No numerical result, run log or fake provenance is generated.
+        """
+        raise NotImplementedError(
+            "LEGACY PHYSICS PATH DISABLED: the former RealPhysicsEngine "
+            "fabricated CHGNet relaxation steps, energy/force histories, "
+            "DFT scores and convergence/provenance metadata. "
+            "No real simulation was performed by this legacy API. "
+            "Do not report those values as measured or predicted physics. "
+            "Use bhs.physics.relaxer.PhysicsRelaxationEngine only for "
+            "an explicitly configured, actual CHGNet run. "
+            "The old Streamlit app needs a separate safe-UI update."
+        )
 
-        # Cryptographic Hashes & Provenance Metadata
-        cif_hash = RealPhysicsEngine.generate_sha256(str(structure))
-        log_hash = RealPhysicsEngine.generate_sha256(ase_log_text)
-        
-        execution_id = f"EXEC-{int(time.time())}-CHG"
-        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-        git_commit = "9a8f23c"
+# END OF COMPLETE BHS LEGACY PHYSICS SAFETY SHIM — CHECK THIS LINE ON GITHUB
 
-        return structure, {
-            "engine": "CHGNet v0.3.0 (ASE Wrapped)",
-            "optimizer": "BFGS",
-            "steps": 32,
-            "converged": True,
-            "e_form": round(float(energy_history[-1]), 4),
-            "e_form_uncertainty": "± 0.012 eV/atom (Prediction Uncertainty)",
-            "calc_status": "SUCCESS",
-            "force_history": force_history.tolist(),
-            "energy_history": energy_history.tolist(),
-            "volume_history": volume_history.tolist(),
-            "steps_history": steps_history,
-            "ase_log": ase_log_text,
-            "dft_scores": {
-                "geometry": 100, "force": 98, "thermodynamics": 95, "symmetry": 100, "overall": 98
-            },
-            "provenance": {
-                "execution_id": execution_id,
-                "timestamp": timestamp,
-                "git_commit": git_commit
-            },
-            "hashes": {
-                "cif": f"0x{cif_hash}",
-                "poscar": f"0x{cif_hash[:8]}a1",
-                "log": f"0x{log_hash}",
-                "traj": f"0x{log_hash[:8]}f9"
-            }
-        }
