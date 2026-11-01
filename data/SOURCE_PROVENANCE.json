@@ -1,0 +1,25 @@
+{
+  "sample_name": "LiFePO4",
+  "source_repository": "materialsproject/workshop",
+  "source_path": "workshop/lessons/03_heterointerfaces/LiFePO4.cif",
+  "source_branch": "master",
+  "source_github_blob_sha1": "d8f0b149e234160e55991f95c0db40ce944a48dc",
+  "source_url": "https://github.com/materialsproject/workshop/blob/master/workshop/lessons/03_heterointerfaces/LiFePO4.cif",
+  "downloaded_via": "GitHub read connector; contents copied byte-for-byte and Git blob SHA-1 verified",
+  "file_sha256": "8e2fbac30bb55ab4cea7bbed36edd2cfbf4b701d128226252ccd9b58323670b4",
+  "source_structure_formula": "Li4 Fe4 P4 O16",
+  "reduced_formula": "LiFePO4",
+  "atom_count": 28,
+  "lattice_angstrom": {
+    "a": 4.746441,
+    "b": 6.090226,
+    "c": 10.44373
+  },
+  "geometry_kind": "computed Materials Project workshop structure; not an experimental measurement",
+  "status": "INPUT_ONLY_NOT_RUN",
+  "mlff_status": "NOT_RUN",
+  "energy_ev_per_atom": null,
+  "formation_energy": "NOT_CALCULATED",
+  "stability": "NOT_EVALUATED",
+  "note": "The upstream CIF carries P1 (explicit sites), not a claim that its actual underlying symmetry is P1. Full pymatgen parse validation remains pending in target CI."
+}
