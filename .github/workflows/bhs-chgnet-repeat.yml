@@ -1,0 +1,109 @@
+# Manual-only, independent LiFePO4 reproducibility check. No push trigger.
+name: BHS LiFePO4 independent repeat and compare
+
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type REPEAT_CHGNET_CPU to authorize a second real CPU calculation'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  repeat:
+    if: ${{ inputs.confirmation == 'REPEAT_CHGNET_CPU' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OMP_NUM_THREADS: '2'
+      MKL_NUM_THREADS: '2'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install same CPU environment as original experiment
+        run: |
+          python -m pip install 'torch==2.5.1+cpu' --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install 'chgnet==0.4.2' 'pymatgen==2026.10.24' 'numpy==2.4.6'
+          python -m pip check
+      - name: Verify input, dependency versions and selected checkpoint file
+        run: |
+          mkdir -p runs
+          python - <<'PYCODE'
+          import hashlib,importlib.metadata,json
+          from pathlib import Path
+          import chgnet
+          from pymatgen.core import Structure
+          c=Path('data/LiFePO4_MP_workshop.cif')
+          assert hashlib.sha256(c.read_bytes()).hexdigest()=='8e2fbac30bb55ab4cea7bbed36edd2cfbf4b701d128226252ccd9b58323670b4'
+          structure=Structure.from_file(str(c))
+          assert len(structure)==28 and structure.is_ordered
+          assert {str(e):int(n) for e,n in structure.composition.items()}=={'Li':4,'Fe':4,'P':4,'O':16}
+          expected={'chgnet':'0.4.2','torch':'2.5.1+cpu','pymatgen':'2026.10.24','numpy':'2.4.6'}
+          observed={k:importlib.metadata.version(k) for k in expected}
+          assert observed==expected,(observed,expected)
+          checkpoint=Path(chgnet.__file__).resolve().parent/'pretrained/0.3.0/chgnet_0.3.0_e29f68s314m37.pth.tar'
+          assert checkpoint.is_file()
+          ck_hash=hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+          assert ck_hash=='d14ab7c0f093efe64b60a7bcd540bca10e74fb7f46c86108a079af60524659d1'
+          Path('runs/repeat_environment.json').write_text(json.dumps({'versions':observed,'checkpoint_0_3_0_sha256':ck_hash,'source_cif_sha256':hashlib.sha256(c.read_bytes()).hexdigest(),'git_sha':'${{ github.sha }}'},indent=2)+'\n')
+          print('PASS: source, 4 dependency versions, and packaged 0.3.0 checkpoint matched')
+          PYCODE
+      - name: Execute second real CHGNet relaxation (CPU)
+        run: |
+          python scripts/first_chgnet_run.py \
+            --cif data/LiFePO4_MP_workshop.cif \
+            --out-dir runs/lifepo4_repeat_real \
+            --execute --ack-model-download
+      - name: Compare against immutable 2026-11-01 first-run measurements
+        run: |
+          python - <<'PYCODE'
+          import hashlib,json,math
+          from pathlib import Path
+          from pymatgen.core import Structure
+          path=Path('runs/lifepo4_repeat_real')
+          m=json.loads((path/'run_manifest.json').read_text())
+          assert m['status']=='CHGNET_OPTIMIZER_RETURNED_OUTPUT',m.get('error')
+          assert m['input']['sha256']=='8e2fbac30bb55ab4cea7bbed36edd2cfbf4b701d128226252ccd9b58323670b4'
+          x=m['result']
+          baseline={'potential_energy_ev_per_atom':-7.5302734375,'potential_energy_total_ev':-210.84765625,'maximum_final_force_ev_per_angstrom':0.0905902306472966,'minimum_interatomic_distance_angstrom':1.5382215254713454,'relaxed_cif_sha256':'b56c50408a754d39ac20191f5715f8b502360ce1a75a712c67599de165b8c738'}
+          # Numerical tolerances are prospective engineering checks, not physically calibrated uncertainty.
+          tolerances={'potential_energy_ev_per_atom':0.001,'potential_energy_total_ev':0.028,'maximum_final_force_ev_per_angstrom':0.03,'minimum_interatomic_distance_angstrom':0.03}
+          comparisons={}
+          all_pass=True
+          for k,t in tolerances.items():
+              val=x.get(k)
+              if val is None or not math.isfinite(float(val)):
+                  comparisons[k]={'pass':False,'error':'missing or nonfinite'};all_pass=False
+                  continue
+              delta=float(val)-baseline[k]
+              ok=abs(delta)<=t
+              all_pass &= ok
+              comparisons[k]={'first':baseline[k],'repeat':float(val),'absolute_difference':abs(delta),'tolerance':t,'pass':ok}
+          cif=path/'relaxed_structure.cif'
+          assert cif.exists()
+          st=Structure.from_file(str(cif))
+          assert len(st)==28
+          assert {str(e):int(n) for e,n in st.composition.items()}=={'Li':4,'Fe':4,'P':4,'O':16}
+          cif_sha=hashlib.sha256(cif.read_bytes()).hexdigest()
+          comparison={'status':'PASS_NUMERICAL_REPEAT' if all_pass else 'NUMERICAL_DIFFERENCE_REQUIRES_REVIEW','baseline_run_url':'https://github.com/busrakisik/inverse-materials-design/actions/runs/41308132667','baseline_checkpoint_sha256':'d14ab7c0f093efe64b60a7bcd540bca10e74fb7f46c86108a079af60524659d1','comparisons':comparisons,'structure_repeat_sha256':cif_sha,'structure_byte_identical_to_first':cif_sha==baseline['relaxed_cif_sha256'],'note':'Hash equality is a supplementary exact serialization check, not a required reproducibility threshold. Numeric tolerances are engineering checks, not physical uncertainty or convergence verification. Formation energy, hull stability and discovery remain unverified.'}
+          Path('runs/reproducibility_comparison.json').write_text(json.dumps(comparison,indent=2,sort_keys=True)+'\n')
+          print('REPEAT_COMPARISON:',comparison['status'])
+          if not all_pass:raise SystemExit('Repeat produced differences outside predeclared engineering thresholds; inspect artifacts')
+          PYCODE
+      - name: Preserve records even if the repeat fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-lifepo4-independent-repeat
+          path: |
+            runs/repeat_environment.json
+            runs/reproducibility_comparison.json
+            runs/lifepo4_repeat_real/run_manifest.json
+            runs/lifepo4_repeat_real/relaxed_structure.cif
+          if-no-files-found: warn
+          retention-days: 30
