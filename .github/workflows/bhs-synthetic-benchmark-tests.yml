@@ -1,0 +1,43 @@
+# Manual-only synthetic software contract checks; not a physical benchmark.
+name: BHS synthetic benchmark harness contract tests
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_SYNTHETIC_TESTS to run the isolated 8-test contract suite'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  synthetic-contracts:
+    if: ${{ inputs.confirmation == 'RUN_SYNTHETIC_TESTS' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out selected research branch
+        uses: actions/checkout@v4
+      - name: Use Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify synthetic harness and eight tests are present
+        run: |
+          test -s bhs/benchmarks/offline_harness.py
+          test -s tests/test_offline_harness.py
+          python -m py_compile bhs/benchmarks/offline_harness.py tests/test_offline_harness.py
+      - name: Execute isolated synthetic contract suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m unittest discover -s tests -p 'test_offline_harness.py' -v 2>&1 | tee synthetic_contract_test_log.txt
+          grep -Eq '^Ran 8 tests? in ' synthetic_contract_test_log.txt
+          grep -Eq '^OK$' synthetic_contract_test_log.txt
+      - name: Preserve test log even if checks fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-harness-contract-log
+          path: synthetic_contract_test_log.txt
+          if-no-files-found: warn
+          retention-days: 30
