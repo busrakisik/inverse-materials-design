@@ -1,0 +1,74 @@
+# BHS synthetic CIF dry-run: NO CHGNet / physics model execution.
+name: BHS first CHGNet protocol dry run
+
+'on':
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/first_chgnet_run.py'
+      - '.github/workflows/bhs-chgnet-dry-run.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out audit branch
+        uses: actions/checkout@v4
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only CIF parser and test utilities (NOT CHGNet)
+        run: |
+          python -m pip install 'pymatgen==2026.10.24' 'PyYAML>=6,<7'
+          if python -m pip show chgnet >/dev/null 2>&1; then
+            echo "Unexpected CHGNet installation; refusing dry-run environment"
+            exit 1
+          fi
+      - name: Generate clearly synthetic CIF fixture (NOT reference material)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from pymatgen.core import Lattice, Structure
+          from pymatgen.io.cif import CifWriter
+          candidate = Structure(Lattice.cubic(5), ['Li', 'O'], [[0,0,0], [.5,.5,.5]])
+          Path('synthetic_ui_protocol_test.cif').write_text(str(CifWriter(candidate)), encoding='utf-8')
+          print('SYNTHETIC fixture only: no claimed real crystal, no physical experiment.')
+          PY
+      - name: Execute protocol in safe dry-run mode (no --execute flag)
+        run: |
+          python scripts/first_chgnet_run.py \
+            --cif synthetic_ui_protocol_test.cif \
+            --out-dir runs/synthetic_dry_run
+      - name: Verify immutable provenance record and zero physics claims
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          folder=Path('runs/synthetic_dry_run')
+          rec=json.loads((folder/'run_manifest.json').read_text())
+          assert rec['status']=='NOT_RUN'
+          assert rec['input']['source']=='USER_SUPPLIED_CIF_UNVERIFIED'
+          assert rec['input']['sha256']==hashlib.sha256(Path('synthetic_ui_protocol_test.cif').read_bytes()).hexdigest()
+          assert rec['result']['potential_energy_ev_per_atom'] is None
+          assert rec['result']['potential_energy_total_ev'] is None
+          assert rec['scientific_claims']['novel_material_discovery']=='NOT_DEMONSTRATED'
+          assert rec['scientific_claims']['stability']=='NOT_EVALUATED'
+          assert not (folder/'relaxed_structure.cif').exists()
+          print('PASS: dry run, immutable CIF hash, null energies, no CHGNet run')
+          PY
+      - name: Reject overwrite of existing experiment directory
+        run: |
+          if python scripts/first_chgnet_run.py \
+              --cif synthetic_ui_protocol_test.cif \
+              --out-dir runs/synthetic_dry_run; then
+            echo 'ERROR: existing run directory was overwritten'
+            exit 1
+          else
+            echo 'PASS: existing run directory was not overwritten'
+          fi
