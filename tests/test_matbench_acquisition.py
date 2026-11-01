@@ -1,5 +1,5 @@
 import gzip, json, unittest
-from acquire_matbench_expt_gap import inspect, read_table
+from scripts.acquire_matbench_expt_gap import inspect, read_table
 
 
 def fixture(n=4604):
