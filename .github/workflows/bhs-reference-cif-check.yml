@@ -1,0 +1,73 @@
+# Validates a source-tracked LiFePO4 CIF and performs a dry run; no CHGNet execution.
+name: BHS LiFePO4 source CIF validation
+
+'on':
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'data/LiFePO4_MP_workshop.cif'
+      - 'data/SOURCE_PROVENANCE.json'
+      - 'scripts/first_chgnet_run.py'
+      - '.github/workflows/bhs-reference-cif-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-cif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install structure parser only
+        run: |
+          python -m pip install 'pymatgen==2026.10.24'
+          if python -m pip show chgnet >/dev/null 2>&1; then
+            echo 'CHGNet unexpectedly installed; aborting' >&2
+            exit 1
+          fi
+      - name: Validate source identity and actual crystal stoichiometry
+        run: |
+          python - <<'PY'
+          import hashlib, json, math
+          from pathlib import Path
+          from pymatgen.core import Structure
+          cif = Path('data/LiFePO4_MP_workshop.cif')
+          provenance = json.loads(Path('data/SOURCE_PROVENANCE.json').read_text())
+          digest = hashlib.sha256(cif.read_bytes()).hexdigest()
+          assert digest == '8e2fbac30bb55ab4cea7bbed36edd2cfbf4b701d128226252ccd9b58323670b4'
+          assert digest == provenance['file_sha256']
+          assert provenance['source_github_blob_sha1'] == 'd8f0b149e234160e55991f95c0db40ce944a48dc'
+          structure = Structure.from_file(str(cif))
+          assert len(structure) == 28
+          assert structure.is_ordered
+          assert {str(k): int(v) for k,v in structure.composition.items()} == {'Li':4,'Fe':4,'P':4,'O':16}
+          for axis, expected in [('a',4.746441),('b',6.090226),('c',10.443730)]:
+            assert math.isclose(float(getattr(structure.lattice, axis)), expected, rel_tol=0, abs_tol=1e-5)
+          print('PASS: real pymatgen parsed 28-site Li4Fe4P4O16 and source SHA-256 matched')
+          PY
+      - name: Dry-run reference using research script (NO MLFF)
+        run: |
+          python scripts/first_chgnet_run.py \
+            --cif data/LiFePO4_MP_workshop.cif \
+            --out-dir runs/source_lifepo4_dry
+      - name: Verify provenance without fabricated physical results
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rec = json.loads(Path('runs/source_lifepo4_dry/run_manifest.json').read_text())
+          assert rec['status'] == 'NOT_RUN'
+          assert rec['input']['site_count'] == 28
+          assert rec['input']['sha256'] == '8e2fbac30bb55ab4cea7bbed36edd2cfbf4b701d128226252ccd9b58323670b4'
+          assert rec['result']['potential_energy_total_ev'] is None
+          assert rec['result']['potential_energy_ev_per_atom'] is None
+          assert rec['scientific_claims']['formation_energy'] == 'NOT_CALCULATED'
+          assert rec['scientific_claims']['stability'] == 'NOT_EVALUATED'
+          assert not Path('runs/source_lifepo4_dry/relaxed_structure.cif').exists()
+          print('PASS: source LiFePO4 dry-run produced NOT_RUN, no CHGNet, no energy')
+          PY
