@@ -62,7 +62,7 @@ jobs:
           test = AppTest.from_file('app.py', default_timeout=40).run()
           assert not test.exception, [str(x.message) for x in test.exception]
           assert len(test.tabs) == 3, 'Expected exactly three clearly labeled tabs'
-          assert len(test.button) >= 1, 'Expected explicit run control'
-          print('PASS: real Streamlit app rendered; no CHGNet run button clicked')
+          assert len(test.button) == 0, 'CHGNet control must be absent without an uploaded CIF'
+          print('PASS: real Streamlit app rendered; no CIF uploaded and no CHGNet run button exposed')
           PY
 # END BHS REAL STREAMLIT SMOKE WORKFLOW — NO CHGNET EXECUTION
