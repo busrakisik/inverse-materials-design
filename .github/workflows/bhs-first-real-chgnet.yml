@@ -1,1 +1,126 @@
+# Manual-only BHS first REAL CHGNet calculation. Never triggers on push.
+name: BHS first real LiFePO4 CHGNet CPU run
 
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_CHGNET_CPU to authorize CPU inference and pretrained model loading'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  chgnet-cpu:
+    if: ${{ inputs.confirmation == 'RUN_CHGNET_CPU' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OMP_NUM_THREADS: '2'
+      MKL_NUM_THREADS: '2'
+      CHGNET_DEVICE: cpu
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - name: Checkout research branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install CPU-only PyTorch and pinned CHGNet stack
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'torch==2.5.1+cpu' --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install 'chgnet==0.4.2' 'pymatgen==2026.10.24'
+          python -m pip check
+
+      - name: Check sourced LiFePO4 identity and model environment
+        run: |
+          python - <<'PY'
+          import hashlib, json, importlib.metadata
+          from pathlib import Path
+          from pymatgen.core import Structure
+          source=Path('data/LiFePO4_MP_workshop.cif')
+          prov=json.loads(Path('data/SOURCE_PROVENANCE.json').read_text())
+          assert hashlib.sha256(source.read_bytes()).hexdigest() == prov['file_sha256']
+          struct=Structure.from_file(str(source))
+          assert len(struct) == 28 and struct.is_ordered
+          assert {str(e):int(n) for e,n in struct.composition.items()} == {'Li':4,'Fe':4,'P':4,'O':16}
+          for name in ('chgnet','pymatgen','torch'):
+              print(f'{name}=={importlib.metadata.version(name)}')
+          print('PASS: verified LiFePO4 source and dependencies.')
+          PY
+
+      - name: Record actual installed checkpoint hashes before inference
+        run: |
+          mkdir -p runs
+          python - <<'PY'
+          import hashlib, importlib.metadata, json
+          from pathlib import Path
+          import chgnet
+          import torch
+          base=Path(chgnet.__file__).resolve().parent
+          suffixes={'.pt','.pth','.ckpt','.tar'}
+          weights=[]
+          for f in sorted((base/'pretrained').rglob('*')):
+              if f.is_file() and any(f.name.endswith(x) for x in suffixes):
+                  weights.append({
+                      'relative_path':str(f.relative_to(base)),
+                      'size_bytes':f.stat().st_size,
+                      'sha256':hashlib.sha256(f.read_bytes()).hexdigest()
+                  })
+          if not weights:
+              raise RuntimeError('No packaged CHGNet checkpoint found; refusing untraceable run')
+          environment={
+              'checkpoint_files':weights,
+              'versions':{n:importlib.metadata.version(n) for n in ('chgnet','pymatgen','torch')},
+              'torch_cuda_available':bool(torch.cuda.is_available()),
+              'requested_device':'cpu',
+              'model_selection':'CHGNet packaged default pretrained checkpoint; verify output path',
+              'github_commit':'${{ github.sha }}',
+          }
+          Path('runs/model_environment.json').write_text(
+              json.dumps(environment,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print('PASS: model-package checkpoint SHA256 captured before execution')
+          PY
+
+      - name: Run ONE explicit LiFePO4 model relaxation on CPU
+        run: |
+          python scripts/first_chgnet_run.py \
+            --cif data/LiFePO4_MP_workshop.cif \
+            --out-dir runs/lifepo4_first_real \
+            --execute --ack-model-download
+
+      - name: Validate output provenance (not a stability test)
+        run: |
+          python - <<'PY'
+          import json,math
+          from pathlib import Path
+          from pymatgen.core import Structure
+          d=Path('runs/lifepo4_first_real')
+          x=json.loads((d/'run_manifest.json').read_text())
+          assert x['status']=='CHGNET_OPTIMIZER_RETURNED_OUTPUT',x.get('error')
+          assert x['scientific_claims']['formation_energy']=='NOT_CALCULATED'
+          assert x['scientific_claims']['stability']=='NOT_EVALUATED'
+          assert math.isfinite(x['result']['potential_energy_ev_per_atom'])
+          s=Structure.from_file(str(d/'relaxed_structure.cif'))
+          assert len(s)==28
+          assert {str(e):int(n) for e,n in s.composition.items()} == {'Li':4,'Fe':4,'P':4,'O':16}
+          print('PASS: actual CHGNet returned a finite potential-energy prediction; no stability claim')
+          PY
+
+      - name: Upload experiment records even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-first-lifepo4-chgnet-records
+          path: |
+            runs/model_environment.json
+            runs/lifepo4_first_real/run_manifest.json
+            runs/lifepo4_first_real/relaxed_structure.cif
+          if-no-files-found: warn
+          retention-days: 30
