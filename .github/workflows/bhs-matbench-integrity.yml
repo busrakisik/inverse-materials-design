@@ -1,0 +1,38 @@
+name: BHS Matbench repeat-download integrity and chemistry audit
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type VERIFY_MATBENCH_AGAIN'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  audit:
+    if: ${{ inputs.confirmation == 'VERIFY_MATBENCH_AGAIN' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test safety and parsing without network
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m unittest -v tests/test_matbench_integrity_gate.py
+      - name: Install chemistry parser
+        run: python -m pip install 'pymatgen==2026.10.24'
+      - name: Verify second independent download and chemical identities
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/matbench_integrity_gate.py --execute --output runs/matbench_integrity_repeat.json
+      - name: Archive ONLY metadata report, including on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-matbench-second-download-integrity-record
+          path: runs/matbench_integrity_repeat.json
+          if-no-files-found: warn
+          retention-days: 30
