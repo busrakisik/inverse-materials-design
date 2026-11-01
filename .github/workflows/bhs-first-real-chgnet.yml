@@ -22,6 +22,7 @@ jobs:
       MKL_NUM_THREADS: '2'
       CHGNET_DEVICE: cpu
       PYTHONUNBUFFERED: '1'
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - name: Checkout research branch
         uses: actions/checkout@v4
