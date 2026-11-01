@@ -1,0 +1,45 @@
+# Manual-only metadata contract test; no dataset downloads or model computation.
+name: BHS dataset metadata gate contract tests
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_DATASET_GATE_TESTS to authorize 14 metadata-only contract tests'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  dataset-gate-tests:
+    if: ${{ inputs.confirmation == 'RUN_DATASET_GATE_TESTS' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out selected research branch
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify files and compile
+        run: |
+          test -s bhs/benchmarks/dataset_gate.py
+          test -s tests/test_dataset_gate.py
+          python -m py_compile bhs/benchmarks/dataset_gate.py tests/test_dataset_gate.py
+      - name: Run 14 metadata-only tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest discover -s tests -p 'test_dataset_gate.py' -v 2>&1 | tee dataset_gate_test_log.txt
+          grep -Eq '^Ran 14 tests? in ' dataset_gate_test_log.txt
+          grep -Eq '^OK$' dataset_gate_test_log.txt
+      - name: Preserve test log even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-dataset-gate-contract-log
+          path: dataset_gate_test_log.txt
+          if-no-files-found: warn
+          retention-days: 30
