@@ -1,0 +1,33 @@
+# Manual-only network data integrity inspection; no benchmark, no automatic trigger.
+name: BHS Matbench experimental gap controlled acquisition
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type ACQUIRE_MATBENCH_DATA to authorize public download and integrity checks'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  controlled-acquisition:
+    if: ${{ inputs.confirmation == 'ACQUIRE_MATBENCH_DATA' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run synthetic acquisition parser tests (no network)
+        run: python -m unittest -v tests/test_matbench_acquisition.py
+      - name: Download once and verify raw hash and schema
+        run: python scripts/acquire_matbench_expt_gap.py --out-dir runs/matbench_expt_gap_acquisition --execute
+      - name: Archive audit manifest, not raw licensed dataset
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-matbench-expt-gap-acquisition-manifest
+          path: runs/matbench_expt_gap_acquisition/acquisition_manifest.json
+          if-no-files-found: warn
+          retention-days: 30
