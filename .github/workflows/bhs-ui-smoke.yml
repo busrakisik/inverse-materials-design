@@ -1,0 +1,68 @@
+# BEGIN BHS REAL STREAMLIT SMOKE WORKFLOW — NO CHGNET EXECUTION
+# Focused compatibility probe; does not validate materials or load MLFF weights.
+name: BHS real Streamlit smoke check
+
+'on':
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'app.py'
+      - 'bhs/**'
+      - 'src/imd_pipeline/pipeline/orchestrator.py'
+      - 'src/imd_pipeline/validation/mlff_validator.py'
+      - '.github/workflows/bhs-ui-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+      - name: Use Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install minimal real UI runtime (no CHGNet)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'streamlit>=1.40,<2' 'pymatgen==2026.10.24' 'PyYAML>=6,<7'
+      - name: Compile UI and mathematical components
+        run: |
+          python -m py_compile app.py bhs/cli.py bhs/search/bayesian_engine.py \
+            src/imd_pipeline/pipeline/orchestrator.py \
+            src/imd_pipeline/validation/mlff_validator.py
+      - name: Import real UI and execute the illustrative mathematical update
+        run: |
+          python - <<'PY'
+          import math
+          import streamlit
+          import pymatgen
+          import app
+          from bhs.search.bayesian_engine import BayesianHypothesisSearchEngine
+          from src.imd_pipeline.pipeline.orchestrator import Orchestrator
+          result = app.calculate_illustrative_bayesian_demo()
+          assert result['mode'] == 'ILLUSTRATIVE_DEMO_NOT_PHYSICAL_EVIDENCE'
+          assert result['model_execution_status'] == 'NOT_RUN'
+          assert result['physical_evidence_status'] == 'NOT_VERIFIED'
+          assert result['discovery_status'] == 'NOT_DEMONSTRATED'
+          assert result['formation_energy_ev_per_atom'] is None
+          assert result['band_gap_eV'] is None
+          assert math.isclose(sum(result['mathematical_posteriors'].values()), 1.0, abs_tol=1e-12)
+          print('PASS: real Streamlit import and illustrative Bayesian arithmetic; no model execution')
+          PY
+      - name: Exercise real Streamlit UI without clicking CHGNet
+        run: |
+          python - <<'PY'
+          from streamlit.testing.v1 import AppTest
+          test = AppTest.from_file('app.py', default_timeout=40).run()
+          assert not test.exception, [str(x.message) for x in test.exception]
+          assert len(test.tabs) == 3, 'Expected exactly three clearly labeled tabs'
+          assert len(test.button) >= 1, 'Expected explicit run control'
+          print('PASS: real Streamlit app rendered; no CHGNet run button clicked')
+          PY
+# END BHS REAL STREAMLIT SMOKE WORKFLOW — NO CHGNET EXECUTION
