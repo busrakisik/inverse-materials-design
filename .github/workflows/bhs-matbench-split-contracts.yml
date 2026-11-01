@@ -1,0 +1,46 @@
+# Manual-only label-blind split contract tests. Does NOT download or split real data.
+name: BHS Matbench label-blind split contract tests
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_SPLIT_CONTRACT_TESTS to run 10 synthetic tests'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  split-contracts:
+    if: ${{ inputs.confirmation == 'RUN_SPLIT_CONTRACT_TESTS' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify split implementation and tests
+        run: |
+          test -s scripts/matbench_split_gate.py
+          test -s tests/test_matbench_split_gate.py
+          test -s research/SPLIT_GATE_V1.md
+          python -m py_compile scripts/matbench_split_gate.py tests/test_matbench_split_gate.py
+      - name: Run ten isolated synthetic split tests
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_matbench_split_gate.py' -v 2>&1 | tee matbench_split_test_log.txt
+          grep -Eq '^Ran 10 tests? in ' matbench_split_test_log.txt
+          grep -Eq '^OK$' matbench_split_test_log.txt
+      - name: Preserve test log on success or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-matbench-split-contract-test-log
+          path: matbench_split_test_log.txt
+          if-no-files-found: warn
+          retention-days: 30
