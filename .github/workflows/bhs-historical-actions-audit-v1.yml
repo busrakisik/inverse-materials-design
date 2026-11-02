@@ -1,0 +1,40 @@
+name: BHS Historical Actions Metadata Audit v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/historical_actions_audit_v1.py'
+      - 'tests/test_historical_actions_audit_v1.py'
+      - 'research/HISTORICAL_ACTIONS_AUDIT_V1.md'
+      - '.github/workflows/bhs-historical-actions-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  history-metadata-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 7 metadata-only tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_historical_actions_audit_v1.py' -v 2>&1 | tee historical_audit_tests.log
+          grep -Eq '^Ran 7 tests? in ' historical_audit_tests.log
+          grep -Eq '^OK$' historical_audit_tests.log
+      - name: Inventory workflow metadata (no holdout execution)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python -m scripts.historical_actions_audit_v1 --repo "$GITHUB_REPOSITORY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-historical-actions-audit-v1
+          path: |
+            historical_audit_tests.log
+            runs/historical_actions_audit_v1/
