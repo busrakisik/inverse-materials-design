@@ -1,0 +1,35 @@
+name: BHS Freeze Audit v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/freeze_audit_v1.py'
+      - 'tests/test_freeze_audit_v1.py'
+      - '.github/workflows/bhs-freeze-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata-only-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit metadata and test fail-closed behavior
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_freeze_audit_v1.py' -v 2>&1 | tee freeze_audit_log.txt
+          grep -Eq '^Ran 8 tests? in ' freeze_audit_log.txt
+          grep -Eq '^OK$' freeze_audit_log.txt
+          python -m scripts.freeze_audit_v1 --out-dir runs/freeze_audit_v1
+          python -c "import json; x=json.load(open('runs/freeze_audit_v1/audit_manifest.json')); assert x['scored_validation_allowed'] is False and x['freeze_approved'] is False"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-freeze-audit-v1
+          path: |
+            freeze_audit_log.txt
+            runs/freeze_audit_v1/
