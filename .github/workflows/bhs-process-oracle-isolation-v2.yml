@@ -1,0 +1,34 @@
+name: BHS Synthetic Process Oracle Isolation v2
+on:
+  workflow_dispatch:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/process_oracle_isolation_v2.py'
+      - 'tests/isolation_bad_worker.py'
+      - 'tests/test_process_oracle_isolation_v2.py'
+      - '.github/workflows/bhs-process-oracle-isolation-v2.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-isolation-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test ten synthetic isolation contracts
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_process_oracle_isolation_v2.py' -v 2>&1 | tee isolation_v2_log.txt
+          grep -Eq '^Ran 10 tests? in ' isolation_v2_log.txt
+          grep -Eq '^OK$' isolation_v2_log.txt
+      - name: Upload diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-process-oracle-isolation-v2
+          path: isolation_v2_log.txt
+          if-no-files-found: warn
