@@ -1,0 +1,40 @@
+name: BHS Historical Artifact Evidence v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/historical_artifact_evidence_v1.py'
+      - 'tests/test_historical_artifact_evidence_v1.py'
+      - 'research/HISTORICAL_ARTIFACT_EVIDENCE_V1.md'
+      - '.github/workflows/bhs-historical-artifact-evidence-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  artifact-inventory-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run evidence scanner contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_historical_artifact_evidence_v1.py' -v 2>&1 | tee artifact_evidence_tests.log
+          grep -Eq '^Ran 8 tests? in ' artifact_evidence_tests.log
+          grep -Eq '^OK$' artifact_evidence_tests.log
+      - name: Inventory available artifacts without downloading ZIP content
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python -m scripts.historical_artifact_evidence_v1 --repo "$GITHUB_REPOSITORY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-historical-artifact-evidence-v1
+          path: |
+            artifact_evidence_tests.log
+            runs/historical_artifact_evidence_v1/
