@@ -33,3 +33,5 @@ jobs:
           name: bhs-sandbox-adversarial-v3-log
           path: sandbox_v3_log.txt
           if-no-files-found: warn
+
+          # Trigger sandbox adversarial v3 CI
