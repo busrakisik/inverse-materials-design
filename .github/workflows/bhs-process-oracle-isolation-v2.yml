@@ -32,3 +32,5 @@ jobs:
           name: bhs-process-oracle-isolation-v2
           path: isolation_v2_log.txt
           if-no-files-found: warn
+
+          # Trigger isolation v2 CI
