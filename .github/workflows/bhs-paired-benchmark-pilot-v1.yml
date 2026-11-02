@@ -1,0 +1,37 @@
+name: BHS Synthetic Paired Benchmark Pilot v1
+on:
+  workflow_dispatch:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/paired_benchmark_pilot_v1.py'
+      - 'tests/test_paired_benchmark_pilot_v1.py'
+      - '.github/workflows/bhs-paired-benchmark-pilot-v1.yml'
+permissions:
+  contents: read
+jobs:
+  paired-synthetic-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run paired pilot contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_paired_benchmark_pilot_v1.py' -v 2>&1 | tee paired_pilot_test_log.txt
+          grep -Eq '^Ran 13 tests? in ' paired_pilot_test_log.txt
+          grep -Eq '^OK$' paired_pilot_test_log.txt
+      - name: Generate exploratory synthetic pilot
+        run: python -m scripts.paired_benchmark_pilot_v1 --out-dir runs/paired_pilot_v1
+      - name: Upload diagnostics and synthetic pilot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-paired-pilot-v1
+          path: |
+            paired_pilot_test_log.txt
+            runs/paired_pilot_v1/
+          if-no-files-found: warn
