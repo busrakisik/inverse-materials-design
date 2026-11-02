@@ -1,0 +1,35 @@
+name: BHS Synthetic Sandbox Adversarial Gate v3
+on:
+  workflow_dispatch:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/sandbox_probe_v3.py'
+      - 'scripts/Dockerfile.sandbox-v3'
+      - 'tests/test_sandbox_v3.py'
+      - '.github/workflows/bhs-sandbox-adversarial-v3.yml'
+permissions:
+  contents: read
+jobs:
+  sandbox-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Docker runtime and security probe contracts (fail closed)
+        run: |
+          set -euo pipefail
+          docker version
+          python -m unittest discover -s tests -p 'test_sandbox_v3.py' -v 2>&1 | tee sandbox_v3_log.txt
+          grep -Eq '^Ran 10 tests? in ' sandbox_v3_log.txt
+          grep -Eq '^OK$' sandbox_v3_log.txt
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-sandbox-adversarial-v3-log
+          path: sandbox_v3_log.txt
+          if-no-files-found: warn
