@@ -1,0 +1,37 @@
+name: BHS Validation Freeze Preparation v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/validation_freeze_prepare_v1.py'
+      - 'tests/test_validation_freeze_prepare_v1.py'
+      - '.github/workflows/bhs-validation-freeze-preparation-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run metadata-only preparation tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_validation_freeze_prepare_v1.py' -v 2>&1 | tee freeze_test_log.txt
+          grep -Eq '^Ran 7 tests? in ' freeze_test_log.txt
+          grep -Eq '^OK$' freeze_test_log.txt
+      - name: Generate non-scored freeze proposal
+        run: python -m scripts.validation_freeze_prepare_v1
+      - name: Upload metadata proposal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-validation-freeze-proposal-v1
+          path: |
+            freeze_test_log.txt
+            runs/validation_freeze_preparation_v1/
+          if-no-files-found: warn
