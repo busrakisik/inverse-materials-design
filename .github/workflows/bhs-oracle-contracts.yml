@@ -1,0 +1,46 @@
+# Synthetic-only Oracle contract tests; never reads real dataset labels.
+name: BHS synthetic shared oracle contract tests
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_ORACLE_CONTRACT_TESTS to run 11 synthetic tests'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  oracle-contracts:
+    if: ${{ inputs.confirmation == 'RUN_ORACLE_CONTRACT_TESTS' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify synthetic-only contract files
+        run: |
+          test -s scripts/shared_oracle.py
+          test -s tests/test_shared_oracle.py
+          test -s research/ORACLE_CONTRACT_V1.md
+          python -m py_compile scripts/shared_oracle.py tests/test_shared_oracle.py
+      - name: Run 11 synthetic Oracle contract tests
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_shared_oracle.py' -v 2>&1 | tee oracle_contract_test_log.txt
+          grep -Eq '^Ran 11 tests? in ' oracle_contract_test_log.txt
+          grep -Eq '^OK$' oracle_contract_test_log.txt
+      - name: Upload test log (including failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-oracle-contract-tests
+          path: oracle_contract_test_log.txt
+          if-no-files-found: warn
+          retention-days: 30
