@@ -32,3 +32,5 @@ jobs:
           name: bhs-synthetic-process-oracle-deadline-log
           path: process_oracle_deadline_log.txt
           if-no-files-found: warn
+
+          # Trigger synthetic deadline gate CI
