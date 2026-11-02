@@ -1,0 +1,49 @@
+# Manual-only synthetic process-oracle contract tests; no real dataset download.
+name: BHS synthetic process-separated oracle contract tests
+'on':
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RUN_PROCESS_ORACLE_TESTS to run 12 synthetic tests'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  process-oracle-contracts:
+    if: ${{ inputs.confirmation == 'RUN_PROCESS_ORACLE_TESTS' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify source, worker, tests, and research contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s scripts/process_oracle.py
+          test -s scripts/synthetic_policy_worker.py
+          test -s tests/test_process_oracle.py
+          test -s research/PROCESS_ORACLE_V1.md
+          python -m py_compile scripts/process_oracle.py scripts/synthetic_policy_worker.py tests/test_process_oracle.py
+      - name: Run 12 synthetic process-oracle tests
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_process_oracle.py' -v 2>&1 | tee process_oracle_test_log.txt
+          grep -Eq '^Ran 12 tests? in ' process_oracle_test_log.txt
+          grep -Eq '^OK$' process_oracle_test_log.txt
+      - name: Upload synthetic test log even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-process-oracle-contract-tests
+          path: process_oracle_test_log.txt
+          if-no-files-found: warn
+          retention-days: 30
