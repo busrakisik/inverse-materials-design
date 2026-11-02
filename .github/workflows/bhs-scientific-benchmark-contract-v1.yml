@@ -1,0 +1,32 @@
+name: BHS Scientific Benchmark Contract v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/scientific_benchmark_contract_v1.py'
+      - 'tests/test_scientific_benchmark_contract_v1.py'
+      - '.github/workflows/bhs-scientific-benchmark-contract-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-benchmark-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify synthetic benchmark contracts
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_scientific_benchmark_contract_v1.py' -v 2>&1 | tee benchmark_contract_v1_log.txt
+          grep -Eq '^Ran 12 tests? in ' benchmark_contract_v1_log.txt
+          grep -Eq '^OK$' benchmark_contract_v1_log.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-scientific-benchmark-contract-v1
+          path: benchmark_contract_v1_log.txt
+          if-no-files-found: warn
