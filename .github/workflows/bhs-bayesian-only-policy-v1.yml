@@ -1,0 +1,32 @@
+name: BHS Bayesian Only Synthetic Policy v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/bayesian_only_policy_v1.py'
+      - 'tests/test_bayesian_only_policy_v1.py'
+      - '.github/workflows/bhs-bayesian-only-policy-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bayesian-only-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 13 synthetic Bayesian-only contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_bayesian_only_policy_v1.py' -v 2>&1 | tee bayesian_only_v1_log.txt
+          grep -Eq '^Ran 13 tests? in ' bayesian_only_v1_log.txt
+          grep -Eq '^OK$' bayesian_only_v1_log.txt
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-bayesian-only-policy-v1-log
+          path: bayesian_only_v1_log.txt
