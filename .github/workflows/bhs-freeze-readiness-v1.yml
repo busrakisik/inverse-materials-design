@@ -1,0 +1,37 @@
+name: BHS Freeze Readiness v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/freeze_readiness_v1.py'
+      - 'tests/test_freeze_readiness_v1.py'
+      - 'research/FREEZE_READINESS_V1.md'
+      - '.github/workflows/bhs-freeze-readiness-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  readiness-no-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test fail-closed metadata gate
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_freeze_readiness_v1.py' -v 2>&1 | tee readiness_tests.log
+          grep -Eq '^Ran 9 tests? in ' readiness_tests.log
+          grep -Eq '^OK$' readiness_tests.log
+      - name: Produce non-approval report
+        run: python -m scripts.freeze_readiness_v1
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-freeze-readiness-v1
+          path: |
+            readiness_tests.log
+            runs/freeze_readiness_v1/readiness_report.json
