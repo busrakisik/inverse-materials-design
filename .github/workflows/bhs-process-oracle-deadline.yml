@@ -1,0 +1,34 @@
+name: BHS Synthetic Process Oracle Deadline Gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/process_oracle_deadline.py'
+      - 'tests/oracle_bad_worker.py'
+      - 'tests/test_process_oracle_deadline.py'
+      - '.github/workflows/bhs-process-oracle-deadline.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-deadline-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run eight synthetic timeout and protocol tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_process_oracle_deadline.py' -v 2>&1 | tee process_oracle_deadline_log.txt
+          grep -Eq '^Ran 8 tests? in ' process_oracle_deadline_log.txt
+          grep -Eq '^OK$' process_oracle_deadline_log.txt
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-process-oracle-deadline-log
+          path: process_oracle_deadline_log.txt
+          if-no-files-found: warn
