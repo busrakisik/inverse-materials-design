@@ -1,13 +1,10 @@
-"""Reconcile pinned historical CI artifacts. Never creates tasks or evaluates holdout labels.
-
-The published ZIP digest is a byte-level artifact check, not independent certification.
-"""
+"""Reconcile pinned historical CI artifacts without accessing held-out labels."""
 from __future__ import annotations
-import argparse, hashlib, json, os, pathlib, re, urllib.request, zipfile, io
+import argparse, hashlib, json, os, pathlib, re, urllib.request, urllib.error, zipfile, io
+from urllib.parse import urlsplit
 
 STATUS='HISTORICAL_EVIDENCE_RECONCILED_PARTIAL_NO_HOLDOUT'
 REPO='busrakisik/inverse-materials-design'
-# ZIP SHA256 checksums independently recorded from downloaded GitHub artifacts.
 SOURCES={
  'freeze':(13213742932,'7f91a72ae2db5c7f7f9cf17da9677abe8d6eaa5cd8ea188fe1dc1e075e5b993d','runs/validation_freeze_manifest_v1/freeze_evidence_manifest.json','2cb4126a2cd27b5d1c442f90e9af763865547f1b'),
  'environment':(13211390930,'822bea24d1c2d4afa0e75f9d5940fdd1279c3ad6f7f37e08456f4ad99fee15ae','runs/synthetic_environment_lock_v1/environment_manifest.json','30413f8f03c1ea310469820b952a4c735a48b440'),
@@ -53,7 +50,6 @@ def reconcile(blobs):
  if history.get('pagination_complete') is not True or not isinstance(history.get('runs_observed'),int):raise ValueError('incomplete workflow metadata')
  if pilot.get('n_rows')!=1800 or pilot.get('n_pairs')!=30 or pilot.get('confirmatory') is not False:raise ValueError('pilot manifest invalid')
  if freeze.get('scored_validation_allowed') is not False or inv.get('scored_validation_allowed') is not False:raise ValueError('unexpected validation approval')
- # Extracted pilot raw rows are audited here too, instead of trusting only its manifest.
  pil_member='runs/paired_pilot_v1/pilot_raw.jsonl'
  with zipfile.ZipFile(io.BytesIO(blobs['pilot'])) as z:
   raw=z.read(pil_member)
@@ -80,14 +76,45 @@ def reconcile(blobs):
    'Artifact and manifest hashes establish byte identity, not independent reviewer approval.',
    'No real materials validation or independent synthetic holdout has been performed.']}
 
-def download_artifact(id,token):
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+ """Return redirects to caller; never forward API credentials to blob storage."""
+ def redirect_request(self,req,fp,code,msg,headers,newurl):
+  return None
+
+def _trusted_artifact_host(host):
+ host=(host or '').lower()
+ return host == 'objects.githubusercontent.com' or host.endswith('.actions.githubusercontent.com') or host.endswith('.blob.core.windows.net')
+
+def _read_bounded(response):
+ content=response.read(MAX_ZIP+1)
+ if len(content)>MAX_ZIP:raise ValueError('ZIP too large')
+ return content
+
+def download_artifact(id,token,*,opener=None):
+ """Authenticate only GitHub API; fetch signed blob separately with NO Authorization."""
  if not token:raise ValueError('GitHub token required in CI')
- url=f'https://api.github.com/repos/{REPO}/actions/artifacts/{id}/zip'
- req=urllib.request.Request(url,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','User-Agent':'BHS-evidence-reconciliation-v1'})
- with urllib.request.urlopen(req,timeout=30) as response:
-  blob=response.read(MAX_ZIP+1)
- if len(blob)>MAX_ZIP:raise ValueError('ZIP too large')
- return blob
+ if type(id) is not int or id<=0:raise ValueError('invalid artifact id')
+ opener=opener if opener is not None else urllib.request.build_opener(_NoRedirect())
+ api=f'https://api.github.com/repos/{REPO}/actions/artifacts/{id}/zip'
+ req=urllib.request.Request(api,headers={'Authorization':'Bearer '+token,
+    'Accept':'application/vnd.github+json','User-Agent':'BHS-evidence-reconciliation-v1'})
+ try:
+  with opener.open(req,timeout=30) as resp:
+   return _read_bounded(resp)
+ except urllib.error.HTTPError as exc:
+  if exc.code not in (301,302,303,307,308):
+   raise RuntimeError(f'GitHub artifact API request failed (HTTP {exc.code}); check actions:read and artifact retention') from None
+  location=exc.headers.get('Location','')
+  parsed=urlsplit(location)
+  if parsed.scheme!='https' or parsed.username or parsed.password or not _trusted_artifact_host(parsed.hostname):
+   raise ValueError('untrusted artifact redirect destination') from None
+ # Build a fresh credential-free request. Do NOT reuse req or opener proxy auth.
+ blob_req=urllib.request.Request(location,headers={'User-Agent':'BHS-evidence-reconciliation-v1'})
+ try:
+  with opener.open(blob_req,timeout=30) as resp:
+   return _read_bounded(resp)
+ except urllib.error.HTTPError as exc:
+  raise RuntimeError(f'Artifact blob request failed (HTTP {exc.code}); signed link may be expired') from None
 
 def main():
  ap=argparse.ArgumentParser()
