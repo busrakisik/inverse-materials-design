@@ -1,0 +1,38 @@
+name: BHS Synthetic Environment Provenance v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/synthetic_environment_lock_v1.py'
+      - 'tests/test_synthetic_environment_lock_v1.py'
+      - 'research/SYNTHETIC_ENVIRONMENT_LOCK_V1.md'
+      - '.github/workflows/bhs-synthetic-environment-lock-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-stdlib-environment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Check metadata-only environment contracts
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_synthetic_environment_lock_v1.py' -v 2>&1 | tee synthetic_environment_tests.log
+          grep -Eq '^Ran 9 tests? in ' synthetic_environment_tests.log
+          grep -Eq '^OK$' synthetic_environment_tests.log
+      - name: Record scoped environment provenance (never run holdout)
+        run: python -m scripts.synthetic_environment_lock_v1
+      - name: Upload environment provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-synthetic-environment-provenance-v1
+          path: |
+            synthetic_environment_tests.log
+            runs/synthetic_environment_lock_v1/
+          if-no-files-found: warn
