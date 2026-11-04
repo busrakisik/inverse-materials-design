@@ -1,0 +1,41 @@
+name: BHS Synthetic Model Misspecification Stress v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/misspecification_stress_v1.py'
+      - 'tests/test_misspecification_stress_v1.py'
+      - 'research/MISSPECIFICATION_STRESS_V1.md'
+      - '.github/workflows/bhs-misspecification-stress-v1.yml'
+      - 'scripts/predictive_calibration_audit_v1.py'
+      - 'scripts/competing_hypotheses_v2.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stress-development-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Test fixed development stress contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_misspecification_stress_v1.py' -v 2>&1 | tee misspecification_stress_tests.log
+          grep -Eq '^Ran 20 tests? in ' misspecification_stress_tests.log
+          grep -Eq '^OK$' misspecification_stress_tests.log
+      - name: Run fixed synthetic stress diagnostic, no benchmark tasks
+        run: python -m scripts.misspecification_stress_v1
+      - name: Preserve diagnostic evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-misspecification-stress-v1
+          path: |
+            misspecification_stress_tests.log
+            runs/misspecification_stress_v1/
+          if-no-files-found: error
