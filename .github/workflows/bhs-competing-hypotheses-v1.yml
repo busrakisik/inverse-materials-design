@@ -1,0 +1,39 @@
+name: BHS Fixed Competing Hypotheses v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/competing_hypotheses_v1.py'
+      - 'tests/test_competing_hypotheses_v1.py'
+      - 'research/COMPETING_HYPOTHESES_V1.md'
+      - '.github/workflows/bhs-competing-hypotheses-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixed-model-development-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run finite-model Bayesian evidence and EIG tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_competing_hypotheses_v1.py' -v 2>&1 | tee competing_hypotheses_tests.log
+          grep -Eq '^Ran 16 tests? in ' competing_hypotheses_tests.log
+          grep -Eq '^OK$' competing_hypotheses_tests.log
+      - name: Fixed development demonstration (NO benchmark or holdout)
+        run: python -m scripts.competing_hypotheses_v1
+      - name: Archive trace and tests
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-competing-hypotheses-development-v1
+          path: |
+            competing_hypotheses_tests.log
+            runs/competing_hypotheses_v1/
+          if-no-files-found: warn
