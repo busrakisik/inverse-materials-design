@@ -1,0 +1,41 @@
+name: BHS Reliability-Gated Experimental Design v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/reliability_gated_design_v1.py'
+      - 'tests/test_reliability_gated_design_v1.py'
+      - 'research/RELIABILITY_GATED_DESIGN_V1.md'
+      - '.github/workflows/bhs-reliability-gated-design-v1.yml'
+      - 'scripts/competing_hypotheses_v2.py'
+      - 'scripts/predictive_calibration_audit_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-development-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run protocol, EIG, cost and provenance contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_reliability_gated_design_v1.py' -v 2>&1 | tee reliability_gated_design_tests.log
+          grep -Eq '^Ran 22 tests? in ' reliability_gated_design_tests.log
+          grep -Eq '^OK$' reliability_gated_design_tests.log
+      - name: Run fixed synthetic development example
+        run: python -m scripts.reliability_gated_design_v1
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-reliability-gated-design-v1
+          path: |
+            reliability_gated_design_tests.log
+            runs/reliability_gated_design_v1/
+          if-no-files-found: error
