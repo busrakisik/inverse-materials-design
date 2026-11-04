@@ -1,0 +1,19 @@
+{
+  "status": "BHS_PUBLICATION_CLAIMS_REGISTER_DEVELOPMENT_ONLY",
+  "audit_date": "2026-11-04",
+  "reviewed_workflow_run": 41861188872,
+  "evidence": {"specific_unit_tests_passed": 15, "paired_development_conditions": 24, "policy_variants": 4, "campaign_rows": 96, "comparisons_to_eig": 72, "cost_cap_arbitrary_units": 8},
+  "claims": [
+    {"id": "C01", "claim": "Paired synthetic comparison pipeline is executable in GitHub CI", "classification": "supported_software_execution", "support": "run 41861188872"},
+    {"id": "C02", "claim": "BHS outperforms published Bayesian optimization methods", "classification": "unsupported", "blocking_evidence": "strong baseline evaluation; independent holdout; common scientific endpoint"},
+    {"id": "C03", "claim": "BHS improves real materials discovery", "classification": "unsupported", "blocking_evidence": "real-material oracle and domain-validated experimental protocol"},
+    {"id": "C04", "claim": "EIG/cost delivers real economic savings", "classification": "unsupported", "blocking_evidence": "partner-verified time and monetary costs, matched performance target"},
+    {"id": "C05", "claim": "Synthetic model posterior can be updated with known measurement noise", "classification": "supported_under_model_assumptions", "support": "conjugate update and local/CI software tests"},
+    {"id": "C06", "claim": "The project's calibration diagnostics certify out-of-family detection", "classification": "unsupported", "blocking_evidence": "predeclared detector, independent power and false-positive evaluation"}
+  ],
+  "independent_holdout_used": false,
+  "scored_validation_allowed": false,
+  "superiority_claim_validated": false,
+  "materials_discovery_validated": false,
+  "commercial_roi_validated": false
+}
