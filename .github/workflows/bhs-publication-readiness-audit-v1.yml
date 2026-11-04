@@ -1,0 +1,39 @@
+name: BHS Publication Readiness Claims Contract v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/publication_readiness_contract_v1.py'
+      - 'tests/test_publication_readiness_contract_v1.py'
+      - 'research/PUBLICATION_READINESS_AUDIT_V1.md'
+      - 'research/PUBLICATION_CLAIMS_REGISTER_V1.json'
+      - '.github/workflows/bhs-publication-readiness-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-static-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Validate claims and holdout guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_publication_readiness_contract_v1.py' -v 2>&1 | tee publication_readiness_tests.log
+          grep -Eq '^Ran 9 tests? in ' publication_readiness_tests.log
+          grep -Eq '^OK$' publication_readiness_tests.log
+          python -m scripts.publication_readiness_contract_v1 | tee publication_claims_contract.json
+      - name: Archive static audit verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-publication-readiness-audit-v1
+          path: |
+            publication_readiness_tests.log
+            publication_claims_contract.json
+          if-no-files-found: warn
