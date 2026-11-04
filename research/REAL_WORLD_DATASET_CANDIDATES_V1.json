@@ -1,0 +1,74 @@
+{
+  "status": "DATASET_FEASIBILITY_ONLY_NOT_BENCHMARKED",
+  "independent_holdout_used": false,
+  "scored_validation_allowed": false,
+  "physical_validation": false,
+  "datasets": [
+    {
+      "id": "nist_fe_co_ni",
+      "name": "NIST REMI Fe-Co-Ni combinatorial library",
+      "url": "https://pages.nist.gov/remi/data/",
+      "kind": "experimental_measurements",
+      "intended_role": "first_candidate_offline_pilot",
+      "support": "NIST's open-access resources and published active-learning study cover Fe-Co-Ni measurements and magnetic coercivity/Kerr rotation",
+      "data_downloaded": false,
+      "data_license_cleared_for_redistribution": false,
+      "instrument_uncertainty_verified": false,
+      "actual_per_experiment_cost_verified": false,
+      "hypothesis_family_mapped": false,
+      "compatible_with_current_bhs": false
+    },
+    {
+      "id": "made_2026",
+      "name": "MADE closed-loop discovery environments",
+      "url": "https://github.com/diffractivelabs/MADE",
+      "kind": "simulation_benchmark_framework",
+      "intended_role": "future_benchmark_adapter",
+      "support": "ICML 2026 benchmark with modular oracle, budgeted campaigns, and MIT-licensed code; no BHS adapter tested",
+      "data_downloaded": false,
+      "data_license_cleared_for_redistribution": false,
+      "instrument_uncertainty_verified": false,
+      "actual_per_experiment_cost_verified": false,
+      "hypothesis_family_mapped": false,
+      "compatible_with_current_bhs": false
+    },
+    {
+      "id": "matbench",
+      "name": "Matbench property-prediction benchmarks",
+      "url": "https://docs.materialsproject.org/services/ml-and-ai-applications/matbench",
+      "kind": "property_prediction_datasets",
+      "intended_role": "property_prediction_reference_only",
+      "support": "Mixture of experimental and computational data; standard predictive tasks, not necessarily sequential hypothesis identification",
+      "data_downloaded": false,
+      "data_license_cleared_for_redistribution": false,
+      "instrument_uncertainty_verified": false,
+      "actual_per_experiment_cost_verified": false,
+      "hypothesis_family_mapped": false,
+      "compatible_with_current_bhs": false
+    },
+    {
+      "id": "materials_project",
+      "name": "Materials Project",
+      "url": "https://docs.materialsproject.org/downloading-data/how-do-i-download-the-materials-project-database",
+      "kind": "primarily_computational_materials_data",
+      "intended_role": "future_domain_data_source",
+      "support": "API access and data; terms and contributed-data rights require source-level review",
+      "data_downloaded": false,
+      "data_license_cleared_for_redistribution": false,
+      "instrument_uncertainty_verified": false,
+      "actual_per_experiment_cost_verified": false,
+      "hypothesis_family_mapped": false,
+      "compatible_with_current_bhs": false
+    }
+  ],
+  "pilot_prerequisites": [
+    "source_file_provenance_and_version_recorded",
+    "reuse_and_redistribution_rights_reviewed",
+    "target_and_feature_semantics_documented",
+    "measurement_error_estimation_reviewed_by_domain_expert",
+    "candidate_costs_observed_or_explicitly_scenario_labelled",
+    "model_hypotheses_and_fit_protocol_predeclared",
+    "leakage_safe_oracle_and_baselines_implemented",
+    "independent_review_before_any_scored_validation"
+  ]
+}
