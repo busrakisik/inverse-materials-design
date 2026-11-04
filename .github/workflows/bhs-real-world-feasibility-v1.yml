@@ -1,0 +1,39 @@
+name: BHS Real-World Benchmark Feasibility v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/real_world_feasibility_v1.py'
+      - 'tests/test_real_world_feasibility_v1.py'
+      - 'research/REAL_WORLD_BENCHMARK_FEASIBILITY_V1.md'
+      - 'research/REAL_WORLD_DATASET_CANDIDATES_V1.json'
+      - '.github/workflows/bhs-real-world-feasibility-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-feasibility-no-data-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Validate research feasibility and no-validation claim gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_real_world_feasibility_v1.py' -v 2>&1 | tee real_world_feasibility_tests.log
+          grep -Eq '^Ran 14 tests? in ' real_world_feasibility_tests.log
+          grep -Eq '^OK$' real_world_feasibility_tests.log
+          python -m scripts.real_world_feasibility_v1
+      - name: Preserve static feasibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-real-world-feasibility-v1
+          path: |
+            real_world_feasibility_tests.log
+            runs/real_world_feasibility_v1/
+          if-no-files-found: error
