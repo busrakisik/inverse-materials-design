@@ -1,0 +1,40 @@
+name: BHS Observation-Conditioned Belief Search v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/belief_state_search_v1.py'
+      - 'tests/test_belief_state_search_v1.py'
+      - 'research/BELIEF_STATE_SEARCH_V1.md'
+      - '.github/workflows/bhs-belief-state-search-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  development-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run observation-conditioned search contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_belief_state_search_v1.py' -v 2>&1 | tee belief_search_tests.log
+          grep -Eq '^Ran 14 tests? in ' belief_search_tests.log
+          grep -Eq '^OK$' belief_search_tests.log
+      - name: Run fixed development demonstration only
+        shell: bash
+        run: python -m scripts.belief_state_search_v1
+      - name: Upload development diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-belief-state-search-v1
+          path: |
+            belief_search_tests.log
+            runs/belief_state_search_v1/
+          if-no-files-found: warn
