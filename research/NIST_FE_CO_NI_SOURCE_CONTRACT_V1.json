@@ -1,0 +1,45 @@
+{
+  "status": "NIST_FE_CO_NI_SOURCE_CONTRACT_ONLY_NOT_BENCHMARKED",
+  "source_repository": "usnistgov/remi",
+  "source_branch": "nist-pages",
+  "source_file": "data/Combinatorial Libraries/Fe-Co-Ni/FeCoNi_benchmark_dataset_220501a.mat",
+  "source_git_blob_sha": "e506db115d522d62618042abead7df2695ccf13e",
+  "source_file_size_bytes": 289480,
+  "description_file": "data/Combinatorial Libraries/Fe-Co-Ni/data description.txt",
+  "description_git_blob_sha": "a2bc0f1973cefd38759d7129d5b7573ab9f53b09",
+  "source_url": "https://github.com/usnistgov/remi/tree/nist-pages/data/Combinatorial%20Libraries/Fe-Co-Ni",
+  "fields": {
+    "C": {
+      "meaning": "sample composition",
+      "unit": "not specified in source description"
+    },
+    "XRD": {
+      "meaning": "X-ray diffraction intensities",
+      "unit": "not specified in source description"
+    },
+    "TTH": {
+      "meaning": "two-theta positions corresponding to XRD",
+      "unit": "not specified in source description"
+    },
+    "Coer": {
+      "meaning": "magnetic coercivity",
+      "unit": "mT"
+    },
+    "Kerr": {
+      "meaning": "Kerr rotation",
+      "unit": "mrad"
+    }
+  },
+  "source_binary_downloaded": false,
+  "source_field_shapes_verified": false,
+  "source_missingness_measured": false,
+  "source_license_cleared_for_redistribution": false,
+  "instrument_uncertainty_verified": false,
+  "real_experiment_cost_verified": false,
+  "scientific_hypotheses_specified": false,
+  "bhs_model_compatibility_validated": false,
+  "real_data_experiment_executed": false,
+  "physical_validation": false,
+  "independent_holdout_used": false,
+  "scored_validation_allowed": false
+}
