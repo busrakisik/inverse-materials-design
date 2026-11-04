@@ -1,0 +1,39 @@
+name: BHS Parametric Competing Hypotheses v2
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/competing_hypotheses_v2.py'
+      - 'tests/test_competing_hypotheses_v2.py'
+      - 'research/COMPETING_HYPOTHESES_V2.md'
+      - '.github/workflows/bhs-competing-hypotheses-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  parametric-development-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run parametric model evidence, noise and EIG contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_competing_hypotheses_v2.py' -v 2>&1 | tee competing_hypotheses_v2_tests.log
+          grep -Eq '^Ran 21 tests? in ' competing_hypotheses_v2_tests.log
+          grep -Eq '^OK$' competing_hypotheses_v2_tests.log
+      - name: Run fixed synthetic development demo only
+        run: python -m scripts.competing_hypotheses_v2
+      - name: Upload tests and development trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-competing-hypotheses-v2-development
+          path: |
+            competing_hypotheses_v2_tests.log
+            runs/competing_hypotheses_v2/
+          if-no-files-found: error
