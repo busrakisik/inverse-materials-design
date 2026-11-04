@@ -1,0 +1,40 @@
+name: BHS Independent Mathematical Verification v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/independent_math_verification_v1.py'
+      - 'tests/test_independent_math_verification_v1.py'
+      - 'research/INDEPENDENT_MATH_VERIFICATION_V1.md'
+      - '.github/workflows/bhs-independent-math-verification-v1.yml'
+      - 'scripts/competing_hypotheses_v2.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mathematical-checks-development-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Independent algebraic and numerical reference tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_independent_math_verification_v1.py' -v 2>&1 | tee independent_math_tests.log
+          grep -Eq '^Ran 15 tests? in ' independent_math_tests.log
+          grep -Eq '^OK$' independent_math_tests.log
+      - name: Run fixed math checks, no external or holdout tasks
+        run: python -m scripts.independent_math_verification_v1
+      - name: Archive mathematical audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-independent-math-verification-v1
+          path: |
+            independent_math_tests.log
+            runs/independent_math_verification_v1/
+          if-no-files-found: error
