@@ -1,0 +1,39 @@
+name: BHS Prequential Predictive Diagnostics v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/predictive_calibration_audit_v1.py'
+      - 'tests/test_predictive_calibration_audit_v1.py'
+      - 'research/PREDICTIVE_CALIBRATION_AUDIT_V1.md'
+      - '.github/workflows/bhs-predictive-calibration-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixed-dev-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run prequential diagnostics tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_predictive_calibration_audit_v1.py' -v 2>&1 | tee predictive_diagnostics_tests.log
+          grep -Eq '^Ran 17 tests? in ' predictive_diagnostics_tests.log
+          grep -Eq '^OK$' predictive_diagnostics_tests.log
+      - name: Run fixed synthetic diagnostic streams
+        run: python -m scripts.predictive_calibration_audit_v1
+      - name: Archive diagnostics and test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-prequential-predictive-diagnostics-v1
+          path: |
+            predictive_diagnostics_tests.log
+            runs/predictive_calibration_audit_v1/
+          if-no-files-found: error
