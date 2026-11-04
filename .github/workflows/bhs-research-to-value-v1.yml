@@ -1,0 +1,42 @@
+name: BHS Paired Research-to-Value Development v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/bhs_research_to_value_v1.py'
+      - 'tests/test_bhs_research_to_value_v1.py'
+      - 'research/RESEARCH_TO_VALUE_PROTOCOL_V1.md'
+      - 'research/CUSTOMER_DISCOVERY_AND_MOAT_V1.md'
+      - '.github/workflows/bhs-research-to-value-v1.yml'
+      - 'scripts/competing_hypotheses_v2.py'
+      - 'scripts/reliability_gated_design_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired-development-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run paired development contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_bhs_research_to_value_v1.py' -v 2>&1 | tee research_to_value_tests.log
+          grep -Eq '^Ran 15 tests? in ' research_to_value_tests.log
+          grep -Eq '^OK$' research_to_value_tests.log
+      - name: Run fixed developer-known paired comparison
+        run: python -m scripts.bhs_research_to_value_v1
+      - name: Archive exploratory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-research-to-value-dev-v1
+          path: |
+            research_to_value_tests.log
+            runs/bhs_research_to_value_v1/
+          if-no-files-found: error
