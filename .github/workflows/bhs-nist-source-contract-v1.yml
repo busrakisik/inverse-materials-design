@@ -1,0 +1,40 @@
+name: BHS NIST Fe-Co-Ni Source Contract v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_source_contract_v1.py'
+      - 'tests/test_nist_source_contract_v1.py'
+      - 'research/NIST_FE_CO_NI_SOURCE_CONTRACT_V1.json'
+      - 'research/NIST_FE_CO_NI_SOURCE_CONTRACT_V1.md'
+      - '.github/workflows/bhs-nist-source-contract-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-metadata-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Check source contract and scientific claim restrictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_source_contract_v1.py' -v 2>&1 | tee nist_source_contract_tests.log
+          grep -Eq '^Ran 14 tests? in ' nist_source_contract_tests.log
+          grep -Eq '^OK$' nist_source_contract_tests.log
+      - name: Produce source contract evidence
+        run: python -m scripts.nist_source_contract_v1
+      - name: Preserve audit artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-nist-source-contract-v1
+          path: |
+            nist_source_contract_tests.log
+            runs/nist_source_contract_v1/
+          if-no-files-found: error
