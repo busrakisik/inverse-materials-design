@@ -1,0 +1,39 @@
+name: BHS Open-Loop MCTS PUCT Development v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/mcts_puct_policy_v1.py'
+      - 'scripts/mcts_puct_dev_demo_v1.py'
+      - 'tests/test_mcts_puct_policy_v1.py'
+      - 'research/MCTS_PUCT_OPEN_LOOP_V1.md'
+      - '.github/workflows/bhs-mcts-puct-open-loop-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  development-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run open-loop PUCT tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_mcts_puct_policy_v1.py' -v 2>&1 | tee mcts_puct_tests.log
+          grep -Eq '^Ran 12 tests? in ' mcts_puct_tests.log
+          grep -Eq '^OK$' mcts_puct_tests.log
+      - name: Run fixed-seed exploratory demo only
+        run: python -m scripts.mcts_puct_dev_demo_v1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-mcts-puct-development-v1
+          path: |
+            mcts_puct_tests.log
+            runs/mcts_puct_dev_v1/
+          if-no-files-found: warn
