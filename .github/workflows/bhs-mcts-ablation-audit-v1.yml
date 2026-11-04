@@ -1,0 +1,46 @@
+name: BHS MCTS Existing-Artifact Ablation Audit v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/mcts_ablation_audit_v1.py'
+      - 'tests/test_mcts_ablation_audit_v1.py'
+      - 'research/MCTS_ABLATION_AUDIT_V1.md'
+      - '.github/workflows/bhs-mcts-ablation-audit-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit-existing-pilot-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Test artifact audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_mcts_ablation_audit_v1.py' -v 2>&1 | tee mcts_ablation_audit_tests.log
+          grep -Eq '^Ran 14 tests? in ' mcts_ablation_audit_tests.log
+          grep -Eq '^OK$' mcts_ablation_audit_tests.log
+      - name: Download existing pinned development artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -c 'from pathlib import Path; from scripts.evidence_reconciliation_v1 import download_artifact; import os; Path("mcts_development_artifact.zip").write_bytes(download_artifact(13312032670, os.environ["GITHUB_TOKEN"]))'
+      - name: Verify digest, audit pairings and produce ablations (NO NEW TASKS)
+        run: |
+          python -m scripts.mcts_ablation_audit_v1 --archive mcts_development_artifact.zip
+      - name: Archive audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bhs-mcts-ablation-audit-v1
+          path: |
+            mcts_ablation_audit_tests.log
+            runs/mcts_ablation_audit_v1/
+          if-no-files-found: warn
