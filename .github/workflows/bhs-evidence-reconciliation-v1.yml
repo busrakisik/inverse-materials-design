@@ -5,7 +5,10 @@ on:
     paths:
       - 'scripts/evidence_reconciliation_v1.py'
       - 'tests/test_evidence_reconciliation_v1.py'
-      - 'research/EVIDENCE_RECONCILIATION_V1.md'
+      - 'tests/test_evidence_reconciliation_redirect_v1.py'
+      - 'scripts/label_boundary_audit_v1.py'
+      - 'tests/test_label_boundary_audit_v1.py'
+      - 'research/LABEL_BOUNDARY_AUDIT_V1.md'
       - '.github/workflows/bhs-evidence-reconciliation-v1.yml'
   workflow_dispatch:
 permissions:
@@ -14,28 +17,38 @@ permissions:
 jobs:
   reconcile-no-holdout:
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11.9'
-      - name: Run evidence reconciliation tests
+      - name: Run reconciliation, redirect, and label-boundary tests
+        shell: bash
         run: |
           set -euo pipefail
           python -m unittest discover -s tests -p 'test_evidence_reconciliation_v1.py' -v 2>&1 | tee reconciliation_tests.log
+          python -m unittest discover -s tests -p 'test_evidence_reconciliation_redirect_v1.py' -v 2>&1 | tee redirect_tests.log
+          python -m unittest discover -s tests -p 'test_label_boundary_audit_v1.py' -v 2>&1 | tee label_boundary_tests.log
           grep -Eq '^Ran 10 tests? in ' reconciliation_tests.log
-          grep -Eq '^OK$' reconciliation_tests.log
-      - name: Verify five historical artifact ZIPs and reconcile source digests
+          grep -Eq '^Ran 8 tests? in ' redirect_tests.log
+          grep -Eq '^Ran 8 tests? in ' label_boundary_tests.log
+          for f in reconciliation_tests.log redirect_tests.log label_boundary_tests.log; do grep -Eq '^OK$' "$f"; done
+      - name: Audit current boundary contracts (no holdout)
+        run: python -m scripts.label_boundary_audit_v1
+      - name: Verify five historical artifact ZIPs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m scripts.evidence_reconciliation_v1
-      - name: Upload diagnostics and reconciliation report
+      - name: Upload diagnostics and reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bhs-evidence-reconciliation-v1
           path: |
             reconciliation_tests.log
+            redirect_tests.log
+            label_boundary_tests.log
             runs/evidence_reconciliation_v1/
+            runs/label_boundary_audit_v1/
           if-no-files-found: warn

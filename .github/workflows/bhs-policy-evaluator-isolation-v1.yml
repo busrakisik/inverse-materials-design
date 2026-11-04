@@ -1,0 +1,40 @@
+name: BHS Policy Evaluator Process Boundary v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/policy_worker_v1.py'
+      - 'scripts/policy_evaluator_isolation_v1.py'
+      - 'tests/test_policy_evaluator_isolation_v1.py'
+      - 'research/POLICY_EVALUATOR_ISOLATION_V1.md'
+      - '.github/workflows/bhs-policy-evaluator-isolation-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  demo-only-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Run process-boundary tests (development seed only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_policy_evaluator_isolation_v1.py' -v 2>&1 | tee process_boundary_tests.log
+          grep -Eq '^Ran 10 tests? in ' process_boundary_tests.log
+          grep -Eq '^OK$' process_boundary_tests.log
+      - name: Run deterministic process boundary demo (not benchmark)
+        run: python -m scripts.policy_evaluator_isolation_v1
+      - name: Upload test and demo evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-policy-evaluator-process-boundary-v1
+          path: |
+            process_boundary_tests.log
+            runs/policy_evaluator_isolation_v1/
+          if-no-files-found: warn
