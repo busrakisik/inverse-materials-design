@@ -1,0 +1,76 @@
+name: BHS NIST Real-Data Diagnostics and Ablation v2
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_diagnostics_ablation_v2.py'
+      - 'tests/test_nist_diagnostics_ablation_v2.py'
+      - 'research/NIST_DIAGNOSTICS_ABLATION_V2.md'
+      - '.github/workflows/bhs-nist-diagnostics-ablation-v2.yml'
+      - 'scripts/nist_anonymous_offline_pilot_v1.py'
+      - 'scripts/nist_dataset_inspection_v1.py'
+      - 'scripts/nist_composition_mapping_v1.py'
+      - 'scripts/multivariate_hypotheses_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  posthoc-real-data-ablation-development-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned numerical libraries
+        run: python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2
+      - name: Test fixed protocol, v1 parity, and no-leakage decision API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_diagnostics_ablation_v2.py' -v 2>&1 | tee nist_diagnostics_ablation_tests.log
+          grep -Eq '^Ran 28 tests? in ' nist_diagnostics_ablation_tests.log
+          grep -Eq '^OK$' nist_diagnostics_ablation_tests.log
+      - name: Pinned NIST Kerr development ablation; no independent holdout
+        run: |
+          python -m scripts.nist_diagnostics_ablation_v2 --fetch
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          p=Path('runs/nist_diagnostics_ablation_v2/aggregated_diagnostic_ablation.json')
+          report=json.loads(p.read_text())
+          for key in ('scored_validation_allowed','independent_holdout_used',
+                      'physical_validation','claim_of_superiority','real_lab_experiment_executed'):
+              assert report[key] is False,key
+          assert report['development_only'] is True
+          assert report['post_hoc_model_diagnostics_not_pre_registered'] is True
+          assert report['source_column_to_element_order_verified'] is False
+          assert report['configuration']['seeds']==[7,13,23,31,41]
+          assert report['configuration']['total_budget']==15
+          assert report['pilot_pool_summary']['eligible_samples']==921
+          assert len(report['policies'])==11
+          assert len(report['prior_v1_reference_reproduction'])==4
+          assert all(d['absolute_error'] < 1e-9 for d in report['prior_v1_reference_reproduction'].values())
+          for name,stats in report['policies'].items():
+              assert stats['replicate_count']==5,name
+              assert all(b in stats['normalized_regret_by_budget'] for b in ('5','10','15'))
+              assert math.isfinite(stats['mean_paired_final_regret_minus_gp_ei']),name
+              assert sum(stats['paired_final_win_tie_loss_vs_gp_ei'].values())==5,name
+          assert not any(key in p.read_text() for key in ('selected_indices','raw_labels','raw_measurements'))
+          print('Pinned NIST retrospective diagnostics and scientific claim gates: PASS')
+          PY
+      - name: Archive aggregated exploratory report and test log only
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-nist-diagnostics-ablation-v2
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            nist_diagnostics_ablation_tests.log
+            runs/nist_diagnostics_ablation_v2/aggregated_diagnostic_ablation.json
+            runs/nist_diagnostics_ablation_v2/aggregated_diagnostic_ablation.sha256
