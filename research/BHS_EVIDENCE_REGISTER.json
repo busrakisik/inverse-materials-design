@@ -2,19 +2,90 @@
   "as_of_date": "2026-11-05",
   "repo": "busrakisik/inverse-materials-design",
   "branch": "bhs-scientific-audit",
-  "last_confirmed_head": "70e0d6bee9e46cdff7d072ecad3fa8d90b7909ee",
+  "last_confirmed_head": "3a6762c7a5de1ecab7587ab1b938108bb5d9f8f5",
   "verified_runs": [
-    {"package": "nist_real_file_descriptive_inspection_v1", "run_id": 41968361627, "tests_passed": 20, "sample_count_inferred": 921},
-    {"package": "multivariate_composition_hypotheses_v1", "run_id": 41969276576, "tests_passed": 20, "synthetic_observations": 6},
-    {"package": "nist_composition_mapping_v1", "run_id": 41970917911, "tests_passed": 23, "source_columns_mapped_to_model": false},
-    {"package": "nist_scientific_hypothesis_spec_v1", "run_id": 41973466044, "tests_passed": 16, "artifact_id": 13390463373, "unresolved_gates": 6}
+    {
+      "package": "nist_real_file_descriptive_inspection_v1",
+      "run_id": 41968361627,
+      "tests_passed": 20,
+      "sample_count_inferred": 921
+    },
+    {
+      "package": "multivariate_composition_hypotheses_v1",
+      "run_id": 41969276576,
+      "tests_passed": 20,
+      "synthetic_observations": 6
+    },
+    {
+      "package": "nist_composition_mapping_v1",
+      "run_id": 41970917911,
+      "tests_passed": 23,
+      "source_columns_mapped_to_model": false
+    },
+    {
+      "package": "nist_scientific_hypothesis_spec_v1",
+      "run_id": 41973466044,
+      "tests_passed": 16,
+      "artifact_id": 13390463373,
+      "unresolved_gates": 6
+    },
+    {
+      "package": "nist_anonymous_offline_pilot_v1",
+      "run_id": 41977734103,
+      "artifact_id": 13392975164,
+      "tests_passed": 27,
+      "eligible_samples": 921,
+      "policies": 4,
+      "development_seeds": [
+        7,
+        13,
+        23
+      ],
+      "development_only": true,
+      "mean_final_normalized_regret": {
+        "gp_ei": 0.025001283117256388,
+        "gp_ucb": 0.07450292037487553,
+        "bhs_bma_ei": 0.13924593765076626,
+        "random": 0.19775608454202978
+      }
+    },
+    {
+      "package": "nist_diagnostics_ablation_v2",
+      "run_id": 41988359209,
+      "artifact_id": 13397435952,
+      "tests_passed": 28,
+      "eligible_samples": 921,
+      "policies": 11,
+      "development_seeds": [
+        7,
+        13,
+        23,
+        31,
+        41
+      ],
+      "v1_reproduced": true,
+      "development_only": true,
+      "mean_final_normalized_regret_approx": {
+        "gp_ei": 0.01500077,
+        "gp_ei_length_0p40": 0.0,
+        "bhs_bma_ei": 0.08354756,
+        "bhs_bma_sigma_0p05": 0.05390571,
+        "random": 0.18399286
+      }
+    }
   ],
   "nist": {
     "commit": "596b04435fb577175264a70c4434f5539b809510",
     "file": "data/Combinatorial Libraries/Fe-Co-Ni/FeCoNi_benchmark_dataset_220501a.mat",
     "git_blob_sha1": "e506db115d522d62618042abead7df2695ccf13e",
     "expected_size_bytes": 289480,
-    "fields_documented": ["C", "XRD", "TTH", "Coer", "Kerr"],
+    "fields_documented": [
+      "C",
+      "XRD",
+      "TTH",
+      "Coer",
+      "Kerr"
+    ],
     "physical_column_order_verified": false,
     "primary_target": "Kerr",
     "primary_target_unit": "mrad",
@@ -27,6 +98,18 @@
     "physical_validation": false,
     "real_material_mechanisms_validated": false,
     "real_cost_savings_measured": false,
-    "holdout_seed_range_prohibited": [10000, 10099]
+    "holdout_seed_range_prohibited": [
+      10000,
+      10099
+    ]
+  },
+  "prepared_not_verified": {
+    "package": "nist_model_adequacy_v3",
+    "local_synthetic_tests_passed": 31,
+    "github_ci_verified": false,
+    "target": "Kerr",
+    "development_only": true,
+    "holdout_used": false,
+    "expected_report": "runs/nist_model_adequacy_v3/aggregated_prequential_adequacy.json"
   }
 }

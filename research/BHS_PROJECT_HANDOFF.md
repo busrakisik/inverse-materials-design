@@ -3,8 +3,8 @@
 **As of:** 2026-11-05 (Europe/Istanbul)  
 **Repository:** https://github.com/busrakisik/inverse-materials-design  
 **Working branch:** `bhs-scientific-audit`  
-**Last confirmed HEAD:** `70e0d6bee9e46cdff7d072ecad3fa8d90b7909ee`  
-**Latest verified workflow:** NIST Scientific Hypothesis Specification v1, https://github.com/busrakisik/inverse-materials-design/actions/runs/41973466044 — **16/16 passed**, artifact ID `13390463373`.
+**Last confirmed HEAD (before v3 upload):** `3a6762c7a5de1ecab7587ab1b938108bb5d9f8f5`  
+**Latest verified workflow (before v3 upload):** NIST Diagnostics & Ablation v2, https://github.com/busrakisik/inverse-materials-design/actions/runs/41988359209 — **28/28 passed**, artifact ID `13397435952`. **v3 locally prepared, not yet run in GitHub CI.**
 
 This file captures the verifiable state as of the date above; later repository changes must be rechecked rather than inferred from these notes.
 
@@ -22,6 +22,17 @@ Initial research release: Zenodo DOI `10.5281/zenodo.21761835` (may predate curr
 4. Real-source mapping audit checks array shapes and plausible fraction/percent scaling; **does not certify chemical element column order**. CI 23/23 at https://github.com/busrakisik/inverse-materials-design/actions/runs/41970917911.
 5. Written hypothesis specification: primary development target `Kerr` (mrad); secondary `Coer` (mT); 3 candidate *mathematical response* families; 6 unresolved gates. CI 16/16 at https://github.com/busrakisik/inverse-materials-design/actions/runs/41973466044.
 6. Prior synthetic policy comparisons, mathematical reference, reliability tests, calibration and other audit modules, with no scored holdout or real performance claim.
+
+
+## Verified empirical development results and next prepared step (2026-11-05)
+
+**v1 offline Kerr replay:** Commit `aaa70761cf97b8d5ed5360ed5991ac73669b746b`, run `41977734103`, artifact `13392975164`, tests 27/27, 921 eligible rows, 4 policies × 3 development seeds × 15 acquisitions. Developer-only mean final normalized regret: GP-EI .025001283117256388, GP-UCB .07450292037487553, BHS-BMA-EI .13924593765076626, random .19775608454202978.
+
+**v2 post-hoc diagnostic ablation:** Commit `3a6762c7a5de1ecab7587ab1b938108bb5d9f8f5`, run `41988359209`, artifact `13397435952`, tests 28/28, 11 conditions × 5 explored seeds × 15 acquisitions. Five-seed mean final normalized regret: GP-EI fixed .22 ~.015001; GP-EI post-hoc .40 = 0.0; BHS-BMA-EI sigma=.15 ~.083548; BHS-BMA-EI sigma=.05 ~.053906; random ~.183993. Original v1 3-seed results were reproduced with error below 1e-9. **These parameters and seeds are all development-only. No independent performance conclusions.** The complete v2 artifact is source of truth for all other variants and paired budgets.
+
+**Next v3 prepared (NOT YET verified by GitHub):** `scripts/nist_model_adequacy_v3.py`, `tests/test_nist_model_adequacy_v3.py`, `research/NIST_MODEL_ADEQUACY_V3.md`, workflow `bhs-nist-model-adequacy-v3.yml`. Synthetic local tests 31/31. The CI is designed to run 3 fixed acquisition histories (`random`, `gp_ei`, `bhs_bma_ei`) × 5 predictive models × 5 already-seen development seeds, reporting one-step-ahead NLPD, RMSE, 90% mixture predictive interval coverage and PIT diagnostics. It must not use independent holdout or raw labels in artifact. **After user uploads, verify HEAD, GitHub Actions status, report checksum, numeric results, limitations and archive. Never claim a v3 real-data outcome before seeing CI artifact.**
+
+**Research decision:** We have a working real-data retrospective *optimization* sandbox, not established physical hypothesis identification. Test whether BHS predictive distributions are misspecified or overconfident under the original GP baseline and adaptive trajectories. Avoid endless post-hoc tuning to make BHS appear superior; if BHS loses, state so. Retain external expert review and separate evaluation data as scientific prerequisites.
 
 ## Source pinned exactly
 
