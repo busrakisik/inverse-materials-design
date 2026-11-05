@@ -1,0 +1,59 @@
+name: BHS NIST Anonymous Offline Development Pilot v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_anonymous_offline_pilot_v1.py'
+      - 'tests/test_nist_anonymous_offline_pilot_v1.py'
+      - 'research/NIST_ANONYMOUS_OFFLINE_PILOT_V1.md'
+      - '.github/workflows/bhs-nist-anonymous-offline-pilot-v1.yml'
+      - 'scripts/nist_dataset_inspection_v1.py'
+      - 'scripts/nist_composition_mapping_v1.py'
+      - 'scripts/multivariate_hypotheses_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  anonymous-offline-development-no-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned scientific dependencies
+        run: python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2
+      - name: Test no-leakage and fixed development protocol
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_anonymous_offline_pilot_v1.py' -v 2>&1 | tee nist_anonymous_pilot_tests.log
+          grep -Eq '^Ran 27 tests? in ' nist_anonymous_pilot_tests.log
+          grep -Eq '^OK$' nist_anonymous_pilot_tests.log
+      - name: Fetch NIST immutable data and run retrospective exploratory replay
+        run: |
+          python -m scripts.nist_anonymous_offline_pilot_v1 --fetch
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('runs/nist_anonymous_offline_pilot_v1/aggregate_dev_report.json')
+          r=json.loads(p.read_text())
+          assert r['scored_validation_allowed'] is False
+          assert r['independent_holdout_used'] is False
+          assert r['source_column_to_element_order_verified'] is False
+          assert r['claim_of_superiority'] is False
+          assert len(r['policies']) == 4
+          assert r['configuration']['seeds'] == [7, 13, 23]
+          print('Exploratory replay gates: PASS')
+          PY
+      - name: Archive aggregated development diagnostics ONLY
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-nist-anonymous-offline-pilot-v1
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            nist_anonymous_pilot_tests.log
+            runs/nist_anonymous_offline_pilot_v1/aggregate_dev_report.json
+            runs/nist_anonymous_offline_pilot_v1/aggregate_dev_report.sha256
