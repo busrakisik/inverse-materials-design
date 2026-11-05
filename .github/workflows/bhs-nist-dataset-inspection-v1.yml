@@ -1,0 +1,42 @@
+name: BHS NIST Real Data Descriptive Inspection v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_dataset_inspection_v1.py'
+      - 'tests/test_nist_dataset_inspection_v1.py'
+      - 'research/NIST_DATASET_INSPECTION_V1.md'
+      - '.github/workflows/bhs-nist-dataset-inspection-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-pinned-public-source-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install pinned scientific parser
+        run: python -m pip install numpy==1.26.4 scipy==1.13.1
+      - name: Test descriptive audit contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_dataset_inspection_v1.py' -v 2>&1 | tee nist_inspection_tests.log
+          grep -Eq '^Ran 20 tests? in ' nist_inspection_tests.log
+          grep -Eq '^OK$' nist_inspection_tests.log
+      - name: Inspect pinned public NIST file (never upload raw bytes)
+        run: python -m scripts.nist_dataset_inspection_v1 --fetch
+      - name: Archive only aggregated audit report and test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-nist-dataset-inspection-v1
+          path: |
+            nist_inspection_tests.log
+            runs/nist_dataset_inspection_v1/descriptive_inspection.json
+            runs/nist_dataset_inspection_v1/descriptive_inspection.sha256
+          if-no-files-found: warn
