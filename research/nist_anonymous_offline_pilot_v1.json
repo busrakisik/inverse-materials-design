@@ -1,0 +1,73 @@
+{
+  "anonymous_coordinates": [
+    "source_col_0",
+    "source_col_1",
+    "source_col_2"
+  ],
+  "authoritative_element_mapping_resolved": false,
+  "claim_of_superiority": false,
+  "configuration": {
+    "costs_assumed_equal_not_measured": true,
+    "fixed_gp_lengthscale_assumption": 0.22,
+    "fixed_nominal_noise_std_after_initial_normalization": 0.15,
+    "gaussian_noise_std_measured": false,
+    "gp_hyperparameters_tuned": false,
+    "initial_observations": 3,
+    "seeds": [
+      7,
+      13,
+      23
+    ],
+    "total_budget_per_campaign": 15
+  },
+  "dataset_ready_for_physical_bhs": false,
+  "development_exploratory_metrics_only": true,
+  "independent_holdout_used": false,
+  "physical_validation": false,
+  "pilot_pool_summary": {
+    "candidate_eligibility_defined_using_retrospective_target_availability": true,
+    "coordinate_scale_source_verified": false,
+    "distinct_anonymous_coordinates": 921,
+    "element_order_verified": false,
+    "eligible_samples": 921,
+    "excluded_rows": 0,
+    "invalid_or_unresolved_coordinate_rows": 0,
+    "missing_kerr_rows": 0,
+    "total_source_samples": 921
+  },
+  "policies": {
+    "bhs_bma_ei": {
+      "max_final_normalized_simple_regret_exploratory": 0.4177378129522988,
+      "mean_final_normalized_simple_regret_exploratory": 0.13924593765076626,
+      "min_final_normalized_simple_regret_exploratory": 0.0,
+      "replicate_count": 3
+    },
+    "gp_ei": {
+      "max_final_normalized_simple_regret_exploratory": 0.07500384935176917,
+      "mean_final_normalized_simple_regret_exploratory": 0.025001283117256388,
+      "min_final_normalized_simple_regret_exploratory": 0.0,
+      "replicate_count": 3
+    },
+    "gp_ucb": {
+      "max_final_normalized_simple_regret_exploratory": 0.22350876112462661,
+      "mean_final_normalized_simple_regret_exploratory": 0.07450292037487553,
+      "min_final_normalized_simple_regret_exploratory": 0.0,
+      "replicate_count": 3
+    },
+    "random": {
+      "max_final_normalized_simple_regret_exploratory": 0.27901333415452834,
+      "mean_final_normalized_simple_regret_exploratory": 0.19775608454202978,
+      "min_final_normalized_simple_regret_exploratory": 0.08528931727897018,
+      "replicate_count": 3
+    }
+  },
+  "policy_labels_hidden_until_selected": true,
+  "scored_validation_allowed": false,
+  "source_column_to_element_order_verified": false,
+  "source_description": "NIST pinned REMI Fe-Co-Ni data",
+  "source_sha256": "aaee4ddb6cf711e789e1edd6358145746611b273cecf2257699ea057d5feb1dc",
+  "status": "NIST_ANONYMOUS_COORDINATE_OFFLINE_DEV_REPLAY_NOT_VALIDATED",
+  "target": "Kerr",
+  "task": "retrospective property optimization (NOT causal mechanism identification)",
+  "unit": "mrad"
+}

@@ -12,7 +12,7 @@
     "real_material_mechanisms_validated": false,
     "scored_validation_allowed": false
   },
-  "last_confirmed_head": "c6ea12510218bf4490dc637408df9de3d8fb8eb6",
+  "last_confirmed_head": "c540a3dbc05f527e4a360deecb310bde68b2c47c",
   "nist": {
     "commit": "596b04435fb577175264a70c4434f5539b809510",
     "expected_size_bytes": 289480,
@@ -30,17 +30,6 @@
     "primary_target_unit": "mrad",
     "secondary_target": "Coer",
     "secondary_target_unit": "mT"
-  },
-  "prepared_not_verified": {
-    "development_only": true,
-    "expected_prequential_model_scores": 540,
-    "expected_report": "runs/nist_miscalibration_rootcause_v4/aggregated_rootcause_diagnostics.json",
-    "github_ci_verified": false,
-    "holdout_used": false,
-    "local_synthetic_tests_passed": 36,
-    "package": "nist_miscalibration_rootcause_v4",
-    "reference_v3_run": 41992614426,
-    "target": "Kerr"
   },
   "repo": "busrakisik/inverse-materials-design",
   "verified_runs": [
@@ -140,6 +129,121 @@
       "run_id": 41992614426,
       "selection_trajectories": 3,
       "tests_passed": 31
+    },
+    {
+      "package": "nist_miscalibration_rootcause_v4",
+      "run_id": 42046318788,
+      "artifact_id": 13425230747,
+      "commit": "c540a3dbc05f527e4a360deecb310bde68b2c47c",
+      "tests_passed": 36,
+      "eligible_samples": 921,
+      "selector_policies": 3,
+      "predictors": 3,
+      "development_seeds": [
+        7,
+        13,
+        23,
+        31,
+        41
+      ],
+      "prequential_diagnostic_scores": 540,
+      "v3_reproduction_check": true,
+      "development_only": true,
+      "independent_validation": false
     }
-  ]
+  ],
+  "last_verified_workflow_run": 42046318788,
+  "last_verified_artifact_id": 13425230747,
+  "last_verified_at": "2026-11-05",
+  "current_verified_claim_boundaries": {
+    "scored_validation_allowed": false,
+    "independent_holdout_used": false,
+    "physical_validation": false,
+    "claim_of_superiority": false,
+    "physical_mechanism_identified": false,
+    "data_source_col_to_elements_verified": false,
+    "real_cost_savings_measured": false,
+    "real_per_sample_instrument_uncertainty_verified": false
+  },
+  "last_snapshot_source": {
+    "repo": "https://github.com/busrakisik/inverse-materials-design",
+    "branch": "bhs-scientific-audit",
+    "head_sha": "c540a3dbc05f527e4a360deecb310bde68b2c47c",
+    "tree_blob_count": 399,
+    "tree_total_blob_bytes": 58198095,
+    "source": "GitHub tree API at HEAD (not complete offline clone)"
+  },
+  "verified_aggregated_reports": [
+    {
+      "version": "nist_anonymous_offline_pilot_v1",
+      "source_zip": "bhs-nist-anonymous-offline-pilot-v1-artifact.zip",
+      "workflow_run": 41977734103,
+      "artifact_id": 13392975164,
+      "tests_passed": 27,
+      "json_path": "research/verified_results/nist_anonymous_offline_pilot_v1.json",
+      "sha256": "90f8c9bdc104bc22449fbe611f1b54aff11b370d29cf2d2f022dbf15a53f1508",
+      "zip_sha256": "424f1d21f7343a536947eab270b06c746ceeac8c0363056b91e23ec5d378846e"
+    },
+    {
+      "version": "nist_diagnostics_ablation_v2",
+      "source_zip": "bhs-nist-diagnostics-ablation-v2-results.zip",
+      "workflow_run": 41988359209,
+      "artifact_id": 13397435952,
+      "tests_passed": 28,
+      "json_path": "research/verified_results/nist_diagnostics_ablation_v2.json",
+      "sha256": "f3e5fd6523c3b61ee7130edba07c7fe2539aac4df45e953815ca3161ef64e69c",
+      "zip_sha256": "3b1868541ff78ed0f0589c967663cdcb9e2d6a8688f66f56a4fe571c56130caa"
+    },
+    {
+      "version": "nist_model_adequacy_v3",
+      "source_zip": "bhs-nist-model-adequacy-v3-results.zip",
+      "workflow_run": 41992614426,
+      "artifact_id": 13397919991,
+      "tests_passed": 31,
+      "json_path": "research/verified_results/nist_model_adequacy_v3.json",
+      "sha256": "e6877dcb59009af3ba51e5d32989e0413f59b29f3681b7a9232397b00c68f2f7",
+      "zip_sha256": "7946ae7ba282682f093728e4f1053fd2f7832f82271f948eae32be5120fbfb7e"
+    },
+    {
+      "version": "nist_miscalibration_rootcause_v4",
+      "source_zip": "BHS_NIST_v4_verified_results.zip",
+      "workflow_run": 42046318788,
+      "artifact_id": 13425230747,
+      "tests_passed": 36,
+      "json_path": "research/verified_results/nist_miscalibration_rootcause_v4.json",
+      "sha256": "662314024186c6cfba1376b8facd515b39bee3e636f1792091306be3444d1efd",
+      "zip_sha256": "8bb3b29484b70df01c925ad36f135b23230d7f48734069b6457500618c0abc38"
+    }
+  ],
+  "v3_prequential_90pct_coverage_by_selector": {
+    "bhs_bma_ei": {
+      "bhs_bma_sigma_0p05_posthoc": 0.08333333333333333,
+      "bhs_bma_sigma_0p15": 0.33333333333333337,
+      "bhs_interaction_sigma_0p15": 0.3166666666666667,
+      "gp_length_0p22": 0.4833333333333333,
+      "gp_length_0p40_posthoc": 0.5166666666666667
+    },
+    "gp_ei": {
+      "bhs_bma_sigma_0p05_posthoc": 0.05,
+      "bhs_bma_sigma_0p15": 0.16666666666666669,
+      "bhs_interaction_sigma_0p15": 0.18333333333333332,
+      "gp_length_0p22": 0.4333333333333333,
+      "gp_length_0p40_posthoc": 0.3333333333333333
+    },
+    "random": {
+      "bhs_bma_sigma_0p05_posthoc": 0.06666666666666667,
+      "bhs_bma_sigma_0p15": 0.2833333333333333,
+      "bhs_interaction_sigma_0p15": 0.2833333333333333,
+      "gp_length_0p22": 0.4333333333333333,
+      "gp_length_0p40_posthoc": 0.35
+    }
+  },
+  "v4_random_trajectory_variance_decomposition": {
+    "mean_assumed_noise_variance": 0.022499999999999996,
+    "mean_within_family_variance": 0.019865536605623624,
+    "mean_between_family_variance": 0.001674227502516299,
+    "mean_total_variance": 0.04403976410813993,
+    "mean_90pct_coverage": 0.2833333333333333,
+    "mean_nlpd": 242.9549654097056
+  }
 }

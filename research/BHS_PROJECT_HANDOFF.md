@@ -1,3 +1,18 @@
+# BHS — VERIFIED CURRENT HANDOFF (2026-11-05)
+
+**Live project:** https://github.com/busrakisik/inverse-materials-design — branch `bhs-scientific-audit`; verified HEAD `c540a3dbc05f527e4a360deecb310bde68b2c47c`.  
+**Read expanded primary record:** `research/BHS_MASTER_CONTEXT_2026-11-05.md` and `research/BHS_EXPERIMENTS_AND_DECISIONS_2026-11-05.md`.  
+**Latest verified CI:** NIST miscalibration v4, [run 42046318788](https://github.com/busrakisik/inverse-materials-design/actions/runs/42046318788), **36/36 tests passed**, 921 real-source eligible samples, 540 pre-reveal diagnostics; artifact `13425230747`.  
+**Latest v3:** [run 41992614426](https://github.com/busrakisik/inverse-materials-design/actions/runs/41992614426), **31/31**, 900 pre-reveal predictions; artifact `13397919991`. Both tested on already-explored development seeds 7,13,23,31,41, NOT independent.  
+**Key finding:** BHS underdispersed, lower 90% interval coverage than GP(.22) under 3 adaptive policies; GP also undercovers. v4 between-family variance small on random trajectories; farther selected anonymous coordinates show higher mean NLPD. No independently validated causal explanation or algorithm superiority. Detailed metrics in exact JSON snapshot.  
+**Next action:** external scientific question/data feasibility + domain reviewer + separate frozen test, not indefinite tuning on NIST. **Missions:** scientific paper evidence + actual lab problem + defensible technology, not accomplished claims.  
+**Hard safety/science flags:** `scored_validation_allowed=false`, `independent_holdout_used=false`, `physical_validation=false`; NEVER use seeds 10000..10099. NIST column identities/measurement sigma/cost/licenses unresolved.  
+**Continuity constraint:** this handoff is drawn from available conversation/repo evidence, not a byte-for-byte old chat transcript. The original inherited handoff is preserved *in full below* rather than discarded.
+
+---
+
+# Preserved prior handoff (verbatim, as included in v4 source package)
+
 # BHS — Project Handoff / Single Source of Continuity
 
 **As of:** 2026-11-05 (Europe/Istanbul)  
