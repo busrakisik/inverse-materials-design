@@ -1,0 +1,43 @@
+name: BHS NIST Composition-to-Model Mapping v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_composition_mapping_v1.py'
+      - 'tests/test_nist_composition_mapping_v1.py'
+      - 'research/NIST_COMPOSITION_TO_MODEL_MAPPING_V1.md'
+      - '.github/workflows/bhs-nist-composition-mapping-v1.yml'
+      - 'scripts/nist_dataset_inspection_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  map-source-metadata-no-model-fitting:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install pinned dependencies
+        run: python -m pip install numpy==1.26.4 scipy==1.13.1
+      - name: Run source mapping contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_composition_mapping_v1.py' -v 2>&1 | tee mapping_contract_tests.log
+          grep -Eq '^Ran 23 tests? in ' mapping_contract_tests.log
+          grep -Eq '^OK$' mapping_contract_tests.log
+      - name: Fetch and inspect immutable NIST source, no BHS evaluation
+        run: python -m scripts.nist_composition_mapping_v1 --fetch
+      - name: Archive aggregate-only mapping readiness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-nist-composition-mapping-v1
+          path: |
+            mapping_contract_tests.log
+            runs/nist_composition_mapping_v1/mapping_readiness.json
+            runs/nist_composition_mapping_v1/mapping_readiness.sha256
+          if-no-files-found: warn
