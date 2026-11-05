@@ -1,0 +1,46 @@
+{
+  "status": "NIST_SCIENTIFIC_HYPOTHESIS_SPECIFICATION_NOT_EVALUATED",
+  "version": 1,
+  "source": {
+    "repository": "usnistgov/remi",
+    "commit": "596b04435fb577175264a70c4434f5539b809510",
+    "git_blob_sha1": "e506db115d522d62618042abead7df2695ccf13e",
+    "expected_samples": 921
+  },
+  "research_question": "Can predeclared phenomenological composition-response models distinguish alternative predictive response shapes in Fe-Co-Ni, without claiming physical-mechanism identification?",
+  "primary_target": "Kerr",
+  "primary_target_units": "mrad",
+  "secondary_target": "Coer",
+  "secondary_target_units": "mT",
+  "selection_rationale": "Published active-learning comparison describes Kerr as a smoother response and coercivity as rougher; a simpler descriptive first pilot may be less confounded by complex local peaks.",
+  "model_families": ["linear", "fe_co_interaction", "localized_response"],
+  "models_are_physical_mechanisms": false,
+  "model_families_are_phenomenological": true,
+  "composition_column_order_authoritatively_verified": false,
+  "composition_units_authoritatively_verified": false,
+  "target_row_alignment_authoritatively_verified": false,
+  "measurement_error_per_row_verified": false,
+  "per_experiment_costs_verified": false,
+  "domain_expert_approved": false,
+  "source_reuse_terms_cleared": false,
+  "real_data_fit_performed": false,
+  "real_data_benchmark_performed": false,
+  "independent_holdout_used": false,
+  "physical_validation": false,
+  "scored_validation_allowed": false,
+  "superiority_claim_validated": false,
+  "dataset_ready_for_bhs": false,
+  "unresolved_gates": [
+    "source_order_and_composition_units",
+    "target_row_alignment_and_missing_value_policy",
+    "domain_review_of_competing_response_families",
+    "measurement_uncertainty_or_explicit_sensitivity_protocol",
+    "source_reuse_terms_and_pilot_permission",
+    "frozen_leakage_safe_protocol_and_strong_baselines"
+  ],
+  "literature": [
+    "https://www.nist.gov/publications/benchmarking-active-learning-strategies-materials-optimization-and-discovery",
+    "https://academic.oup.com/ooms/article/2/1/itac006/6637521",
+    "https://pages.nist.gov/remi/data/"
+  ]
+}
