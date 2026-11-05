@@ -1,0 +1,41 @@
+name: BHS Multivariate Composition Hypotheses v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/multivariate_hypotheses_v1.py'
+      - 'tests/test_multivariate_hypotheses_v1.py'
+      - 'research/MULTIVARIATE_HYPOTHESES_V1.md'
+      - '.github/workflows/bhs-multivariate-hypotheses-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  multivariate-synthetic-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==1.26.4
+      - name: Test multivariate Gaussian arithmetic
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_multivariate_hypotheses_v1.py' -v 2>&1 | tee multivariate_hypotheses_tests.log
+          grep -Eq '^Ran 20 tests? in ' multivariate_hypotheses_tests.log
+          grep -Eq '^OK$' multivariate_hypotheses_tests.log
+      - name: Run synthetic development-only mathematical demonstration
+        run: python -m scripts.multivariate_hypotheses_v1
+      - name: Preserve synthetic math evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-multivariate-hypotheses-v1
+          path: |
+            multivariate_hypotheses_tests.log
+            runs/multivariate_hypotheses_v1/
+          if-no-files-found: error
