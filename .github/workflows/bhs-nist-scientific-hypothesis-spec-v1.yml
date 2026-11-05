@@ -1,0 +1,40 @@
+name: BHS NIST Scientific Hypothesis Specification v1
+on:
+  push:
+    branches: [bhs-scientific-audit]
+    paths:
+      - 'scripts/nist_scientific_hypothesis_spec_v1.py'
+      - 'tests/test_nist_scientific_hypothesis_spec_v1.py'
+      - 'research/NIST_SCIENTIFIC_HYPOTHESIS_SPEC_V1.json'
+      - 'research/NIST_SCIENTIFIC_HYPOTHESIS_SPEC_V1.md'
+      - '.github/workflows/bhs-nist-scientific-hypothesis-spec-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-spec-no-holdout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Verify fixed scientific specification and false-only claim gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_nist_scientific_hypothesis_spec_v1.py' -v 2>&1 | tee nist_hypothesis_spec_tests.log
+          grep -Eq '^Ran 16 tests? in ' nist_hypothesis_spec_tests.log
+          grep -Eq '^OK$' nist_hypothesis_spec_tests.log
+          python -m scripts.nist_scientific_hypothesis_spec_v1 | tee nist_hypothesis_spec_summary.log
+      - name: Archive static specification evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-nist-scientific-hypothesis-spec-v1
+          path: |
+            nist_hypothesis_spec_tests.log
+            nist_hypothesis_spec_summary.log
+            runs/nist_scientific_hypothesis_spec_v1/
+          if-no-files-found: warn
