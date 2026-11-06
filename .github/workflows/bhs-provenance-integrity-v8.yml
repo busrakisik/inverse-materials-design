@@ -6,6 +6,9 @@ on:
       - "bhs/decisions/verified_review_v8.py"
       - "tests/test_verified_review_v8.py"
       - "research/BHS_PROVENANCE_INTEGRITY_V8.md"
+      - "research/BHS_PROSPECTIVE_DECISION_RELIABILITY_STUDY_DESIGN.md"
+      - "research/RESEARCH_OVERVIEW.md"
+      - "README.md"
       - ".github/workflows/bhs-provenance-integrity-v8.yml"
   workflow_dispatch:
 permissions:
