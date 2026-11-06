@@ -1,0 +1,66 @@
+name: BHS Concrete Assumptions and Abstention v6
+on:
+  push:
+    branches:
+      - bhs-v6-assumption-audit
+    paths:
+      - "scripts/uci_concrete_assumptions_v6.py"
+      - "tests/test_uci_concrete_assumptions_v6.py"
+      - "research/CONCRETE_ASSUMPTION_AUDIT_V6.md"
+      - ".github/workflows/bhs-concrete-assumption-audit-v6.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-assumptions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned source and numeric dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3 ucimlrepo==0.0.7
+          python -m pip check
+      - name: Check scientifically necessary failure behaviors without downloaded observations
+        run: |
+          python -m unittest discover -s tests -p 'test_uci_concrete_assumptions_v6.py' -v
+          python -m scripts.uci_concrete_assumptions_v6
+      - name: Run declared development-only source assumption audit
+        run: |
+          python -m scripts.uci_concrete_assumptions_v6 --execute --out runs/uci_concrete_assumptions_v6.json
+      - name: Verify forced abstention and no independent scientific claims
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("runs/uci_concrete_assumptions_v6.json").read_text())
+          assert x["source"]["dataset_id"]==165
+          assert x["source"]["doi"]=="10.24432/C5PK67"
+          assert x["pool"]["source_rows"]==1030
+          assert len(x["matching_sensitivity"])==3
+          assert x["decision"]["status"]=="ABSTAIN_FROM_PHYSICAL_OR_LAB_RECOMMENDATION"
+          assert len(x["decision"]["reason_codes"])>=4
+          assert all(not x["evidence_boundaries"][key] for key in (
+            "scored_validation_allowed","independent_holdout_used","physical_validation",
+            "causal_identification","physical_mechanism_confirmed","claim_of_superiority",
+            "laboratory_recipe_recommended","reserved_seeds_used"
+          ))
+          assert x["evidence_boundaries"]["development_only"] is True
+          print("Verified scientific abstention, traceable reasons and source contract.")
+          PY
+      - name: Upload aggregate-only scientific evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-concrete-assumption-audit-v6-development
+          path: runs/uci_concrete_assumptions_v6.json
+          if-no-files-found: error
+          retention-days: 21
