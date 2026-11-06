@@ -42,6 +42,12 @@ Primary preserved evidence:
 - [v4 miscalibration aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_miscalibration_rootcause_v4.json)
 - [v4 GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42046318788)
 
+## New external real-data development (v5 — November 2026)
+
+A separate [UCI concrete 28-day retrospective development study](research/UCI_CONCRETE_V5_FIRST_REAL_DEVELOPMENT_RESULT.md) was implemented after the NIST work using a publicly licensed dataset (1,030 original rows; 416 distinct 28-day feature profiles). Five software tests and nine paired development campaigns completed in [GitHub Actions](https://github.com/busrakisik/inverse-materials-design/actions/runs/42214172524).
+
+In the exploratory comparison, **fixed GP–EI (0.095889) slightly outperformed the kernel portfolio (0.097209)** on mean normalized final regret; random selection was 0.242408 (lower is better). The statistical model portfolio is not a physical hypothesis-discrimination result. Three development seeds do not justify superiority or generalization claims; independent holdout and physical validation remain **not performed**.
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.

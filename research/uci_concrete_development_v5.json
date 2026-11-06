@@ -1,0 +1,90 @@
+{
+  "study": "BHS external concrete property-optimization development v5",
+  "provenance": {
+    "github_workflow_run": 42214172524,
+    "github_artifact_id": 13500686767,
+    "github_source_commit": "d87b14fe5c05a82355d0cc1ce3b4bc22fcb98943",
+    "original_artifact_json_sha256": "03a3bdb537d43703d1ee618be90a5ccd7493638bb40beaece77714e0d68dfa4e",
+    "original_artifact_download": "https://github.com/busrakisik/inverse-materials-design/actions/runs/42214172524"
+  },
+  "source": {
+    "name": "UCI Concrete Compressive Strength",
+    "creator": "I-Cheng Yeh",
+    "dataset_id": 165,
+    "doi": "10.24432/C5PK67",
+    "license": "CC BY 4.0",
+    "parsed_numeric_table_sha256": "98958f558e46763cf6d5403de8784af39ebe906c4604447c188889c3e346cd87",
+    "original_xls_sha256_verified": false
+  },
+  "pool": {
+    "source_rows": 1030,
+    "rows_age_28": 425,
+    "unique_profiles_age_28": 416,
+    "repeat_profile_rows_excluded_by_features_only": 9,
+    "repeated_targets_averaged": false
+  },
+  "protocol": {
+    "development_seeds": [
+      7,
+      13,
+      23
+    ],
+    "initial_observations": 6,
+    "additional_acquisitions": 10,
+    "policies": [
+      "random",
+      "gp_ei",
+      "kernel_portfolio_ei"
+    ],
+    "all_policies_share_initial_observations_within_seed": true,
+    "objectives": "maximize 28-day compressive strength",
+    "real_per_experiment_cost_known": false
+  },
+  "constraints": {
+    "development_only": true,
+    "independent_holdout_used": false,
+    "scored_validation_allowed": false,
+    "physical_validation": false,
+    "physical_hypotheses_tested": false,
+    "claimed_superiority": false,
+    "reserved_holdout_seeds_used": false
+  },
+  "aggregates": {
+    "random": {
+      "mean_normalized_final_regret": 0.24240768565314394,
+      "mean_final_regret_mpa": 17.746666666666666,
+      "development_campaigns": 3
+    },
+    "gp_ei": {
+      "mean_normalized_final_regret": 0.0958885398169649,
+      "mean_final_regret_mpa": 7.0200000000000005,
+      "development_campaigns": 3
+    },
+    "kernel_portfolio_ei": {
+      "mean_normalized_final_regret": 0.09720894231207027,
+      "mean_final_regret_mpa": 7.1166666666666645,
+      "development_campaigns": 3
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 7,
+      "random": 24.53,
+      "gp_ei": 7.25,
+      "kernel_portfolio_ei": 7.25
+    },
+    {
+      "seed": 13,
+      "random": 7.25,
+      "gp_ei": 7.049999999999997,
+      "kernel_portfolio_ei": 7.049999999999997
+    },
+    {
+      "seed": 23,
+      "random": 21.46,
+      "gp_ei": 6.760000000000005,
+      "kernel_portfolio_ei": 7.049999999999997
+    }
+  ],
+  "interpretation": "The kernel portfolio did not outperform the fixed GP-EI reference on these three development campaigns. No superiority or independent validation claim is authorized."
+}

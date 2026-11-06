@@ -24,3 +24,9 @@ The [four preserved aggregate JSON reports](./) and relevant [GitHub Actions run
 Seek separately sourced, legally usable data and domain-reviewed physical hypotheses. Define observables, experimental costs, uncertainty assumptions, pre-reveal isolation and strong baselines before running further evaluations. The proposed external validation phase is a plan, not independently confirmed scientific evidence.
 
 The initial [Zenodo software release](https://doi.org/10.5281/zenodo.21761835) predates the research branch. Preserved experimental reports and source citations should be considered in their original evidence scope.
+
+## External real-data development, 6 November 2026
+
+A new exploratory 28-day UCI concrete data experiment used 416 unique feature profiles from a published source (Yeh, DOI 10.24432/C5PK67; CC BY 4.0). Three paired development seeds and fixed 10-step acquisition budgets yielded mean normalized final simple regret of 0.242408 (random), 0.095889 (GP–EI), and 0.097209 (kernel portfolio EI). The portfolio did **not** outperform GP–EI. See [full exploratory evidence and limitations](UCI_CONCRETE_V5_FIRST_REAL_DEVELOPMENT_RESULT.md) and [aggregate reviewed JSON](uci_concrete_development_v5.json).
+
+This is a retrospective **property optimization** comparison, not physical hypothesis discrimination, independent scored validation, calibration, real acquisition-cost measurement or a new materials discovery. All independent validation safeguards remain in effect.
