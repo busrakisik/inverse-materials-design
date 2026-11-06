@@ -56,6 +56,14 @@ In the [first UCI real-measurement assumption audit](research/CONCRETE_ASSUMPTIO
 
 The preregistered rule therefore returned **ABSTAIN FROM PHYSICAL OR LABORATORY RECOMMENDATION**, with specific auditable reasons. Observational direction agreement is not a causal proof. Source checks, label-blind comparisons and failure behavior are tested in the [v6 code](scripts/uci_concrete_assumptions_v6.py) and [GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42229114121).
 
+## Evidence requirements before laboratory action (v7)
+
+The latest [evidence-sufficiency decision contract](research/BHS_EVIDENCE_SUFFICIENCY_V7.md) separates **descriptive reporting**, **observational comparisons**, and **laboratory intervention review**. Each step has explicit source, measurement and experimental-design requirements. Missing or contradictory evidence produces a reasoned request or abstention, not a laboratory recipe.
+
+On the existing UCI concrete development record, the system permits only a descriptive report. It requests **4 additional evidence categories** for observational review and **9** for laboratory review, including material batches, curing and measurement protocols, controlled interventions and independent evaluation. [Review the recorded decision JSON](research/bhs_evidence_sufficiency_v7.json) or [inspect the tested source](bhs/decisions/evidence_contract_v7.py).
+
+**Limit:** The 12 software contract tests establish defined behavior, not demonstrated improvement over expert decision rules or independently verified laboratory safety. Prospective validation and an explicit recommendation-coverage versus false-decision-risk comparison remain necessary.
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
