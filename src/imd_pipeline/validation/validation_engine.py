@@ -29,7 +29,7 @@ class ValidationEngine:
             try:
                 from chgnet.model import CHGNet
                 self._chgnet_model = CHGNet.load()
-                print("⚡ [MLFF Engine] CHGNet Yapay Zeka Potansiyeli Başarıyla Yüklendi!")
+                print("⚡ [MLFF Engine] CHGNet potansiyel modeli yüklendi.")
             except ImportError:
                 print("ℹ️ [MLFF Engine] CHGNet kütüphanesi ortamda bulunamadı. Akıllı MLFF Simülatörü aktif.")
 
