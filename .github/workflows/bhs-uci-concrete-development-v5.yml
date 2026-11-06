@@ -1,0 +1,73 @@
+name: BHS UCI Concrete 28-day Development v5
+
+on:
+  push:
+    branches:
+      - bhs-v5-concrete-development
+    paths:
+      - "scripts/uci_concrete_v5.py"
+      - "tests/test_uci_concrete_v5.py"
+      - "research/UCI_CONCRETE_DEVELOPMENT_V5.md"
+      - ".github/workflows/bhs-uci-concrete-development-v5.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-concrete-development:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install fixed development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3 ucimlrepo==0.0.7
+          python -m pip check
+      - name: Run synthetic contracts before access to source data
+        run: |
+          python -m unittest discover -s tests -p 'test_uci_concrete_v5.py' -v
+          python -m scripts.uci_concrete_v5
+      - name: Retrieve authorized UCI dataset and run development comparison
+        run: |
+          python -m scripts.uci_concrete_v5 --execute --out runs/uci_concrete_development_v5.json
+      - name: Assert non-confirmatory research boundaries and output schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("runs/uci_concrete_development_v5.json")
+          o=json.loads(p.read_text(encoding="utf-8"))
+          assert o["source_dataset_id"]==165
+          assert o["source_license"]=="CC BY 4.0"
+          assert o["pool"]["source_rows"]==1030
+          assert o["pool"]["unique_profiles_age_28"]>=18
+          assert o["development_only"] is True
+          assert o["independent_holdout_used"] is False
+          assert o["scored_validation_allowed"] is False
+          assert o["physical_validation"] is False
+          assert o["claimed_superiority"] is False
+          assert o["reserved_seeds_used"] is False
+          assert o["development_seeds"]==[7,13,23]
+          assert len(o["development_campaign_results"])==9
+          assert set(o["aggregates"])=={"random","gp_ei","kernel_portfolio_ei"}
+          assert all(0<=r["normalized_final_simple_regret"]<=1 for r in o["development_campaign_results"])
+          print("Confirmed: genuine external data, all exploratory constraints and 9 paired campaigns.")
+          PY
+      - name: Preserve only aggregate development outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-uci-concrete-v5-development-only
+          path: runs/uci_concrete_development_v5.json
+          if-no-files-found: error
+          retention-days: 21
