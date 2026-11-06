@@ -1,116 +1,58 @@
 # Bayesian Hypothesis Search (BHS)
-### A hypothesis-centered research prototype for computational materials discovery
+
+**An independent research prototype for Bayesian hypothesis evaluation and sequential experiment selection in computational materials research.**
 
 [![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21761835.svg)](https://doi.org/10.5281/zenodo.21761835)
-[![Research software](https://img.shields.io/badge/status-research%20prototype-blue)](https://github.com/busrakisik/inverse-materials-design)
 
-**Bayesian Hypothesis Search (BHS)** explores a hypothesis-centered alternative to directly generating crystal structures. The central research idea is to maintain competing structural hypotheses, update their relative plausibility as evidence is evaluated, and prioritize further computation using an adaptive search policy.
+BHS investigates how explicit competing model assumptions, evidence updates, uncertainty diagnostics and decision rules can support more transparent and reproducible scientific computation. The repository contains developmental software, synthetic verification tests, retrospective evaluations and provenance records. Software tests do not by themselves establish scientific efficacy.
 
-**Project status:** Open-source research prototype. The repository contains working ideas and implementation components, but it is **not yet a validated autonomous materials-discovery system**. Benchmark figures currently included in the source are *simulated examples*, not measured evidence of performance gains.
+## Scientific questions
 
-## Research question
+1. **Hypothesis discrimination:** Can competing falsifiable hypotheses be distinguished by selecting informative observations when likelihoods, experimental feasibility and costs are sufficiently specified?
+2. **Property optimization:** Can predictive-model selection or averaging improve sample efficiency against strong Gaussian-process baselines under matched retrospective conditions?
 
-Can explicit scientific hypotheses, sequential evidence updates, and search-budget allocation make candidate evaluation more transparent and resource-aware in inverse materials design?
+These are distinct tasks. The historical NIST Kerr experiments investigate property optimization; statistical response-model families are **not** established physical mechanisms.
 
-Rather than immediately committing resources to a single generated structure, BHS investigates a process in which a set of candidate hypotheses is evaluated and revised over multiple evidence stages.
+## Research implementation
 
-## Approach
+- Mathematical Bayesian updates on explicitly supplied priors and likelihoods, with input validation and provenance output.
+- Experimental sequential search, decision policies, benchmarks and reliability checks (see the [research branch](https://github.com/busrakisik/inverse-materials-design/tree/bhs-scientific-audit)).
+- Optional CHGNet integration for computational evaluation, not a claimed physical laboratory verification.
+- Source-integrity checks, synthetic unit tests, and real-data retrospective diagnostics.
 
-The intended workflow is:
+The current focused demonstration does not perform physical materials discovery, and its 20-system benchmark scaffold is a planned protocol rather than a completed experimental campaign. The initial v1.0.1 Zenodo release predates the later research experiments.
 
-1. **Initialize hypotheses:** Define candidate structural explanations and prior probabilities.
-2. **Evaluate evidence:** Estimate likelihoods using physical and structural criteria.
-3. **Update beliefs:** Apply sequential Bayesian updates to hypothesis probabilities.
-4. **Allocate search effort:** Use a PUCT-style exploration/exploitation score to prioritize candidates.
-5. **Record provenance:** Save the configuration, evidence history, selected hypotheses, and output metadata.
+## NIST development evidence — v1 to v4
 
-Under an explicitly stated conditional-independence assumption, a sequential update has the form
+The NIST REMI historical Kerr data provide **921 eligible retrospective observations**. The composition-coordinate columns are treated as anonymous because their precise element mapping has not been independently verified. All reported comparisons below are **exploratory development**, not a held-out independent evaluation.
 
-$$
-P(H_i \mid E_{1:k}) \propto P(H_i)\prod_{j=1}^{k} P(E_j\mid H_i).
-$$
-
-The validity and calibration of evidence likelihoods remain important research questions.
-
-## Components in the repository
-
-| Component | Description |
+| Study | Verified developmental outcome |
 | --- | --- |
-| `bhs/search/bayesian_engine.py` | Hypothesis probability updates and PUCT-style scoring |
-| `bhs/evidence/likelihoods.py` | Structural-clash and novelty-related likelihood functions |
-| `bhs/physics/relaxer.py` | Experimental integration point for CHGNet-based relaxation |
-| `bhs/provenance/` | Provenance value types and run-output bundles |
-| `bhs/cli.py` | Configuration-driven reconstruction demonstration |
-| `bhs/benchmarks/suite_20.py` | **Illustrative/simulated** 20-system benchmark scaffold |
-| `bhs/reports/generate_artifacts.py` | LaTeX table generation from benchmark JSON |
-| `tests/` | Unit and demonstration tests |
-| `app.py` and `crystal_gen/` | Earlier interactive inverse-design prototype components; require separate cleanup |
+| **v1** | Mean normalized final simple regret over three 15-acquisition development campaigns: **GP–EI 0.0250** vs **BHS–BMA–EI 0.1392** (smaller is better). |
+| **v2** | Post-hoc hyperparameter/model ablations showed substantial sensitivity and no independently validated superiority. |
+| **v3** | Across 900 prequential development forecasts, nominal 90% intervals undercovered substantially. On random trajectories: GP **43.3%**, BHS–BMA **28.3%** coverage. |
+| **v4** | 540 miscalibration diagnostics, variance/distance/phase analyses and **36/36** passing software tests. |
 
-The repository also preserves earlier work on an LLM-assisted inverse materials-design interface. That prototype is related to, but distinct from, the BHS hypothesis-search research direction.
+**Negative result retained:** In the original protocol, BHS did not outperform the GP expected-improvement reference. Calibration failures for both models, more severe for BHS in these diagnostic comparisons, remain unresolved. Post-hoc interval widening is not independent calibration.
 
-## Getting started (development)
+Primary preserved evidence:
+- [v1 aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_anonymous_offline_pilot_v1.json)
+- [v2 ablation aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_diagnostics_ablation_v2.json)
+- [v3 prediction-adequacy aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_model_adequacy_v3.json)
+- [v4 miscalibration aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_miscalibration_rootcause_v4.json)
+- [v4 GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42046318788)
 
-Clone the repository:
+## Scientific boundaries and next steps
 
-```bash
-git clone https://github.com/busrakisik/inverse-materials-design.git
-cd inverse-materials-design
-```
+No independent scored validation or physical validation has been performed. The independent evaluation seeds `10000–10099` remain reserved and unused. No verified novel material, true physical mechanism, instrument-calibrated uncertainty, commercial benefit or method superiority is claimed.
 
-Create a Python virtual environment, then install dependencies:
+The next stage targets distinct, permission-cleared external scientific evidence and a predeclared comparison against strong baselines, with appropriate domain-expert review. Planned external studies must not be described as completed.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install pyyaml
-```
+## Software and citation
 
-> **Installation note:** The current dependency list is not yet fully locked or verified across platforms. CHGNet integration requires additional setup. These commands are development starting points, not a tested reproducibility guarantee.
+- [Research source and test suites](https://github.com/busrakisik/inverse-materials-design/tree/bhs-scientific-audit)
+- [Initial archived release, v1.0.1](https://doi.org/10.5281/zenodo.21761835) (not a snapshot of the subsequent research branch)
+- [CITATION.cff](CITATION.cff) · [MIT license](LICENSE)
+- Maintainer: [@busrakisik](https://github.com/busrakisik)
 
-A sample CLI entry point is included:
-
-```bash
-python -m bhs.cli \
-  --config configs/reconstruction_lifepo4.yaml \
-  --out-dir runs/example_run
-```
-
-The example uses predefined hypotheses and likelihood inputs. Successful completion should **not** be interpreted as discovering or validating a new material.
-
-Tests can be explored individually, for example:
-
-```bash
-python -m tests.test_evidence
-python -m tests.test_reconstruction_run
-```
-
-Test execution and scientific validity are separate questions; full-environment execution has not been independently verified for this release.
-
-## Benchmark status: illustrative, not experimental
-
-The current `bhs/benchmarks/suite_20.py` defines 20 example material systems, but its search-step and compute-budget values are **hard-coded simulations**. They should not be reported as measured speedups, validated GPU-hour reductions, or evidence that BHS outperforms random search or other baselines.
-
-A future empirical benchmark should compute results from actual runs, record the hardware and software environments, use comparable computational budgets, include repeated trials, and report uncertainty and failure cases.
-
-## Scientific limitations and next steps
-
-- **Evidence modeling:** Establish calibrated likelihoods and test their assumptions.
-- **Physical validation:** Distinguish actual MLFF calculations from placeholder/fallback values. The current relaxation fallback uses a fixed proxy energy and its provenance labeling needs correction.
-- **Search experiments:** Replace simulated benchmark metrics with observed outputs and independent baselines.
-- **Reproducibility:** Pin dependencies, validate environment setup, and archive exact experiment configurations and artifacts.
-- **Legacy application:** Resolve merge-conflict markers in `app.py` and test the interactive demonstration before presenting it as runnable.
-- **Documentation and citation:** Reconcile the author's name and version metadata across GitHub, `CITATION.cff`, and Zenodo.
-
-These are active engineering and research tasks, not completed results.
-
-## Research artifact and citation
-
-- **Source repository:** https://github.com/busrakisik/inverse-materials-design
-- **Zenodo archived release (v1.0.1):** https://doi.org/10.5281/zenodo.21761835
-
-For a formal citation, use the authoritative information on the Zenodo record after confirming that the author and release metadata are correct.
-
-## Project contact
-
-Maintained at [@busrakisik](https://github.com/busrakisik). Research discussions, reproducibility feedback, and technical suggestions are welcome.
+Scientific source data retain their original provenance and reuse constraints. Interpret each code path and result according to its recorded evidence level and limitations.
