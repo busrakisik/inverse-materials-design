@@ -1,3 +1,8 @@
+# Release readiness — historical checkpoint
+
+> **Historical document (31 October 2026).** The audit below records the state at that date, not the current project's full testing or publication status. For the latest evidence, see [research overview](research/RESEARCH_OVERVIEW.md), [NIST aggregated results](research/) and [current README](README.md). In particular, the older `CITATION.cff` values discussed below were revised on 6 November 2026 so the earlier Zenodo release is not presented as the archive for subsequent experiments.
+
+---
 
 BHS — Release Readiness and Scientific Audit Notes
 

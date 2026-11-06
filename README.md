@@ -42,6 +42,22 @@ Primary preserved evidence:
 - [v4 miscalibration aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_miscalibration_rootcause_v4.json)
 - [v4 GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42046318788)
 
+## Reproduce the software checks
+
+The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
+
+```bash
+git clone https://github.com/busrakisik/inverse-materials-design.git
+cd inverse-materials-design
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2
+python -m unittest discover -s tests -p 'test_nist_model_adequacy_v3.py' -v
+python -m unittest discover -s tests -p 'test_nist_miscalibration_rootcause_v4.py' -v
+```
+
+The above two test modules have previously passed **31** and **36** checks respectively on Python 3.11 in the research verification environment. Additional components such as Streamlit, pymatgen and optional CHGNet require their own dependencies and environment checks. Consult [the research overview](research/RESEARCH_OVERVIEW.md), [the evidence register](research/BHS_EVIDENCE_REGISTER.json) and [the test suite](tests/) before interpreting model outputs.
+
 ## Scientific boundaries and next steps
 
 No independent scored validation or physical validation has been performed. The independent evaluation seeds `10000–10099` remain reserved and unused. No verified novel material, true physical mechanism, instrument-calibrated uncertainty, commercial benefit or method superiority is claimed.
