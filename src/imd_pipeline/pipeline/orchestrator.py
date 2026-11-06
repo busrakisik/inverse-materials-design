@@ -18,9 +18,9 @@ class DiscoveryResult:
 
 class Orchestrator:
     """
-    Closed-Loop Material Discovery Orchestrator.
-    LLM Jeneratörü ile CHGNet Physics Validator arasındaki kapalı döngü
-    fiziksel optimizasyon sürecini yönetir.
+    Legacy exploratory candidate-evaluation prototype.
+    Uses a fixed synthetic initial candidate and optional computational
+    evaluation; this is not validated autonomous materials discovery.
     """
 
     def __init__(
@@ -38,7 +38,7 @@ class Orchestrator:
     def _generate_initial_candidate(self, formula: str) -> Structure:
         """
         Başlangıç aday kristal yapısını üretir.
-        (LLM API entegrasyonu buraya bağlanır, şimdilik sentetik başlangıç yapısı döner).
+        (Harici aday üretimi uygulanmamıştır; sabit sentetik bir başlangıç döner.)
         """
         # LiFePO4 için Orthorhombic Pnma sentetik başlangıç kafesi
         lattice = Lattice.orthorhombic(10.33, 6.01, 4.69)
@@ -56,7 +56,7 @@ class Orchestrator:
 
     def _perturb_structure_for_retry(self, structure: Structure, iteration: int) -> Structure:
         """
-        LLM feedback simülasyonu: Bir önceki adımda çakışma/yüksek enerji varsa
+        İteratif pertürbasyon simülasyonu: Bir önceki adımda çakışma/yüksek enerji varsa
         kristal parametrelerini genleşmeye ve koordinatları perturb etmeye zorlar.
         """
         new_lattice = structure.lattice.scale(structure.volume * (1.0 + 0.02 * iteration))
@@ -72,7 +72,7 @@ class Orchestrator:
         """
         Otonom kapalı döngü keşif sürecini başlatır.
 
-        1. Aday yapıyı oluştur (LLM Generator)
+        1. Sabit örnek aday yapıyı oluştur (sentetik başlangıç)
         2. CHGNet ile relakse et ve fiziksel metrikleri hesapla (Validator)
         3. Enerji eşiğini ve atomik çakışmaları kontrol et
         4. Uygun değilse fiziksel yönlendirme (Decision Engine) ile döngüyü tekrar et
@@ -140,7 +140,7 @@ class Orchestrator:
                 final_structure = relaxed_struct
                 break
 
-            # 5. Yakınsama sağlanamadıysa yeni iterasyon için prompt/yapı güncelle
+            # 5. Yakınsama sağlanamadıysa yeni iterasyon için yapı güncelle
             current_structure = self._perturb_structure_for_retry(relaxed_struct, iteration)
             final_structure = relaxed_struct
 
