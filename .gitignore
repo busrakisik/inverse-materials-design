@@ -5,3 +5,29 @@ __pycache__/
 *.cif
 cloudflared
 .ipynb_checkpoints/
+
+# Local environment and credentials
+.venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+.DS_Store
+
+# Private research continuity and historical backups
+private_archive/
+private_history_archive/
+research/_private/
+research/BHS_MASTER_CONTEXT_*.md
+research/BHS_PROJECT_HANDOFF.md
+research/BHS_HANDOFF_PREVIOUS_VERSION_*.md
+research/BHS_NEXT_*.md
+research/BHS_ARCHIVAL_INVENTORY_*.json
+research/BHS_BACKUP_SCOPE_AND_VERIFICATION.md
+research/BHS_EVIDENCE_REGISTER_PREVIOUS_VERSION.json
+research/BHS_EXPERIMENTS_AND_DECISIONS_*.md
+research/BHS_EXTERNAL_VALIDATION_V5_RESEARCH_PLAN.md
+research/BHS_SOURCE_RESEARCH_*.md
+BHS_FULL_CONTINUITY_*_BACKUP.zip
