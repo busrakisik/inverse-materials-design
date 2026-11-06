@@ -1,0 +1,117 @@
+{
+  "study": "BHS v6 assumption audit of water-to-binder contrast at 28 days",
+  "source": {
+    "dataset_id": 165,
+    "doi": "10.24432/C5PK67",
+    "license": "CC BY 4.0",
+    "parsed_table_sha256": "98958f558e46763cf6d5403de8784af39ebe906c4604447c188889c3e346cd87",
+    "original_xls_sha256_verified": false
+  },
+  "question": "Is the expected inverse water-to-binder versus 28-day strength pattern assessable under sufficiently comparable observational mixtures?",
+  "scope": "exploratory observational diagnostics, not a causal test or lab decision",
+  "pool": {
+    "source_rows": 1030,
+    "rows_age_28": 425,
+    "unique_profiles_age_28": 416,
+    "repeat_profile_rows_excluded_by_features_only": 9,
+    "repeated_targets_averaged": false
+  },
+  "repeat_audit": {
+    "duplicate_input_groups": 5,
+    "duplicate_input_extra_rows": 9,
+    "max_response_span_mpa": 12.61,
+    "groups_response_span_over_1_mpa": 2,
+    "measurement_noise_model_identified": false
+  },
+  "matching_sensitivity": [
+    {
+      "other_ingredient_absolute_tolerance_kg_m3": 5.0,
+      "eligible_observational_pairs": 1,
+      "disjoint_paired_comparisons": 1,
+      "direction_matches_water_binder_expectation": 1,
+      "direction_opposes_water_binder_expectation": 0,
+      "tied_strengths": 0,
+      "descriptive_direction_fraction": 1.0,
+      "passes_arbitrary_minimum_pair_count": false,
+      "causal_identification_established": false
+    },
+    {
+      "other_ingredient_absolute_tolerance_kg_m3": 15.0,
+      "eligible_observational_pairs": 21,
+      "disjoint_paired_comparisons": 11,
+      "direction_matches_water_binder_expectation": 10,
+      "direction_opposes_water_binder_expectation": 1,
+      "tied_strengths": 0,
+      "descriptive_direction_fraction": 0.9090909090909091,
+      "passes_arbitrary_minimum_pair_count": false,
+      "causal_identification_established": false
+    },
+    {
+      "other_ingredient_absolute_tolerance_kg_m3": 30.0,
+      "eligible_observational_pairs": 140,
+      "disjoint_paired_comparisons": 52,
+      "direction_matches_water_binder_expectation": 46,
+      "direction_opposes_water_binder_expectation": 6,
+      "tied_strengths": 0,
+      "descriptive_direction_fraction": 0.8846153846153846,
+      "passes_arbitrary_minimum_pair_count": true,
+      "causal_identification_established": false
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "source_schema_age_units",
+      "observed": true,
+      "basis": "UCI metadata and numerical source checks"
+    },
+    {
+      "id": "binder_definition",
+      "observed": false,
+      "basis": "cement+slag+fly ash is an explicit proxy; unequal reactivity unverified"
+    },
+    {
+      "id": "material_lot_curing_and_test_protocol",
+      "observed": false,
+      "missing": [
+        "cement_and_scm_material_identity_and_lot",
+        "curing_temperature_and_humidity",
+        "specimen_geometry_and_test_protocol",
+        "measurement_repeatability_and_uncertainty"
+      ]
+    },
+    {
+      "id": "measurement_noise_and_repeatability",
+      "observed": false,
+      "basis": "no per-sample uncertainty model"
+    },
+    {
+      "id": "randomized_water_intervention",
+      "observed": false,
+      "basis": "retrospective observational table"
+    }
+  ],
+  "decision": {
+    "status": "ABSTAIN_FROM_PHYSICAL_OR_LAB_RECOMMENDATION",
+    "reason_codes": [
+      "UNRECORDED_CURING_AND_LAB_CONDITIONS",
+      "UNMEASURED_SOURCE_AND_TEST_PROTOCOL_CONFOUNDING",
+      "OBSERVATIONAL_PAIRING_CANNOT_IDENTIFY_CAUSAL_WATER_EFFECT",
+      "NO_VERIFIED_INSTRUMENT_OR_REPLICATION_ERROR_MODEL",
+      "PAIR_SUPPORT_SENSITIVE_TO_MATCH_TOLERANCE",
+      "IDENTICAL_FEATURE_PROFILES_HAVE_DISCORDANT_STRENGTHS"
+    ],
+    "permitted_use": "report descriptive pair counts, conflicts and sensitivity only",
+    "next_evidence": "domain specialist, matched controlled water intervention, recorded material lots/curing/testing, calibrated replicate variability"
+  },
+  "evidence_boundaries": {
+    "development_only": true,
+    "scored_validation_allowed": false,
+    "independent_holdout_used": false,
+    "physical_validation": false,
+    "causal_identification": false,
+    "physical_mechanism_confirmed": false,
+    "claim_of_superiority": false,
+    "laboratory_recipe_recommended": false,
+    "reserved_seeds_used": false
+  }
+}
