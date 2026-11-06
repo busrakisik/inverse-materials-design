@@ -1,0 +1,75 @@
+{
+  "source_study": "v6 real UCI 165 assumption audit",
+  "evidence_source": "research/uci_concrete_assumptions_v6.json",
+  "decisions": {
+    "descriptive": {
+      "study": "BHS v7 evidence sufficiency and selective-decision contract",
+      "requested_level": "descriptive",
+      "status": "DESCRIPTIVE_REPORT_ONLY",
+      "reason_codes": [
+        "EVIDENCE_REFERENCES_REQUIRE_VERIFICATION"
+      ],
+      "evidence_requested": [],
+      "automatic_laboratory_action_authorized": false,
+      "human_review_required_for_laboratory_action": true,
+      "independent_holdout_used": false,
+      "physical_validation": false,
+      "development_only": true
+    },
+    "observational": {
+      "study": "BHS v7 evidence sufficiency and selective-decision contract",
+      "requested_level": "observational",
+      "status": "REQUEST_ADDITIONAL_EVIDENCE",
+      "reason_codes": [
+        "EVIDENCE_UNAVAILABLE:batch_identity",
+        "EVIDENCE_UNAVAILABLE:curing_conditions",
+        "EVIDENCE_UNAVAILABLE:testing_protocol",
+        "EVIDENCE_UNAVAILABLE:replicate_uncertainty"
+      ],
+      "evidence_requested": [
+        "batch_identity",
+        "curing_conditions",
+        "replicate_uncertainty",
+        "testing_protocol"
+      ],
+      "automatic_laboratory_action_authorized": false,
+      "human_review_required_for_laboratory_action": true,
+      "independent_holdout_used": false,
+      "physical_validation": false,
+      "development_only": true
+    },
+    "laboratory": {
+      "study": "BHS v7 evidence sufficiency and selective-decision contract",
+      "requested_level": "laboratory",
+      "status": "REQUEST_ADDITIONAL_EVIDENCE",
+      "reason_codes": [
+        "EVIDENCE_UNAVAILABLE:batch_identity",
+        "EVIDENCE_UNAVAILABLE:curing_conditions",
+        "EVIDENCE_UNAVAILABLE:testing_protocol",
+        "EVIDENCE_UNAVAILABLE:replicate_uncertainty",
+        "EVIDENCE_UNAVAILABLE:controlled_intervention",
+        "EVIDENCE_UNAVAILABLE:randomization_or_blocking",
+        "EVIDENCE_UNAVAILABLE:instrument_calibration",
+        "EVIDENCE_UNAVAILABLE:independent_performance_evidence",
+        "EVIDENCE_UNAVAILABLE:expert_protocol_approval"
+      ],
+      "evidence_requested": [
+        "batch_identity",
+        "controlled_intervention",
+        "curing_conditions",
+        "expert_protocol_approval",
+        "independent_performance_evidence",
+        "instrument_calibration",
+        "randomization_or_blocking",
+        "replicate_uncertainty",
+        "testing_protocol"
+      ],
+      "automatic_laboratory_action_authorized": false,
+      "human_review_required_for_laboratory_action": true,
+      "independent_holdout_used": false,
+      "physical_validation": false,
+      "development_only": true
+    }
+  },
+  "status_note": "Deterministic evidence triage, not empirical validation of risk, causal findings or improved laboratory outcomes."
+}
