@@ -4,7 +4,7 @@ on:
     branches: [bhs-v7-evidence-contract]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   contract:
     runs-on: ubuntu-latest
@@ -29,6 +29,19 @@ jobs:
           assert all(not x["automatic_laboratory_action_authorized"] for x in d.values())
           print("Decision contracts and no-laboratory-action safeguard verified")
           PY
+      - name: Preserve verified deterministic evidence
+        run: |
+          echo "8cc01440da1b1c3c48e47b47d959773c5b5e56f5548460a7e75ee4fdf50f9b5f  runs/bhs_evidence_sufficiency_v7.json" | sha256sum -c -
+          cp runs/bhs_evidence_sufficiency_v7.json research/bhs_evidence_sufficiency_v7.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/bhs_evidence_sufficiency_v7.json
+          if git diff --cached --quiet; then
+            echo "Deterministic evidence already recorded."
+          else
+            git commit -m "evidence: record v7 development-only evidence triage"
+            git push origin HEAD:bhs-v7-evidence-contract
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: bhs-v7-development-evidence-triage
