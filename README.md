@@ -1,85 +1,58 @@
-<!-- BEGIN OF COMPLETE BHS README — CHECK THIS LINE ON GITHUB -->
 # Bayesian Hypothesis Search (BHS)
-**Hypothesis-centered research prototype for computational materials discovery**
 
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21761835.svg)](https://doi.org/10.5281/zenodo.21761835)
+**An independent research prototype for Bayesian hypothesis evaluation and sequential experiment selection in computational materials research.**
 
-BHS investigates whether explicit scientific hypotheses and sequential Bayesian updates could support more transparent inverse-materials research.
+> **Version context:** The historical August 2026 release is distinct from the later NIST development experiments documented here. Cite a specific Git commit and its associated evidence when discussing the current BHS research.
 
-**Status — `bhs-scientific-audit` branch (31 October 2026):** This is a research prototype, **not a scientifically validated autonomous materials-discovery system**. The current command-line example is an **illustrative Bayesian demonstration**, not a physical experiment.
+BHS investigates how explicit competing model assumptions, evidence updates, uncertainty diagnostics and decision rules can support more transparent and reproducible scientific computation. The repository contains developmental software, synthetic verification tests, retrospective evaluations and provenance records. Software tests do not by themselves establish scientific efficacy.
 
-## Implemented scope
+## Scientific questions
 
-| Module | What it currently does |
+1. **Hypothesis discrimination:** Can competing falsifiable hypotheses be distinguished by selecting informative observations when likelihoods, experimental feasibility and costs are sufficiently specified?
+2. **Property optimization:** Can predictive-model selection or averaging improve sample efficiency against strong Gaussian-process baselines under matched retrospective conditions?
+
+These are distinct tasks. The historical NIST Kerr experiments investigate property optimization; statistical response-model families are **not** established physical mechanisms.
+
+## Research implementation
+
+- Mathematical Bayesian updates on explicitly supplied priors and likelihoods, with input validation and provenance output.
+- Experimental sequential search, decision policies, benchmarks and reliability checks (see the [research branch](https://github.com/busrakisik/inverse-materials-design/tree/bhs-scientific-audit)).
+- Optional CHGNet integration for computational evaluation, not a claimed physical laboratory verification.
+- Source-integrity checks, synthetic unit tests, and real-data retrospective diagnostics.
+
+The current focused demonstration does not perform physical materials discovery, and its 20-system benchmark scaffold is a planned protocol rather than a completed experimental campaign. The historical Zenodo deposit refers to a different earlier software scope; it does not independently authenticate the later BHS experiments.
+
+## NIST development evidence — v1 to v4
+
+The NIST REMI historical Kerr data provide **921 eligible retrospective observations**. The composition-coordinate columns are treated as anonymous because their precise element mapping has not been independently verified. All reported comparisons below are **exploratory development**, not a held-out independent evaluation.
+
+| Study | Verified developmental outcome |
 | --- | --- |
-| `bhs/search/bayesian_engine.py` | Validates and updates supplied hypothesis probabilities; no actual MCTS rollouts or GPU allocation |
-| `bhs/cli.py` | Runs an explicit `--demo` with illustrative likelihoods; saves `NOT_VERIFIED` provenance |
-| `bhs/evidence/likelihoods.py` | Computes an **uncalibrated** periodic-overlap score and transforms a supplied SOAP distance; neither is a calibrated likelihood, and SOAP descriptors are not computed |
-| `bhs/physics/relaxer.py` | Optional CHGNet adapter; reports predicted potential energy in eV/atom **if run**, not formation energy or energy above hull |
-| `bhs/benchmarks/suite_20.py` | Defines a 20-system study protocol with status `NOT_RUN`; **no empirical benchmark results** |
-| `bhs/benchmarks/baselines.py` | Random-selection demonstration; no measured speedups |
-| `bhs/provenance/bundle.py` | Records inputs, history and hashes, without claiming scientific reproducibility |
-| `bhs/reports/generate_artifacts.py` | Exports the unexecuted protocol; performance-table export is disabled |
+| **v1** | Mean normalized final simple regret over three 15-acquisition development campaigns: **GP–EI 0.0250** vs **BHS–BMA–EI 0.1392** (smaller is better). |
+| **v2** | Post-hoc hyperparameter/model ablations showed substantial sensitivity and no independently validated superiority. |
+| **v3** | Across 900 prequential development forecasts, nominal 90% intervals undercovered substantially. On random trajectories: GP **43.3%**, BHS–BMA **28.3%** coverage. |
+| **v4** | 540 miscalibration diagnostics, variance/distance/phase analyses and **36/36** passing software tests. |
 
-The `app.py`, `crystal_gen/`, and `legacy/` components are earlier prototype work and are **outside the focused automated test scope**.
+**Negative result retained:** In the original protocol, BHS did not outperform the GP expected-improvement reference. Calibration failures for both models, more severe for BHS in these diagnostic comparisons, remain unresolved. Post-hoc interval widening is not independent calibration.
 
-## Bayesian formulation
+Primary preserved evidence:
+- [v1 aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_anonymous_offline_pilot_v1.json)
+- [v2 ablation aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_diagnostics_ablation_v2.json)
+- [v3 prediction-adequacy aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_model_adequacy_v3.json)
+- [v4 miscalibration aggregate report](https://github.com/busrakisik/inverse-materials-design/blob/bhs-scientific-audit/research/nist_miscalibration_rootcause_v4.json)
+- [v4 GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42046318788)
 
-For an input prior and supplied likelihoods:
+## Scientific boundaries and next steps
 
-\[
-P(H_i\mid E)=\frac{P(E\mid H_i)P(H_i)}{\sum_j P(E\mid H_j)P(H_j)}.
-\]
+No independent scored validation or physical validation has been performed. The independent evaluation seeds `10000–10099` remain reserved and unused. No verified novel material, true physical mechanism, instrument-calibrated uncertainty, commercial benefit or method superiority is claimed.
 
-The update code is mathematically tested. **That does not establish that its input likelihoods are calibrated physical evidence.** Dependence between evidence sources also remains to be evaluated.
+The next stage targets distinct, permission-cleared external scientific evidence and a predeclared comparison against strong baselines, with appropriate domain-expert review. Planned external studies must not be described as completed.
 
-## Run the illustrative demo
+## Software and citation
 
-```bash
-git clone https://github.com/busrakisik/inverse-materials-design.git
-cd inverse-materials-design
-git checkout bhs-scientific-audit
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install pytest PyYAML pymatgen
-python -m bhs.cli --demo \
-  --config configs/reconstruction_lifepo4.yaml \
-  --out-dir runs/demo_001
-```
+- [Research source and test suites](https://github.com/busrakisik/inverse-materials-design/tree/bhs-scientific-audit)
+- [Historical predecessor software archive, August 2026](https://doi.org/10.5281/zenodo.21761835) — an archived earlier version, **not** a publication or archival snapshot of the NIST v1–v4 results
+- [CITATION.cff](CITATION.cff) · [MIT license](LICENSE)
+- Maintainer: [@busrakisik](https://github.com/busrakisik)
 
-The demo writes `input_config.json`, `execution_history.json` and `provenance_manifest.json`. **No CHGNet calculation, crystal validation, MCTS search, GPU allocation, or material discovery occurs.** The sample YAML's physical constraints and budget are not executed.
-
-## Tests
-
-```bash
-python -m pytest -q \
-  tests/test_reconstruction_run.py \
-  tests/test_ablation_matrix.py \
-  tests/test_benchmarks.py \
-  tests/test_reports.py \
-  tests/test_provenance.py \
-  tests/test_evidence.py \
-  tests/test_physics.py
-```
-
-**83 focused tests passed** on 31 October 2026 ([GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/41194127747)). Evidence tests use real `pymatgen`; physics-adapter tests **mock CHGNet**. Passing tests does **not** demonstrate physical accuracy or experimental search performance.
-
-The top-level `requirements.txt` is not a locked environment and includes platform-dependent legacy packages. The setup above covers only the audited demo and tests.
-
-## Benchmark and research status
-
-The 20 systems are a **planned study**, not experimental outcomes. Obtain a `NOT_RUN` manifest using:
-
-```bash
-python -c "from bhs.benchmarks.suite_20 import AblationBenchmarkSuite; print(AblationBenchmarkSuite.save_protocol_manifest())"
-```
-
-Next steps: calibrate evidence likelihoods; implement and evaluate actual hypothesis selection/MCTS; test real CHGNet predictions against reference data; benchmark against fair baselines with raw run logs, fixed budgets and repeated seeds; pin dependencies and independently reproduce results.
-
-## Citation
-
-**Büşra Kısık**, *Bayesian Hypothesis Search (BHS)*. Archived v1.0.1: [Zenodo 10.5281/zenodo.21761835](https://doi.org/10.5281/zenodo.21761835). See [`CITATION.cff`](CITATION.cff). License: MIT.
-
-The existing Zenodo archive predates these experimental-branch changes; **the audit branch is not automatically included in that archived release**.
-
-<!-- END OF COMPLETE BHS README — CHECK THIS LINE ON GITHUB -->
+Scientific source data retain their original provenance and reuse constraints. Interpret each code path and result according to its recorded evidence level and limitations.
