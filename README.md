@@ -2,7 +2,7 @@
 
 **An independent research prototype for Bayesian hypothesis evaluation and sequential experiment selection in computational materials research.**
 
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21761835.svg)](https://doi.org/10.5281/zenodo.21761835)
+> **Version context:** The historical August 2026 release is distinct from the later NIST development experiments documented here. Cite a specific Git commit and its associated evidence when discussing the current BHS research.
 
 BHS investigates how explicit competing model assumptions, evidence updates, uncertainty diagnostics and decision rules can support more transparent and reproducible scientific computation. The repository contains developmental software, synthetic verification tests, retrospective evaluations and provenance records. Software tests do not by themselves establish scientific efficacy.
 
@@ -20,7 +20,7 @@ These are distinct tasks. The historical NIST Kerr experiments investigate prope
 - Optional CHGNet integration for computational evaluation, not a claimed physical laboratory verification.
 - Source-integrity checks, synthetic unit tests, and real-data retrospective diagnostics.
 
-The current focused demonstration does not perform physical materials discovery, and its 20-system benchmark scaffold is a planned protocol rather than a completed experimental campaign. The initial v1.0.1 Zenodo release predates the later research experiments.
+The current focused demonstration does not perform physical materials discovery, and its 20-system benchmark scaffold is a planned protocol rather than a completed experimental campaign. The historical Zenodo deposit refers to a different earlier software scope; it does not independently authenticate the later BHS experiments.
 
 ## NIST development evidence — v1 to v4
 
@@ -51,7 +51,7 @@ The next stage targets distinct, permission-cleared external scientific evidence
 ## Software and citation
 
 - [Research source and test suites](https://github.com/busrakisik/inverse-materials-design/tree/bhs-scientific-audit)
-- [Initial archived release, v1.0.1](https://doi.org/10.5281/zenodo.21761835) (not a snapshot of the subsequent research branch)
+- [Historical predecessor software archive, August 2026](https://doi.org/10.5281/zenodo.21761835) — an archived earlier version, **not** a publication or archival snapshot of the NIST v1–v4 results
 - [CITATION.cff](CITATION.cff) · [MIT license](LICENSE)
 - Maintainer: [@busrakisik](https://github.com/busrakisik)
 
