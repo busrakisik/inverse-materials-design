@@ -64,6 +64,12 @@ On the existing UCI concrete development record, the system permits only a descr
 
 **Limit:** The 12 software contract tests establish defined behavior, not demonstrated improvement over expert decision rules or independently verified laboratory safety. Prospective validation and an explicit recommendation-coverage versus false-decision-risk comparison remain necessary.
 
+## Independent review integrity checks (v8)
+
+The [v8 integrity preflight](research/BHS_PROVENANCE_INTEGRITY_V8.md) now makes a key scientific limitation testable: a source reference or a self-reported probability is **not** independently verified evidence. For a proposed laboratory review, the software checks explicitly compatible risk units, a documented probability-bound method, a short-lived cryptographically signed review packet, and whether the source metadata or risk values changed after the review. The reviewer trust key must be configured separately by the laboratory; the software cannot validate the underlying measurements or the calibration claim.
+
+[Sixteen adversarial software contracts](tests/test_verified_review_v8.py) passed in [GitHub Actions](https://github.com/busrakisik/inverse-materials-design/actions/runs/42254473861). This is **not** evidence of superior laboratory decisions or real-world safety. The [prospective risk–coverage study design](research/BHS_PROSPECTIVE_DECISION_RELIABILITY_STUDY_DESIGN.md) defines how the practical value would have to be tested against simpler policies with genuinely independent outcomes.
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
