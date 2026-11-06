@@ -235,7 +235,7 @@ def test_real_candidate_is_never_replaced_by_a_default_lifepo4(monkeypatch):
 
 
 def test_autonomous_candidate_generation_is_explicitly_unimplemented():
-    with pytest.raises(NotImplementedError, match="No LLM"):
+    with pytest.raises(NotImplementedError, match="No experimental candidate generator"):
         Orchestrator._generate_initial_candidate("FeO")
 
 

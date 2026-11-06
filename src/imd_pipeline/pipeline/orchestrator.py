@@ -1,7 +1,7 @@
 # BEGIN OF COMPLETE BHS LEGACY ORCHESTRATOR — CHECK THIS LINE ON GITHUB
 """Explicit single-candidate CHGNet orchestration without fabricated discovery.
 
-This compatibility module does NOT implement an LLM candidate generator,
+This compatibility module does not implement an automated candidate generator,
 Bayesian tree search, autonomous refinement, secondary models, DFT, or
 experimental verification. No default LiFePO4 structure, relaxation, formation
 energy, convergence, or stability result is manufactured. An actual pymatgen
@@ -105,9 +105,9 @@ class Orchestrator:
 
     @staticmethod
     def _generate_initial_candidate(formula: str) -> Structure:
-        """Unimplemented candidate generation must never be disguised as LLM."""
+        """Unimplemented candidate generation must not be presented as an executed experiment."""
         raise NotImplementedError(
-            "No LLM or experimental candidate generator is implemented. "
+            "No experimental candidate generator is implemented. "
             "Pass a real pymatgen Structure as initial_structure."
         )
 

@@ -11,7 +11,7 @@ from imd_pipeline.output.structure_analyzer import StructureAnalyzer
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Inverse Materials Design — LLM-Powered Loop")
+    parser = argparse.ArgumentParser(description="Inverse Materials Design — legacy illustrative prototype")
     parser.add_argument("--formula", required=True, help="Hedef kimyasal formül (örn. LiFePO4)")
     parser.add_argument("--max-retries", type=int, default=5)
     parser.add_argument("--output-dir", type=Path, default=Path("data/outputs"))
