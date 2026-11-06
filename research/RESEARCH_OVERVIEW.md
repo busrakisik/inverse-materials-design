@@ -25,6 +25,12 @@ Seek separately sourced, legally usable data and domain-reviewed physical hypoth
 
 The initial [Zenodo software release](https://doi.org/10.5281/zenodo.21761835) predates the research branch. Preserved experimental reports and source citations should be considered in their original evidence scope.
 
+## Evidence sufficiency under scientifically necessary assumptions — v6
+
+In the UCI 28-day concrete data, BHS evaluated whether the measurement records could justify an actual recommendation about water-to-binder ratio. Tight matching produced just **one** disjoint observational pair (±5 kg/m³ among six other ingredients), versus **11** at ±15 and **52** at ±30 kg/m³; increasing tolerance weakens comparability. Identical recorded mixture inputs had discordant strength outcomes (maximum within-group span 12.61 MPa), and key material-lot/curing/test metadata were unavailable.
+
+The explicit decision was to **abstain from a causal or laboratory recommendation**, not to claim that the usual strength–water/binder direction was validated. [Assumption protocol](CONCRETE_ASSUMPTION_AUDIT_V6.md) · [Real-data development report](CONCRETE_ASSUMPTION_AUDIT_V6_RESULT.md) · [Source/tests](../scripts/uci_concrete_assumptions_v6.py).
+
 ## External real-data development, 6 November 2026
 
 A new exploratory 28-day UCI concrete data experiment used 416 unique feature profiles from a published source (Yeh, DOI 10.24432/C5PK67; CC BY 4.0). Three paired development seeds and fixed 10-step acquisition budgets yielded mean normalized final simple regret of 0.242408 (random), 0.095889 (GP–EI), and 0.097209 (kernel portfolio EI). The portfolio did **not** outperform GP–EI. See [full exploratory evidence and limitations](UCI_CONCRETE_V5_FIRST_REAL_DEVELOPMENT_RESULT.md) and [aggregate reviewed JSON](uci_concrete_development_v5.json).

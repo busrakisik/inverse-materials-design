@@ -48,6 +48,14 @@ A separate [UCI concrete 28-day retrospective development study](research/UCI_CO
 
 In the exploratory comparison, **fixed GP–EI (0.095889) slightly outperformed the kernel portfolio (0.097209)** on mean normalized final regret; random selection was 0.242408 (lower is better). The statistical model portfolio is not a physical hypothesis-discrimination result. Three development seeds do not justify superiority or generalization claims; independent holdout and physical validation remain **not performed**.
 
+## Assumption audit and justified abstention (v6 — 6 November 2026)
+
+The next study asks a laboratory-relevant question rather than adding model variants: **what would need to be true before a water-to-binder recommendation for 28-day concrete strength is scientifically justified?**
+
+In the [first UCI real-measurement assumption audit](research/CONCRETE_ASSUMPTION_AUDIT_V6_RESULT.md), 416 distinct 28-day mixture profiles yielded **1**, **11** and **52** disjoint observational comparisons under ±5, ±15 and ±30 kg/m³ matching tolerances. Five identical-input repeat groups were found; the largest within-group strength difference was **12.61 MPa**. Differences in actual curing, material lots, instrument uncertainty and specimen/testing conditions are not controlled by the public table.
+
+The preregistered rule therefore returned **ABSTAIN FROM PHYSICAL OR LABORATORY RECOMMENDATION**, with specific auditable reasons. Observational direction agreement is not a causal proof. Source checks, label-blind comparisons and failure behavior are tested in the [v6 code](scripts/uci_concrete_assumptions_v6.py) and [GitHub Actions run](https://github.com/busrakisik/inverse-materials-design/actions/runs/42229114121).
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.

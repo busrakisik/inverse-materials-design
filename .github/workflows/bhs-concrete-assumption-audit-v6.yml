@@ -10,7 +10,7 @@ on:
       - ".github/workflows/bhs-concrete-assumption-audit-v6.yml"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   verify-assumptions:
     runs-on: ubuntu-latest
@@ -57,6 +57,16 @@ jobs:
           assert x["evidence_boundaries"]["development_only"] is True
           print("Verified scientific abstention, traceable reasons and source contract.")
           PY
+      - name: Preserve the exact validated aggregate in the research tree
+        if: github.ref == 'refs/heads/bhs-v6-assumption-audit'
+        run: |
+          echo "3a5486a1b081ec863c9224cbc730509def27b68bb03e9c5b0a2bb3f149f7ecc5  runs/uci_concrete_assumptions_v6.json" | sha256sum -c -
+          cp runs/uci_concrete_assumptions_v6.json research/uci_concrete_assumptions_v6.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/uci_concrete_assumptions_v6.json
+          git commit -m "evidence: archive reproducible real-data v6 assumption audit"
+          git push origin HEAD:bhs-v6-assumption-audit
       - name: Upload aggregate-only scientific evidence
         uses: actions/upload-artifact@v4
         with:
