@@ -1,0 +1,36 @@
+name: BHS Evidence Contract v7
+on:
+  push:
+    branches: [bhs-v7-evidence-contract]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run contract tests
+        run: python -m unittest discover -s tests -p 'test_evidence_contract_v7.py' -v
+      - name: Review previous development evidence
+        run: python -m bhs.decisions.evidence_contract_v7 --v6-json research/uci_concrete_assumptions_v6.json --out runs/bhs_evidence_sufficiency_v7.json
+      - name: Verify refusal and information-request behavior
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open("runs/bhs_evidence_sufficiency_v7.json"))
+          d=r["decisions"]
+          assert d["descriptive"]["status"]=="DESCRIPTIVE_REPORT_ONLY"
+          assert d["observational"]["status"]=="REQUEST_ADDITIONAL_EVIDENCE"
+          assert d["laboratory"]["status"]=="REQUEST_ADDITIONAL_EVIDENCE"
+          assert all(not x["automatic_laboratory_action_authorized"] for x in d.values())
+          print("Decision contracts and no-laboratory-action safeguard verified")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v7-development-evidence-triage
+          path: runs/bhs_evidence_sufficiency_v7.json
+          retention-days: 21
