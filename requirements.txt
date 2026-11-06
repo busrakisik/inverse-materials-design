@@ -1,19 +1,11 @@
-
-# BHS research prototype — development dependencies
-# This list is not a locked, fully tested reproducible environment.
-# Optional CHGNet relaxation needs an additional compatible installation.
-# Some legacy LLM packages (especially bitsandbytes) have platform-specific requirements.
-
-# Existing legacy model / UI dependencies
-bitsandbytes>=0.46.1
-transformers
-accelerate
-streamlit
-py3Dmol
-pymatgen
-torch
-
-# Explicit dependencies used by the codebase
-PyYAML
-plotly
+# BHS development dependencies (not a fully reproducible lockfile)
+# Experiment workflows pin numerical dependencies separately.
 numpy
+scipy
+scikit-learn
+PyYAML
+pymatgen
+streamlit
+plotly
+py3Dmol
+torch

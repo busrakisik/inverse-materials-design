@@ -17,7 +17,7 @@ Primary supporting publications:
 - Wang et al. (2022), NIST active learning study: https://www.nist.gov/publications/benchmarking-active-learning-strategies-materials-optimization-and-discovery
 - MADE, ICML 2026: https://proceedings.mlr.press/v306/malik26a.html
 - MADE code/license: https://github.com/diffractivelabs/MADE
-- Matbench scope: https://docs.materialsproject.org/services/ml-and-ai-applications/matbench
+- Matbench scope: https://github.com/materialsproject/matbench
 - Materials Project terms signpost: https://registry.opendata.aws/materials-project/
 
 ## Scientific compatibility decision

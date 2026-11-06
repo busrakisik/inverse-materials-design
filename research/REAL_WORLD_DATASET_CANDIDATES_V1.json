@@ -35,7 +35,7 @@
     {
       "id": "matbench",
       "name": "Matbench property-prediction benchmarks",
-      "url": "https://docs.materialsproject.org/services/ml-and-ai-applications/matbench",
+      "url": "https://github.com/materialsproject/matbench",
       "kind": "property_prediction_datasets",
       "intended_role": "property_prediction_reference_only",
       "support": "Mixture of experimental and computational data; standard predictive tasks, not necessarily sequential hypothesis identification",
