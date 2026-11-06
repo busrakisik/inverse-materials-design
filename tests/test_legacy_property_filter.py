@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY PROPERTY FILTER SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Safety checks for legacy material-property reporting, NOT property prediction.
 
 These tests use real pymatgen structures in GitHub Actions. No electronic-
@@ -235,4 +234,3 @@ def test_invalid_structure_is_rejected_by_synthesis_and_gap_methods(invalid_stru
     with pytest.raises(ValueError, match="Structure"):
         PropertyFilter.classify_band_gap(invalid_structure)
 
-# END OF COMPLETE BHS LEGACY PROPERTY FILTER SAFETY TESTS — CHECK THIS LINE ON GITHUB

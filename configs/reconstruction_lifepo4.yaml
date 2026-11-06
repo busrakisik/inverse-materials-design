@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS ILLUSTRATIVE CONFIG — CHECK THIS LINE ON GITHUB
 # Example inputs ONLY for `python -m bhs.cli --demo`.
 # No crystal reconstruction, physical validation, CHGNet run, MCTS rollout,
 # scientific likelihood calibration, or GPU-time allocation occurs.
@@ -27,5 +26,4 @@ budget:
   max_mcts_steps: 5
   base_gpu_hours: 4.0
 
-# END OF COMPLETE BHS ILLUSTRATIVE CONFIG — CHECK THIS LINE ON GITHUB
 

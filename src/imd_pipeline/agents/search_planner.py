@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS LEGACY SEARCH PLANNER — CHECK THIS LINE ON GITHUB
 """Fail-closed legacy compute-budget interface for the BHS research prototype.
 
 NO GPU allocation, MLFF/DFT inference, resource booking, calibrated
@@ -58,5 +57,4 @@ class AdaptiveBudgetPlanner:
             ),
         }
 
-# END OF COMPLETE BHS LEGACY SEARCH PLANNER — CHECK THIS LINE ON GITHUB
 

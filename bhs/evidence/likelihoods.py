@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS EVIDENCE LIKELIHOODS — CHECK THIS LINE ON GITHUB
 """Explicitly heuristic structural evidence scores for the BHS prototype.
 
 These functions DO NOT estimate calibrated probabilities P(E | H), validate
@@ -119,4 +118,3 @@ class LikelihoodEngine:
             uncertainty=None,
         )
 
-# END OF COMPLETE BHS EVIDENCE LIKELIHOODS — CHECK THIS LINE ON GITHUB

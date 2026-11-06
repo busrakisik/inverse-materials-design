@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS STREAMLIT APP SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Scoped BHS app software/provenance tests; NOT scientific materials validation.
 
 The real mathematical Bayesian updater and real pymatgen CIF parser are used
@@ -645,4 +644,3 @@ def test_main_never_shows_bandgap_or_formation_energy_metric(ui_app):
     assert ui.calls("download_button")
 
 
-# END OF COMPLETE BHS STREAMLIT APP SAFETY TESTS — CHECK THIS LINE ON GITHUB

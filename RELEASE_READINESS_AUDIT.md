@@ -1,5 +1,4 @@
 
-<!-- BEGIN OF COMPLETE BHS RELEASE READINESS AUDIT -->
 BHS — Release Readiness and Scientific Audit Notes
 
 Audit date: 2026-10-31
@@ -85,4 +84,3 @@ Non-claim: The 83 passing tests are engineering evidence for the tested
 behaviors, not proof of improved materials discovery, scientific
 breakthroughs, reduced GPU hours, or benchmark superiority.
 
-<!-- END OF COMPLETE BHS RELEASE READINESS AUDIT -->

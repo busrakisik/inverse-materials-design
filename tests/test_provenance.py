@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS BAYESIAN PROVENANCE TESTS — CHECK THIS LINE ON GITHUB
 
 """Mathematical and provenance tests for the BHS Bayesian *prototype*.
 
@@ -142,4 +141,3 @@ def test_puct_is_not_claimed_without_evaluated_rollouts():
     with pytest.raises(KeyError, match="Unknown hypothesis"):
         engine.compute_uct("unknown")
         
-# END OF COMPLETE BHS BAYESIAN PROVENANCE TESTS — CHECK THIS LINE ON GITHUB

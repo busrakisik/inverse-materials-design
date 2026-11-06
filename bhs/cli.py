@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS CLI FILE — CHECK THIS LINE ON GITHUB
 """BHS command-line entry point for a transparent Bayesian-update demonstration.
 
 This CLI deliberately performs NO crystal-structure validation, CHGNet
@@ -139,4 +138,3 @@ def main(argv=None):
 if __name__ == "__main__":
     main()
 
-# END OF COMPLETE BHS CLI FILE — CHECK THIS LINE ON GITHUB

@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY PROPERTY FILTER — CHECK THIS LINE ON GITHUB
 """Safe property-assessment interface for the BHS research prototype.
 
 No electronic-structure calculation, experimentally supported band-gap
@@ -90,4 +89,3 @@ class PropertyFilter:
             ),
         }
 
-# END OF COMPLETE BHS LEGACY PROPERTY FILTER — CHECK THIS LINE ON GITHUB

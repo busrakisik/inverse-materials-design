@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY ENSEMBLE VALIDATOR — CHECK THIS LINE ON GITHUB
 """Fail-closed compatibility wrapper for the old 'ensemble' MLFF interface.
 
 Only one CHGNet validator is invoked. No MACE, M3GNet, DFT, or independent
@@ -96,4 +95,3 @@ class MultiMLFFEnsembleValidator:
         })
         return result
 
-# END OF COMPLETE BHS LEGACY ENSEMBLE VALIDATOR — CHECK THIS LINE ON GITHUB

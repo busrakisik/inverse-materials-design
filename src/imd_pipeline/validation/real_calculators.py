@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS LEGACY PHYSICS SAFETY SHIM — CHECK THIS LINE ON GITHUB
 """Fail-closed guard for an unaudited legacy Streamlit physics interface.
 
 The previous implementation manufactured 32 optimization steps, energies,
@@ -53,5 +52,4 @@ class RealPhysicsEngine:
             "The old Streamlit app needs a separate safe-UI update."
         )
 
-# END OF COMPLETE BHS LEGACY PHYSICS SAFETY SHIM — CHECK THIS LINE ON GITHUB
 

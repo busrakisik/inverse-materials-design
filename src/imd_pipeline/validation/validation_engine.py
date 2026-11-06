@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS LEGACY VALIDATION ENGINE — CHECK THIS LINE ON GITHUB
 """Safe legacy validation interface; no synthetic relaxation or formation energy.
 
 Geometric pair distances use pymatgen and may flag sites for inspection, but
@@ -201,7 +200,6 @@ class ValidationEngine:
             "Use run_all for explicit status and optional CHGNet potential energy."
         )
 
-# END OF COMPLETE BHS LEGACY VALIDATION ENGINE — CHECK THIS LINE ON GITHUB
 
 
 

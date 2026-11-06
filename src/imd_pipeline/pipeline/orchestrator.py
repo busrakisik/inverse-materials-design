@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY ORCHESTRATOR — CHECK THIS LINE ON GITHUB
 """Explicit single-candidate CHGNet orchestration without fabricated discovery.
 
 This compatibility module does not implement an automated candidate generator,
@@ -313,4 +312,3 @@ class Orchestrator:
             ),
         )
 
-# END OF COMPLETE BHS LEGACY ORCHESTRATOR — CHECK THIS LINE ON GITHUB

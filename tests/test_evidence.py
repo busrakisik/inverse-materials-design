@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS EVIDENCE TESTS
 """Check structural scoring with pymatgen; NOT scientific calibration."""
 
 import math
@@ -84,4 +83,3 @@ def test_invalid_soap_scale_rejected(bad):
     with pytest.raises(ValueError, match="delta"):
         LikelihoodEngine.calculate_soap_novelty_likelihood(0.2, delta=bad)
 
-# END OF COMPLETE BHS EVIDENCE TESTS

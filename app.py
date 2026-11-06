@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS SCIENTIFICALLY HONEST STREAMLIT APP — CHECK THIS LINE ON GITHUB
 """BHS research prototype UI: a labelled Bayesian demo and optional CHGNet.
 
 Nothing executes a physics model on page load. Illustrative likelihoods are
@@ -256,4 +255,3 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-# END OF COMPLETE BHS SCIENTIFICALLY HONEST STREAMLIT APP — CHECK THIS LINE ON GITHUB

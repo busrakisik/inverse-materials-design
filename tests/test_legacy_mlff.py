@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY MLFF VALIDATOR SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Software correctness at a mocked CHGNet boundary, never a physical study.
 
 CI uses real pymatgen objects but deliberately substitutes a fake CHGNet API.
@@ -297,4 +296,3 @@ def test_energy_was_not_assigned_a_fake_model_version(monkeypatch):
     assert "model_version" not in result
     assert "calibrated_uncertainty" not in result
 
-# END OF COMPLETE BHS LEGACY MLFF VALIDATOR SAFETY TESTS — CHECK THIS LINE ON GITHUB

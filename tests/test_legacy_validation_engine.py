@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY VALIDATION ENGINE SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Geometry screening and optional-CHGNet software safety, not materials research.
 
 The CI suite uses real pymatgen objects and a mocked primary MLFF adapter.
@@ -429,4 +428,3 @@ def test_metadata_is_json_serializable_without_nan_when_mlff_disabled():
     ))[1]["details"]["potential_energy_ev_per_atom"] is None
 
 
-# END OF COMPLETE BHS LEGACY VALIDATION ENGINE SAFETY TESTS — CHECK THIS LINE ON GITHUB

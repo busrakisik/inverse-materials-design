@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY MLFF VALIDATOR — CHECK THIS LINE ON GITHUB
 """Explicit CHGNet MLFF adapter, with no synthetic fallback predictions.
 
 A real CHGNet optimizer call may return a predicted potential energy and
@@ -172,4 +171,3 @@ class MLFFValidator:
                 "material property is established by this result."
             ),
         }
-# END OF COMPLETE BHS LEGACY MLFF VALIDATOR — CHECK THIS LINE ON GITHUB

@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS BAYESIAN ENGINE — CHECK THIS LINE ON GITHUB
 """Validated Bayesian belief updates for the BHS research prototype.
 
 Inputs are user-supplied probabilities, NOT calibrated physical evidence.
@@ -143,4 +142,3 @@ class BayesianHypothesisSearchEngine:
         self.history.append(record)
         return record
 
-# END OF COMPLETE BHS BAYESIAN ENGINE — CHECK THIS LINE ON GITHUB

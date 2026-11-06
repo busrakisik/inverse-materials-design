@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY ENSEMBLE SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Prevent fictional cross-model validation in the legacy ensemble wrapper.
 
 These tests use a real pymatgen Structure in GitHub CI, but a fake primary
@@ -316,4 +315,3 @@ def test_primary_fake_scientific_claim_is_rejected(monkeypatch, field):
     with pytest.raises(RuntimeError, match="unsupported scientific or ensemble"):
         _evaluate(monkeypatch, primary=_primary_result(**{field: 0.75}))
 
-# END OF COMPLETE BHS LEGACY ENSEMBLE SAFETY TESTS — CHECK THIS LINE ON GITHUB

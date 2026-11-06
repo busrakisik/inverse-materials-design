@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY HYPOTHESIS SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Tests of non-fabrication and input validation; NOT material science benchmarks."""
 
 import copy
@@ -186,4 +185,3 @@ def test_invalid_explanation_inputs_rejected(bad_candidate_data):
     with pytest.raises(ValueError):
         HypothesisAndExplainabilityEngine.explain_why_selected(bad_candidate_data)
 
-# END OF COMPLETE BHS LEGACY HYPOTHESIS SAFETY TESTS — CHECK THIS LINE ON GITHUB

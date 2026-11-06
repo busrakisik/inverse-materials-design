@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY LITERATURE SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Software-safety tests; no database/patent search or novelty calculation.
 
 These tests verify explicit NOT_RUN/NOT_CHECKED metadata and fail-closed
@@ -158,4 +157,3 @@ def test_invalid_structure_fingerprint_fails_without_inventing_results(bad_finge
     with pytest.raises(ValueError, match="structure_fingerprint"):
         _assess(fingerprint=bad_fingerprint)
 
-# END OF COMPLETE BHS LEGACY LITERATURE SAFETY TESTS — CHECK THIS LINE ON GITHUB

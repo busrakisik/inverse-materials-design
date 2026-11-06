@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY ORCHESTRATOR SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Legacy orchestration software and provenance tests, NOT materials validation.
 
 The workflow uses real pymatgen Structure and Composition objects, while
@@ -511,4 +510,3 @@ def test_no_network_calls_when_primary_is_fake(monkeypatch):
     r, _ = _run(monkeypatch)
     assert r.execution_status == "CHGNET_OPTIMIZER_RETURNED_OUTPUT"
 
-# END OF COMPLETE BHS LEGACY ORCHESTRATOR SAFETY TESTS — CHECK THIS LINE ON GITHUB

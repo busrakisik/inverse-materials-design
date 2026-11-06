@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY LITERATURE AGENT — CHECK THIS LINE ON GITHUB
 """Safe legacy compatibility interface for literature and patent assessment.
 
 IMPORTANT: This module DOES NOT access Materials Project, OQMD, Crossref,
@@ -66,4 +65,3 @@ class RealLiteraturePatentAgent:
             ),
         }
 
-# END OF COMPLETE BHS LEGACY LITERATURE AGENT — CHECK THIS LINE ON GITHUB

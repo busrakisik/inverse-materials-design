@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY HYPOTHESIS ENGINE — CHECK THIS LINE ON GITHUB
 """Safe illustrative hypothesis registry: NO physical ranking or selection.
 
 No formation energies, hull positions, MLFF comparisons, patent results,
@@ -85,4 +84,3 @@ class HypothesisAndExplainabilityEngine:
             "NOT_CHECKED: no patent prior-art or scientific novelty search performed.",
         ]
 
-# END OF COMPLETE BHS LEGACY HYPOTHESIS ENGINE — CHECK THIS LINE ON GITHUB

@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY SEARCH PLANNER SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Software-safety tests: no actual GPU reservation, MLFF, or DFT calculations."""
 
 import json
@@ -183,4 +182,3 @@ def test_invalid_uncertainty_is_rejected(invalid):
     with pytest.raises(ValueError):
         _plan(invalid)
 
-# END OF COMPLETE BHS LEGACY SEARCH PLANNER SAFETY TESTS — CHECK THIS LINE ON GITHUB

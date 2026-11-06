@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS CONSENSUS SAFETY TESTS — CHECK THIS LINE ON GITHUB
 """Safety and arithmetic tests; no real MLFF/DFT inference is performed."""
 
 import copy
@@ -169,4 +168,3 @@ def test_one_model_would_not_count_as_cross_model_consensus():
             {"model_predictions": {"A": _record(-5.0)}}
         )
 
-# END OF COMPLETE BHS CONSENSUS SAFETY TESTS — CHECK THIS LINE ON GITHUB

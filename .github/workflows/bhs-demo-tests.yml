@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS 852-TEST WORKFLOW — CHECK THIS LINE ON GITHUB
 # BHS software and scientific-claim safety tests only; no empirical materials validation.
 # Real pymatgen structures are tested; CHGNet/MLFF calculations are mocked or NOT_RUN.
 name: BHS demo and provenance checks
@@ -125,4 +124,3 @@ jobs:
             tests/test_legacy_orchestrator.py \
             tests/test_legacy_app.py
 
-# END OF COMPLETE BHS 852-TEST WORKFLOW — CHECK THIS LINE ON GITHUB

@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY BAYESIAN TESTS — CHECK THIS LINE ON GITHUB
 """Legacy Bayesian compatibility tests against the audited BHS engine.
 
 No scientific likelihood calibration, MCTS/PUCT rollout, GPU allocation,
@@ -173,4 +172,3 @@ def test_history_snapshot_not_overwritten_by_later_updates():
     assert engine.history[0]["budget_status"] == "NOT_ALLOCATED"
     assert engine.history[0]["mcts_status"] == "NOT_RUN"
 
-# END OF COMPLETE BHS LEGACY BAYESIAN TESTS — CHECK THIS LINE ON GITHUB

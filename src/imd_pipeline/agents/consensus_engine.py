@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS LEGACY CONSENSUS ENGINE — CHECK THIS LINE ON GITHUB
 """Descriptive statistics on explicitly supplied model outputs only.
 
 No CHGNet, MACE, M3GNet or DFT calculations are executed here. Input records
@@ -102,4 +101,3 @@ class MultiModelConsensusEngine:
             ),
         }
 
-# END OF COMPLETE BHS LEGACY CONSENSUS ENGINE — CHECK THIS LINE ON GITHUB

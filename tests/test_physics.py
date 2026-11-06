@@ -1,4 +1,3 @@
-# BEGIN OF COMPLETE BHS PHYSICS ADAPTER TESTS
 """Test CHGNet adapter behavior using a mocked optimizer, not a physics run.
 
 Real pymatgen Structure objects are used in CI. No CHGNet model, GPU,
@@ -109,4 +108,3 @@ def test_incomplete_chgnet_result_rejected(monkeypatch, bad_result):
     with pytest.raises(RuntimeError, match="invalid outputs"):
         PhysicsRelaxationEngine.run_chgnet_relaxation(_example_structure(1))
 
-# END OF COMPLETE BHS PHYSICS ADAPTER TESTS

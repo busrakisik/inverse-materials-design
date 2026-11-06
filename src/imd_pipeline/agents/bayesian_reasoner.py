@@ -1,5 +1,4 @@
 
-# BEGIN OF COMPLETE BHS LEGACY BAYESIAN REASONER — CHECK THIS LINE ON GITHUB
 """Compatibility adapter for the audited BHS Bayesian probability engine.
 
 This module performs *only* mathematical Bayesian updates. It does not run
@@ -100,4 +99,3 @@ class BayesianHypothesisSearchEngine:
             ),
         }
 
-# END OF COMPLETE BHS LEGACY BAYESIAN REASONER — CHECK THIS LINE ON GITHUB
