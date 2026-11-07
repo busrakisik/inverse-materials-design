@@ -91,11 +91,17 @@ def _observed_summary(observed):
                  if len(values) == REPEATS]
     if len(completed) < INITIAL_GEOMETRIES:
         raise MeasurementContractError("NO_COMPLETED_DESIGN_FOR_DECISION")
+    if any(not np.isfinite(v).all() or not np.isfinite(v.mean())
+           for _, v in completed):
+        raise MeasurementContractError("NONFINITE_COMPLETED_RESPONSE")
     ranked = sorted(completed, key=lambda v: (-float(v[1].mean()), v[0]))
     pooled_sse = sum(float(np.sum((v - v.mean())**2)) for _, v in completed)
     dof = len(completed)*(REPEATS - 1)
     if dof <= 0:
         raise MeasurementContractError("INSUFFICIENT_NOISE_DEGREES")
+    # Reject nonfinite spread before clipping: Python max(0, NaN) may return 0.
+    if not np.isfinite(pooled_sse):
+        raise MeasurementContractError("NONFINITE_POOLED_RESPONSE_VARIANCE")
     pooled = max(0.0, pooled_sse/dof)
     stderr = float(np.sqrt(2*pooled/REPEATS))
     margin = float(ranked[0][1].mean() - ranked[1][1].mean())
