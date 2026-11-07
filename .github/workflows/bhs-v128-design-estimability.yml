@@ -1,0 +1,81 @@
+name: BHS v12.8 Experimental Design Estimability Contracts
+
+on:
+  push:
+    branches: [bhs-v128-design-estimability-contracts]
+    paths:
+      - 'scripts/bhs_v128_design_estimability.py'
+      - 'tests/test_bhs_v128_design_estimability.py'
+      - 'research/BHS_V128_DESIGN_ESTIMABILITY_PROTOCOL.md'
+      - 'research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json'
+      - '.github/workflows/bhs-v128-design-estimability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  design-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Confirm immutable earlier source and pilot records
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_v127_hypothesis_readiness.py)" = '9902f5fe18b5e34afa061c90c856ae954bee87ec'
+          test "$(git rev-parse HEAD:research/BHS_V127_FECONI_PILOT_PASSPORT.json)" = 'd3fb4c46092ac8e51959d8cecbf0d2a365dec663'
+          test "$(git rev-parse HEAD:research/BHS_V127_FIRST_PILOT_READINESS.json)" = 'd4d912fc99890e72ed5a98eaf8992a5e46361c52'
+          test "$(git rev-parse HEAD:scripts/bhs_v126_group_risk_intake_contracts.py)" = '19b2aa364a4677a20f20e69d30666ff0bf9a29f6'
+          test "$(git rev-parse HEAD:research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json)" = '3cde6a6ad809effdf21fcdd50ab737c8cfaf07e8'
+      - name: Install pinned dependencies for previous contracts
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify prior research tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+      - name: Verify new estimability, confounding and false-independence controls
+        run: python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+      - name: Check mathematical estimability versus physical no-go
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v128_design_estimability --plan research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json --out runs/bhs_v128_design_estimation_report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v128_design_estimation_report.json').read_text())
+          assert r['specimen_rows']==8 and r['synthesis_batch_count']==4
+          assert r['planned_technical_traces']==24
+          assert r['linear_contrast_estimable_under_declared_nuisance'] is True
+          assert r['residual_degrees_of_freedom']==0
+          assert 'NO_RESIDUAL_DEGREES_OF_FREEDOM' in r['blocking_conditions']
+          assert r['physical_recommendation_allowed'] is False
+          assert r['independent_physical_validation_established'] is False
+          assert r['status']=='NO_GO_PHYSICAL_DESIGN_NOT_EXTERNALLY_VALIDATED'
+          print('Mathematical contrast present; real physical suitability not established.')
+          PY
+          sha256sum runs/bhs_v128_design_estimation_report.json
+      - name: Preserve original unapproved-design diagnostic
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v128-planned-design-estimability
+          path: runs/bhs_v128_design_estimation_report.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
