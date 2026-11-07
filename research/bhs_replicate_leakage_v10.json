@@ -1,0 +1,247 @@
+{
+  "study": "BHS v10 replicate-aware mechanical measurements evaluation audit",
+  "source": {
+    "repository": "PV-Lab/Benchmarking",
+    "publication_doi": "10.1038/s41524-021-00656-9",
+    "original_experiment_doi": "10.1126/sciadv.aaz1708",
+    "source_commit": "7585c517ad88e676c42c6bf24a8ad278e01ddb21",
+    "original_csv_git_blob_sha1": "b007fe5d8762233bbd23c8cf83858b169f05492a",
+    "downloaded_raw_csv_sha256": "2c01f875f3c210e986ca6142bf20f417884c2ad7d6f008c2fc574b44a3d5f606",
+    "public_repository_license": "MIT",
+    "raw_data_redistributed": false
+  },
+  "data_contract": {
+    "measurements": 1800,
+    "distinct_geometry_profiles": 600,
+    "replicates_per_profile": 3,
+    "predictors": [
+      "n",
+      "theta",
+      "r",
+      "t"
+    ],
+    "target": "toughness",
+    "target_unit": "joule",
+    "geometry_feature_grouping": "exact_numeric_vector",
+    "all_data_are_original_historical_measurements": true,
+    "bhs_performed_new_physical_experiments": false
+  },
+  "repeatability": {
+    "profile_count": 600,
+    "measurements_per_profile": 3,
+    "fraction_profiles_nonzero_span": 1.0,
+    "sample_sd_joule_median": 1.6604923589185425,
+    "sample_sd_joule_p90": 8.790587585973013,
+    "sample_sd_joule_max": 19.877988091439782,
+    "replicate_range_joule_median": 3.0401467799999997,
+    "replicate_range_joule_p90": 16.194012822500003,
+    "replicate_range_joule_max": 37.2980473,
+    "within_profile_rms_deviation_joule": 4.329591856111585,
+    "measurement_noise_is_calibrated": false,
+    "batch_variance_is_identified": false
+  },
+  "protocol": {
+    "reference_model": "fixed_random_forest",
+    "parameters": {
+      "n_estimators": 120,
+      "min_samples_leaf": 2,
+      "max_features": 1.0,
+      "n_jobs": 1
+    },
+    "development_seeds": [
+      7,
+      13,
+      23,
+      31,
+      43
+    ],
+    "reserved_independent_seeds_used": false,
+    "test_fraction": 0.25,
+    "metrics": [
+      "mae_joule",
+      "rmse_joule",
+      "seen_geometry_fraction"
+    ],
+    "evaluation_scope": "retrospective development split methodology audit"
+  },
+  "results_by_seed": [
+    {
+      "seed": 7,
+      "protocol": "measurement_row_random",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 592,
+      "test_unique_geometries": 346,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.9466666666666667,
+      "random_forest_mae_joule": 3.9330720641890196,
+      "random_forest_rmse_joule": 6.175434459737261,
+      "geometry_lookup_test_coverage": 0.9466666666666667,
+      "geometry_lookup_mae_joule_when_supported": 4.159659049278169,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 7,
+      "protocol": "geometry_grouped",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 450,
+      "test_unique_geometries": 150,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.0,
+      "random_forest_mae_joule": 4.290285159360898,
+      "random_forest_rmse_joule": 6.332301488683589,
+      "geometry_lookup_test_coverage": 0.0,
+      "geometry_lookup_mae_joule_when_supported": null,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 13,
+      "protocol": "measurement_row_random",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 587,
+      "test_unique_geometries": 344,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.9133333333333333,
+      "random_forest_mae_joule": 3.860831553780719,
+      "random_forest_rmse_joule": 6.2084626752833545,
+      "geometry_lookup_test_coverage": 0.9133333333333333,
+      "geometry_lookup_mae_joule_when_supported": 4.2270451439659364,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 13,
+      "protocol": "geometry_grouped",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 450,
+      "test_unique_geometries": 150,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.0,
+      "random_forest_mae_joule": 4.623762126898946,
+      "random_forest_rmse_joule": 7.500100296087775,
+      "geometry_lookup_test_coverage": 0.0,
+      "geometry_lookup_mae_joule_when_supported": null,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 23,
+      "protocol": "measurement_row_random",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 590,
+      "test_unique_geometries": 347,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.9333333333333333,
+      "random_forest_mae_joule": 3.815861917713075,
+      "random_forest_rmse_joule": 6.0131154600545225,
+      "geometry_lookup_test_coverage": 0.9333333333333333,
+      "geometry_lookup_mae_joule_when_supported": 3.865059682589286,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 23,
+      "protocol": "geometry_grouped",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 450,
+      "test_unique_geometries": 150,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.0,
+      "random_forest_mae_joule": 5.057434394525387,
+      "random_forest_rmse_joule": 7.8331799406528475,
+      "geometry_lookup_test_coverage": 0.0,
+      "geometry_lookup_mae_joule_when_supported": null,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 31,
+      "protocol": "measurement_row_random",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 585,
+      "test_unique_geometries": 352,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.9,
+      "random_forest_mae_joule": 3.72673068208768,
+      "random_forest_rmse_joule": 6.031516300547147,
+      "geometry_lookup_test_coverage": 0.9,
+      "geometry_lookup_mae_joule_when_supported": 3.8377084413148146,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 31,
+      "protocol": "geometry_grouped",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 450,
+      "test_unique_geometries": 150,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.0,
+      "random_forest_mae_joule": 5.158170820404582,
+      "random_forest_rmse_joule": 7.540206078251263,
+      "geometry_lookup_test_coverage": 0.0,
+      "geometry_lookup_mae_joule_when_supported": null,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 43,
+      "protocol": "measurement_row_random",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 589,
+      "test_unique_geometries": 349,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.9266666666666666,
+      "random_forest_mae_joule": 3.7281086644326065,
+      "random_forest_rmse_joule": 5.844486047978322,
+      "geometry_lookup_test_coverage": 0.9266666666666666,
+      "geometry_lookup_mae_joule_when_supported": 3.8950289908753004,
+      "model_is_predeclared_baseline_not_bhs": true
+    },
+    {
+      "seed": 43,
+      "protocol": "geometry_grouped",
+      "train_measurements": 1350,
+      "test_measurements": 450,
+      "train_unique_geometries": 450,
+      "test_unique_geometries": 150,
+      "test_measurement_fraction_with_geometry_seen_in_training": 0.0,
+      "random_forest_mae_joule": 4.8301737707573675,
+      "random_forest_rmse_joule": 7.302293329745659,
+      "geometry_lookup_test_coverage": 0.0,
+      "geometry_lookup_mae_joule_when_supported": null,
+      "model_is_predeclared_baseline_not_bhs": true
+    }
+  ],
+  "aggregate_by_protocol": {
+    "measurement_row_random": {
+      "development_partitions": 5,
+      "mae_joule_mean": 3.81292097644062,
+      "mae_joule_median": 3.815861917713075,
+      "mae_joule_min": 3.72673068208768,
+      "mae_joule_max": 3.9330720641890196,
+      "mean_test_fraction_seen_geometry": 0.9239999999999998
+    },
+    "geometry_grouped": {
+      "development_partitions": 5,
+      "mae_joule_mean": 4.791965254389436,
+      "mae_joule_median": 4.8301737707573675,
+      "mae_joule_min": 4.290285159360898,
+      "mae_joule_max": 5.158170820404582,
+      "mean_test_fraction_seen_geometry": 0.0
+    }
+  },
+  "decision": {
+    "status": "REQUIRE_GEOMETRY_GROUPED_EVALUATION_FOR_NEW_GEOMETRY_CLAIMS",
+    "reason_codes": [
+      "REPEATED_MEASUREMENTS_ARE_NOT_DISTINCT_GEOMETRIES",
+      "ROW_RANDOM_SPLIT_MAY_INCLUDE_SAME_GEOMETRY_IN_TRAIN_AND_TEST",
+      "UNVERIFIED_BATCH_PROCESS_AND_PRINTER_INDEPENDENCE",
+      "NO_UNTOUCHED_PROSPECTIVE_LABORATORY_EVALUATION"
+    ],
+    "laboratory_action_authorized": false
+  },
+  "hard_gates": {
+    "development_only": true,
+    "scored_validation_allowed": false,
+    "independent_holdout_used": false,
+    "physical_validation_by_bhs": false,
+    "calibrated_uncertainty_proven": false,
+    "causal_identification": false,
+    "method_superiority_claimed": false,
+    "measured_cost_savings": false
+  }
+}
