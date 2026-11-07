@@ -1,0 +1,45 @@
+name: BHS v12.2 Adaptive GP Response-Budget Contracts
+
+on:
+  push:
+    branches: [bhs-v122-adaptive-gp-contracts]
+    paths:
+      - "scripts/bhs_v122_adaptive_gp_reference.py"
+      - "tests/test_bhs_v122_adaptive_gp_reference.py"
+      - "research/BHS_V122_ADAPTIVE_GP_REFERENCE_PROTOCOL.md"
+      - ".github/workflows/bhs-v122-adaptive-gp-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check earlier source and protocol boundaries
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_measurement_allocation_v12.py)" = '25ad70029af5d3b9f67cff5b00749e7c2e1f2690'
+          test "$(git rev-parse HEAD:scripts/bhs_v121_order_contracts.py)" = '863bf931844c4b6d44382f9bc55e6998de8ddd69'
+      - name: Pin numerical dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify V12 acquired-response contracts
+        run: python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+      - name: Verify V12.1 representation contracts
+        run: python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+      - name: Verify V12.2 adaptive GP measurement contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m scripts.bhs_v122_adaptive_gp_reference
