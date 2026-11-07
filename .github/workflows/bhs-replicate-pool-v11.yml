@@ -103,9 +103,10 @@ jobs:
           page=Path('README.md').read_text(encoding='utf-8').lower()
           study=Path('research/BHS_REPLICATE_POOL_V11_RESULTS.md').read_text(encoding='utf-8').lower()
           assert 'did not outperform gp' in page
-          assert 'did not outperform' in study
+          plain_study=study.replace('*','').replace('–','-')
+          assert 'did not outperform' in plain_study
           assert 'not independent validation' in page
-          assert 'not an independent' in study or 'not independent' in study
+          assert 'independent_holdout_used=false' in study
           print('Negative result, real-data limits and source documents match CI measurements.')
           PY
       - name: Preserve source-locked exact verified aggregate in research branch
