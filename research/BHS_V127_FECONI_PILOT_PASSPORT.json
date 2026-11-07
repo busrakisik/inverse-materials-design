@@ -1,0 +1,80 @@
+{
+  "schema_version": "BHS-V12.7",
+  "study_id": "FeCoNi-thin-film-proposed-pilot",
+  "status": "candidate_unapproved",
+  "material_system": "Fe-Co-Ni magnetic thin films",
+  "hypotheses": [
+    {
+      "id": "H0",
+      "primary_observable": "coercive_field",
+      "unit": "A/m",
+      "prediction": "Under matched composition, thickness, substrate and measurement conditions, no processing-associated coercive-field contrast exceeds the externally fixed minimum meaningful effect.",
+      "falsifier": "A reproducible across-batch coercive-field contrast exceeds the predeclared minimum and passes instrument and confound checks."
+    },
+    {
+      "id": "H1",
+      "primary_observable": "coercive_field",
+      "unit": "A/m",
+      "prediction": "Under matched conditions, the approved processing contrast is accompanied by both a diffraction-observed structural contrast and a reproducible coercive-field contrast exceeding the fixed minimum meaningful effect.",
+      "falsifier": "With adequate verified measurement precision and processing contrast, independent batches do not show both required structural and magnetic contrasts."
+    }
+  ],
+  "readout": {
+    "primary_observable": "coercive_field",
+    "primary_unit": "A/m",
+    "method": "MOKE hysteresis",
+    "structural_method": "X-ray diffraction",
+    "raw_trace_retention": true,
+    "instrument_field_calibration_verified": false,
+    "structural_instrument_calibration_verified": false
+  },
+  "design": {
+    "independence_unit": "synthesis_batch",
+    "calibration_group_ids": [],
+    "evaluation_group_ids": [],
+    "randomization_plan": null,
+    "processing_conditions": null,
+    "composition_verified": false,
+    "substrate_control": null,
+    "thickness_control": null,
+    "structural_contrast_definition": null,
+    "minimum_meaningful_effect_A_per_m": null,
+    "measurement_uncertainty_A_per_m": null,
+    "sample_size_and_precision_plan": null,
+    "measurement_chronology_plan": null,
+    "missing_data_plan": null
+  },
+  "resources": {
+    "response_budget": null,
+    "per_measurement_cost": null,
+    "cost_unit": null,
+    "abstention_cost": null,
+    "measurement_seconds": null
+  },
+  "governance": {
+    "lab_partner_confirmed": false,
+    "responsible_investigator_review_verified": false,
+    "material_and_instrument_safety_verified": false,
+    "source_rights_verified": false,
+    "protocol_externally_registered": false
+  },
+  "evidence": {
+    "new_prospective_measurements_available": false,
+    "independent_validation_available": false,
+    "authentic_measurement_log_verified": false,
+    "source_sha256": null,
+    "source_license": null,
+    "historical_nist_used_as_holdout": false
+  },
+  "release": {
+    "requested": false,
+    "physical_action_allowed": false,
+    "generalization_claim_allowed": false
+  },
+  "references": [
+    "https://pages.nist.gov/remi/data/",
+    "https://doi.org/10.1088/0022-3727/33/12/304",
+    "https://doi.org/10.3379/jmsjmag.15.S1_113",
+    "https://doi.org/10.1080/14686996.2017.1287520"
+  ]
+}
