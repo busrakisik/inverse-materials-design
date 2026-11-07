@@ -1,0 +1,40 @@
+name: BHS v12.1 Revealed-Response Order Contracts
+
+on:
+  push:
+    branches: [bhs-v121-observation-order-contracts]
+    paths:
+      - "scripts/bhs_v121_order_contracts.py"
+      - "tests/test_bhs_v121_order_contracts.py"
+      - "research/BHS_V121_ORDER_REPRESENTATION_PROTOCOL.md"
+      - ".github/workflows/bhs-v121-order-representation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  order-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin numeric libraries
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify existing v12 policies and budgets
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+      - name: Verify canonical observed-value interface without historical data
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m scripts.bhs_v121_order_contracts
