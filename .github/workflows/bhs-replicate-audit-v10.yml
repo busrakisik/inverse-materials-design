@@ -1,0 +1,83 @@
+name: BHS Real Materials Replicate Audit v10
+
+on:
+  push:
+    branches: [bhs-v10-replicate-leakage-audit]
+    paths:
+      - "scripts/bhs_replicate_leakage_v10.py"
+      - "tests/test_bhs_replicate_leakage_v10.py"
+      - "research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_PROTOCOL.md"
+      - ".github/workflows/bhs-replicate-audit-v10.yml"
+      - "README.md"
+      - "research/RESEARCH_OVERVIEW.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measured-replicates-development:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install fixed development dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify source contracts and geometry leakage counterexamples
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_replicate_leakage_v10.py' -v
+          python -m scripts.bhs_replicate_leakage_v10
+      - name: Download immutable experimental source and run frozen development
+        run: |
+          python -m scripts.bhs_replicate_leakage_v10 --execute --out runs/bhs_replicate_leakage_v10.json
+      - name: Verify provenance, triplicates, separation and scientific restrictions
+        run: |
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          report=json.loads(Path("runs/bhs_replicate_leakage_v10.json").read_text())
+          assert report["source"]["source_commit"]=="7585c517ad88e676c42c6bf24a8ad278e01ddb21"
+          assert report["source"]["original_csv_git_blob_sha1"]=="b007fe5d8762233bbd23c8cf83858b169f05492a"
+          assert len(report["source"]["downloaded_raw_csv_sha256"])==64
+          assert report["data_contract"]["measurements"]==1800
+          assert report["data_contract"]["distinct_geometry_profiles"]==600
+          assert report["repeatability"]["profile_count"]==600
+          assert report["repeatability"]["measurements_per_profile"]==3
+          assert len(report["results_by_seed"])==10
+          assert report["protocol"]["development_seeds"]==[7,13,23,31,43]
+          for row in report["results_by_seed"]:
+              assert row["test_measurements"]==450
+              assert math.isfinite(row["random_forest_mae_joule"])
+              assert row["random_forest_mae_joule"]>=0
+              if row["protocol"]=="geometry_grouped":
+                  assert row["test_unique_geometries"]==150
+                  assert row["test_measurement_fraction_with_geometry_seen_in_training"]==0
+              else:
+                  assert row["test_measurement_fraction_with_geometry_seen_in_training"]>0
+          assert report["decision"]["laboratory_action_authorized"] is False
+          assert all(report["hard_gates"][k] is False for k in (
+              "scored_validation_allowed","independent_holdout_used",
+              "physical_validation_by_bhs","calibrated_uncertainty_proven",
+              "causal_identification","method_superiority_claimed",
+              "measured_cost_savings"
+          ))
+          print("Verified source integrity, authentic triplicates, group separation and no new physical claims.")
+          PY
+      - name: Archive only aggregate development evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v10-authentic-measurement-leakage-audit-development
+          path: runs/bhs_replicate_leakage_v10.json
+          if-no-files-found: error
+          retention-days: 21
