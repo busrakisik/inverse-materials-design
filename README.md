@@ -80,6 +80,14 @@ This is a reproducible illustration of **established causal-identification theor
 
 For research groups interested in evaluating this question, the [external laboratory evidence intake protocol](research/BHS_EXTERNAL_LAB_EVIDENCE_INTAKE_V1.md) states the minimum source, batch, instrument, intervention, uncertainty and independent-validation records a scientifically credible pilot would require. It is a **proposed collaboration specification**; no laboratory partner or prospective result is claimed.
 
+## Real materials replication and evaluation validity (v10 — November 2026)
+
+A [source-locked experimental replicate audit](research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_RESULTS.md) used authentic 3D-printed mechanical toughness measurements from a published materials study (Liang et al., 2021; Gongora et al., 2020). Its 1,800 rows represent **600 unique geometries tested three times each**, not 1,800 independent designs.
+
+A fixed reference predictor had mean development MAE **3.81 J** with random measurement-row splits but **4.79 J** when entire geometries were withheld. In the row-level test, **92.4%** of measurement rows had an identical geometry already in training; geometry-held-out tests had **0%** overlap. The largest observed range among three tests of one geometry was **37.30 J**. These splits answer different generalization questions, so the error difference is **not** proof that leakage alone caused a specific reduction, nor does it demonstrate BHS superiority.
+
+The methodology now requires **replicate-aware, geometry-grouped evaluation** for claims about new physical designs. The data were collected by the original experimental group; BHS ran no new physical tests, independent holdout or laboratory intervention. [Protocol](research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_PROTOCOL.md) · [source and tests](scripts/bhs_replicate_leakage_v10.py) · [verified aggregate result](research/bhs_replicate_leakage_v10.json).
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
