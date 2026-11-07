@@ -78,6 +78,8 @@ The [exact, synthetic result](research/bhs_v9_exact_counterexample.json) and [16
 
 This is a reproducible illustration of **established causal-identification theory**, not a newly discovered theorem, real materials measurement or demonstrated benefit in a laboratory. The next empirical milestone remains expert-reviewed controlled interventions and independently measured selective risk at matched decision coverage.
 
+For research groups interested in evaluating this question, the [external laboratory evidence intake protocol](research/BHS_EXTERNAL_LAB_EVIDENCE_INTAKE_V1.md) states the minimum source, batch, instrument, intervention, uncertainty and independent-validation records a scientifically credible pilot would require. It is a **proposed collaboration specification**; no laboratory partner or prospective result is claimed.
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
