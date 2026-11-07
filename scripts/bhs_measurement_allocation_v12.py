@@ -194,13 +194,39 @@ class HistoricalMeasurementOracle:
             np.random.default_rng(np.random.SeedSequence([seed, i])).permutation(REPEATS)
             for i in range(len(hidden))
         ]
+        # Only the evaluator owns the use-once measurement ledger. Re-requests
+        # and skipped ordinals fail rather than revealing another source value.
+        self.__revealed_counts = np.zeros(len(hidden), dtype=np.int8)
 
     def reveal_one(self, idx: int, ordinal: int) -> float:
-        if type(idx) is not int or not (0 <= idx < len(self.__hidden)) or not (1 <= ordinal <= REPEATS):
+        if (type(idx) is not int or type(ordinal) is not int or
+                not (0 <= idx < len(self.__hidden)) or not (1 <= ordinal <= REPEATS)):
             raise MeasurementContractError("INVALID_ONE_MEASUREMENT_REQUEST")
-        return float(self.__hidden[idx, self.__permutation[idx][ordinal - 1]])
+        expected = int(self.__revealed_counts[idx]) + 1
+        if ordinal != expected:
+            raise MeasurementContractError("MEASUREMENT_ALREADY_REVEALED_OR_OUT_OF_ORDER")
+        response = float(self.__hidden[idx, self.__permutation[idx][ordinal - 1]])
+        self.__revealed_counts[idx] += 1
+        return response
 
     def evaluate_complete_only(self, observed: Mapping[int, tuple[float, ...]]):
+        # Verify the public acquisition transcript against the private ledger
+        # before computing any retrospective statistic. Evaluator-only check;
+        # the acquisition policy never receives the source array or ledger.
+        if not isinstance(observed, Mapping):
+            raise MeasurementContractError("INVALID_EVALUATION_TRANSCRIPT")
+        actual_ids = {i for i in range(len(self.__hidden)) if self.__revealed_counts[i]}
+        if (set(observed) != actual_ids or
+                any(type(i) is not int for i in observed)):
+            raise MeasurementContractError("EVALUATION_TRANSCRIPT_IDS_MISMATCH")
+        for idx, values in observed.items():
+            count = int(self.__revealed_counts[idx])
+            if not isinstance(values, (tuple, list)) or len(values) != count:
+                raise MeasurementContractError("EVALUATION_TRANSCRIPT_COUNT_MISMATCH")
+            recorded = np.asarray(values, dtype=float)
+            expected = self.__hidden[idx, self.__permutation[idx][:count]]
+            if recorded.shape != expected.shape or not np.array_equal(recorded, expected):
+                raise MeasurementContractError("EVALUATION_TRANSCRIPT_VALUES_MISMATCH")
         completed = [idx for idx, values in observed.items() if len(values) == REPEATS]
         if not completed:
             return {"abstained_no_complete_design": True, "regret_j": None}

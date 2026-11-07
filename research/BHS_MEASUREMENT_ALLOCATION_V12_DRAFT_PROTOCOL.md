@@ -56,3 +56,9 @@ Features and GP/RF hyperparameters follow the cited v11 baseline where compatibl
 `claim_of_superiority=false`  
 `real_savings_measured=false`  
 `reserved_nist_seeds_used=false`
+
+## Pre-replay contract hardening (7 November 2026)
+
+An additional source-independent check closes an evaluator replay loophole: a previously revealed measurement cannot be requested again, ordinals cannot be skipped, and the retrospective evaluator rejects forged or incomplete acquisition transcripts. This does **not** alter the four policy functions, frozen actions, selection thresholds, initial seeds, candidate descriptors, measurement counts, objectives or evaluation convention. The checks were added before the first outcome-scored v12 historical replay. The protected development-only and independent-evidence restrictions remain unchanged.
+
+A synthetic two-seed baseline comparison checks that the three bundled policies reproduce the v11 selection-regret convention without touching any historical responses. Exact historical baseline parity remains a mandatory gate in the separately authorized historical replay.

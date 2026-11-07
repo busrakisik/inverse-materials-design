@@ -49,6 +49,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
         run: |
           python -m scripts.bhs_measurement_allocation_v12 --execute --out runs/bhs_measurement_allocation_v12.json
+          sha256sum runs/bhs_measurement_allocation_v12.json
       - name: Confirm historical report contains no outcome rows or inflated claims
         if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
         run: |
@@ -83,11 +84,11 @@ jobs:
           print('All bundled baseline campaigns agree with preserved v11 results.')
           print('Development evidence boundary verified; no source measurements in aggregate output.')
           PY
-      - name: Archive aggregate-only development results
-        if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
+      - name: Archive aggregate-only development results even if parity verification fails
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_development == true }}
         uses: actions/upload-artifact@v4
         with:
           name: bhs-v12-historical-measurement-development-only
           path: runs/bhs_measurement_allocation_v12.json
-          if-no-files-found: error
-          retention-days: 14
+          if-no-files-found: warn
+          retention-days: 90

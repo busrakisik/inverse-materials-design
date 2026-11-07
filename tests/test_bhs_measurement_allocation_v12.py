@@ -117,6 +117,77 @@ class MeasurementLevelContracts(unittest.TestCase):
             self.assertEqual(observations_a, observations_b)
             self.assertAlmostEqual(sum(observations_a), float(np.sum(triples[idx])))
 
+    def test_oracle_does_not_repeat_or_skip_an_unseen_response(self):
+        _, triples = synthetic_pool()
+        oracle = HistoricalMeasurementOracle(triples, 7)
+        with self.assertRaisesRegex(MeasurementContractError, 'OUT_OF_ORDER'):
+            oracle.reveal_one(0, 2)
+        first = oracle.reveal_one(0, 1)
+        self.assertTrue(np.isfinite(first))
+        with self.assertRaisesRegex(MeasurementContractError, 'ALREADY_REVEALED'):
+            oracle.reveal_one(0, 1)
+        with self.assertRaisesRegex(MeasurementContractError, 'OUT_OF_ORDER'):
+            oracle.reveal_one(0, 3)
+        oracle.reveal_one(0, 2)
+        oracle.reveal_one(0, 3)
+        with self.assertRaisesRegex(MeasurementContractError, 'ALREADY_REVEALED'):
+            oracle.reveal_one(0, 3)
+        with self.assertRaisesRegex(MeasurementContractError, 'INVALID_ONE_MEASUREMENT'):
+            oracle.reveal_one(0, True)
+
+    def test_oracle_evaluator_refuses_unearned_or_forged_transcripts(self):
+        _, triples = synthetic_pool()
+        oracle = HistoricalMeasurementOracle(triples, 7)
+        v1 = oracle.reveal_one(0, 1)
+        v2 = oracle.reveal_one(0, 2)
+        with self.assertRaisesRegex(MeasurementContractError, 'IDS_MISMATCH'):
+            oracle.evaluate_complete_only({})
+        with self.assertRaisesRegex(MeasurementContractError, 'IDS_MISMATCH'):
+            oracle.evaluate_complete_only({0: (v1, v2), 1: (100.0,)})
+        with self.assertRaisesRegex(MeasurementContractError, 'COUNT_MISMATCH'):
+            oracle.evaluate_complete_only({0: (v1,)})
+        with self.assertRaisesRegex(MeasurementContractError, 'VALUES_MISMATCH'):
+            oracle.evaluate_complete_only({0: (v1, v2 + 10.0)})
+        result = oracle.evaluate_complete_only({0: (v1, v2)})
+        self.assertTrue(result['abstained_no_complete_design'])
+        v3 = oracle.reveal_one(0, 3)
+        completed = oracle.evaluate_complete_only({0: (v1, v2, v3)})
+        self.assertFalse(completed['abstained_no_complete_design'])
+        self.assertTrue(completed['recommended_uses_all_three_observations'])
+
+    def test_oracle_copies_private_measurements_at_initialization(self):
+        _, triples = synthetic_pool()
+        oracle = HistoricalMeasurementOracle(triples, 7)
+        original = np.sort(triples[0].copy())
+        triples[0] = -1e9
+        self.assertTrue(np.array_equal(
+            np.sort([oracle.reveal_one(0, j) for j in range(1, 4)]), original
+        ))
+
+    def test_bundled_synthetic_baseline_parity_with_v11(self):
+        # No historical source loaded. This confirms the unchanged V11
+        # baseline geometry choices and empirical simple-regret accounting.
+        from scripts.bhs_replicate_pool_v11 import run_campaign as v11_run
+        X, triples = synthetic_pool()
+        policies = {
+            'random_bundled': 'random',
+            'gp_ard_bundled': 'gp_ard_ei',
+            'rf_ucb_bundled': 'rf_ucb',
+        }
+        for seed in (7, 13):
+            for new_policy, prior_policy in policies.items():
+                with self.subTest(seed=seed, policy=new_policy):
+                    earlier = v11_run(X, triples, prior_policy, seed)
+                    now = run_campaign(X, triples, new_policy, seed)
+                    self.assertEqual(now['historical_measurements_revealed'], 48)
+                    self.assertEqual(now['completely_measured_geometries'], 16)
+                    self.assertEqual(now['partially_measured_geometries'], 0)
+                    self.assertAlmostEqual(
+                        now['regret_j'],
+                        earlier['final_simple_regret_against_noisy_pool_best_j'],
+                        places=8,
+                    )
+
     def test_hard_seed_prohibition(self):
         for seed in (-1, 10000, 10099, True, 3.0):
             with self.assertRaises(MeasurementContractError):
