@@ -1,0 +1,59 @@
+name: BHS v12.3 Controlled Synthetic Decision Contracts
+
+on:
+  push:
+    branches: [bhs-v123-synthetic-decision-audit]
+    paths:
+      - "scripts/bhs_v123_synthetic_decision_audit.py"
+      - "tests/test_bhs_v123_synthetic_decision_audit.py"
+      - "research/BHS_V123_CONTROLLED_SYNTHETIC_PROTOCOL.md"
+      - ".github/workflows/bhs-v123-controlled-synthetic-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen parent implementations and preregistered protocol
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_measurement_allocation_v12.py)" = '25ad70029af5d3b9f67cff5b00749e7c2e1f2690'
+          test "$(git rev-parse HEAD:scripts/bhs_v121_order_contracts.py)" = '863bf931844c4b6d44382f9bc55e6998de8ddd69'
+          test "$(git rev-parse HEAD:scripts/bhs_v122_adaptive_gp_reference.py)" = 'b80b23e80ee0cd99503c85fbef59cb15c5cf6039'
+          test "$(git rev-parse HEAD:research/BHS_V123_CONTROLLED_SYNTHETIC_PROTOCOL.md)" = '2ee655408f392d51179280432f4ba1ef4489fc07'
+      - name: Install fixed numerical libraries
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify V12 measurement contracts
+        run: python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+      - name: Verify V12.1 representation contracts
+        run: python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+      - name: Verify V12.2 adaptive references
+        run: python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+      - name: Verify V12.3 controlled evaluator
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m scripts.bhs_v123_synthetic_decision_audit
+      - name: Verify source-independent study restrictions
+        run: |
+          python - <<'PY'
+          from scripts.bhs_v123_synthetic_decision_audit import HARD_GATES
+          assert HARD_GATES['development_only'] is True
+          for name, value in HARD_GATES.items():
+              if name != 'development_only':
+                  assert value is False, name
+          print('No outcome-scored comparison performed by push verification.')
+          PY
