@@ -7,6 +7,7 @@ on:
       - "scripts/bhs_replicate_leakage_v10.py"
       - "tests/test_bhs_replicate_leakage_v10.py"
       - "research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_PROTOCOL.md"
+      - "research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_RESULTS.md"
       - ".github/workflows/bhs-replicate-audit-v10.yml"
       - "README.md"
       - "research/RESEARCH_OVERVIEW.md"
@@ -98,6 +99,29 @@ jobs:
             git commit -m 'evidence: preserve source-locked experimental replicate leakage development'
             git push origin HEAD:bhs-v10-replicate-leakage-audit
           fi
+      - name: Verify professor-facing conclusions and study source references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          required=[
+            "README.md",
+            "research/RESEARCH_OVERVIEW.md",
+            "research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_PROTOCOL.md",
+            "research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_RESULTS.md",
+            "research/bhs_replicate_leakage_v10.json",
+            "scripts/bhs_replicate_leakage_v10.py",
+            "tests/test_bhs_replicate_leakage_v10.py",
+          ]
+          for name in required:
+              assert Path(name).is_file(), "Missing research source: " + name
+          readme=Path("README.md").read_text(encoding="utf-8")
+          report=Path("research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_RESULTS.md").read_text(encoding="utf-8")
+          assert "92.4%" in readme and "4.79 J" in readme
+          assert "not" in report.lower()
+          assert "independent_holdout_used=false" in report
+          assert "NOT" in readme or "not" in readme
+          print("Verified research landing page and retrospective scientific boundaries.")
+          PY
       - name: Archive only aggregate development evidence
         uses: actions/upload-artifact@v4
         with:
