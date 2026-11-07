@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   measured-replicates-development:
@@ -74,6 +74,30 @@ jobs:
           ))
           print("Verified source integrity, authentic triplicates, group separation and no new physical claims.")
           PY
+      - name: Preserve verified aggregate-only scientific record in research tree
+        if: github.ref == 'refs/heads/bhs-v10-replicate-leakage-audit'
+        run: |
+          cp runs/bhs_replicate_leakage_v10.json research/bhs_replicate_leakage_v10.json
+          sha256sum research/bhs_replicate_leakage_v10.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path("research/bhs_replicate_leakage_v10.json").read_text())
+          assert o["source"]["raw_data_redistributed"] is False
+          assert len(o["results_by_seed"])==10
+          assert o["hard_gates"]["independent_holdout_used"] is False
+          assert o["hard_gates"]["physical_validation_by_bhs"] is False
+          print("Provenance and scientific restrictions checked before preserving output.")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/bhs_replicate_leakage_v10.json
+          if git diff --cached --quiet; then
+            echo 'Identical source-locked aggregate already preserved.'
+          else
+            git commit -m 'evidence: preserve source-locked experimental replicate leakage development'
+            git push origin HEAD:bhs-v10-replicate-leakage-audit
+          fi
       - name: Archive only aggregate development evidence
         uses: actions/upload-artifact@v4
         with:
