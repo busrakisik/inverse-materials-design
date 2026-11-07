@@ -6,6 +6,7 @@ on:
       - "bhs/decisions/causal_nonidentifiability_v9.py"
       - "tests/test_causal_nonidentifiability_v9.py"
       - "research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md"
+      - "research/BHS_EXTERNAL_LAB_EVIDENCE_INTAKE_V1.md"
       - "research/bhs_v9_exact_counterexample.json"
       - "research/RESEARCH_OVERVIEW.md"
       - "README.md"
@@ -49,6 +50,7 @@ jobs:
               "bhs/decisions/causal_nonidentifiability_v9.py",
               "tests/test_causal_nonidentifiability_v9.py",
               "research/BHS_PROSPECTIVE_DECISION_RELIABILITY_STUDY_DESIGN.md",
+              "research/BHS_EXTERNAL_LAB_EVIDENCE_INTAKE_V1.md",
           ]
           for path in expected:
               assert Path(path).is_file(), "Missing documented source: "+path
