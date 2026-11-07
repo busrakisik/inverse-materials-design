@@ -1,0 +1,62 @@
+name: BHS Causal Nonidentifiability v9
+on:
+  push:
+    branches: [bhs-v9-identifiability-counterexample]
+    paths:
+      - "bhs/decisions/causal_nonidentifiability_v9.py"
+      - "tests/test_causal_nonidentifiability_v9.py"
+      - "research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md"
+      - ".github/workflows/bhs-causal-identifiability-v9.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exact-causal-counterexample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install reviewed v8 cryptographic dependency
+        run: |
+          python -m pip install cryptography==46.0.4
+          python -m pip check
+      - name: Preserve v7 evidence-contract regressions
+        run: python -m unittest discover -s tests -p 'test_evidence_contract_v7.py' -v
+      - name: Preserve v8 reviewer-integrity regressions
+        run: python -m unittest discover -s tests -p 'test_verified_review_v8.py' -v
+      - name: Test exact v9 counterexamples, minimax regret, and conservative review
+        run: python -m unittest discover -s tests -p 'test_causal_nonidentifiability_v9.py' -v
+      - name: Generate exact synthetic proof independently of any UCI source
+        run: python -m bhs.decisions.causal_nonidentifiability_v9 --out runs/bhs_v9_nonidentifiability.json
+      - name: Verify mathematical counterexample and evidence boundaries
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof=json.loads(Path("runs/bhs_v9_nonidentifiability.json").read_text())
+          assert proof["type"]=="EXACT_SYNTHETIC_STRUCTURAL_COUNTEREXAMPLE"
+          assert proof["observational_law_identical"] is True
+          assert proof["causal_effect_range_within_declared_world_set"]==[-5.0,5.0]
+          assert proof["status"]=="ABSTAIN_CAUSAL_EFFECT_NOT_IDENTIFIED"
+          assert proof["conditional_illustrative_regret"]["minimax_randomized_action_worst"]==2.5
+          assert proof["conditional_illustrative_regret"]["abstention_minimax_preferred_for_this_world_set"] is True
+          assert proof["identification_proven_from_observations"] is False
+          assert proof["world_set_completeness_established"] is False
+          assert proof["new_empirical_data_used"] is False
+          assert proof["independent_holdout_used"] is False
+          assert proof["physical_validation"] is False
+          assert proof["automatic_laboratory_action_authorized"] is False
+          print("Exact opposing causal effects with identical observations; no empirical claims.")
+          PY
+      - name: Archive deterministic synthetic counterexample
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v9-exact-causal-nonidentifiability-only
+          path: runs/bhs_v9_nonidentifiability.json
+          if-no-files-found: error
+          retention-days: 21
