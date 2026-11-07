@@ -1,0 +1,98 @@
+{
+  "schema_version": "BHS-V12.8",
+  "status": "manufactured_design_fixture_only",
+  "material_system": "Fe-Co-Ni magnetic thin films",
+  "response_name": "coercive_field",
+  "response_unit": "A/m",
+  "independent_unit": "planned_coupon",
+  "intended_primary_contrast": "modified_minus_reference",
+  "processing_conditions_physically_approved": false,
+  "measurement_calibration_independently_verified": false,
+  "randomization_independently_verified": false,
+  "external_investigator_approval_verified": false,
+  "reviewed_minimum_effect_A_per_m": null,
+  "raw_outcomes_present": false,
+  "physical_action_allowed": false,
+  "specimens": [
+    {
+      "coupon_id": "B01-R",
+      "synthesis_batch_id": "B01",
+      "processing_arm": "reference",
+      "moke_session_id": "S1",
+      "planned_position": 1,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B01-M",
+      "synthesis_batch_id": "B01",
+      "processing_arm": "modified",
+      "moke_session_id": "S2",
+      "planned_position": 2,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B02-R",
+      "synthesis_batch_id": "B02",
+      "processing_arm": "reference",
+      "moke_session_id": "S2",
+      "planned_position": 1,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B02-M",
+      "synthesis_batch_id": "B02",
+      "processing_arm": "modified",
+      "moke_session_id": "S1",
+      "planned_position": 2,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B03-R",
+      "synthesis_batch_id": "B03",
+      "processing_arm": "reference",
+      "moke_session_id": "S2",
+      "planned_position": 4,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B03-M",
+      "synthesis_batch_id": "B03",
+      "processing_arm": "modified",
+      "moke_session_id": "S1",
+      "planned_position": 3,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B04-R",
+      "synthesis_batch_id": "B04",
+      "processing_arm": "reference",
+      "moke_session_id": "S1",
+      "planned_position": 4,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    },
+    {
+      "coupon_id": "B04-M",
+      "synthesis_batch_id": "B04",
+      "processing_arm": "modified",
+      "moke_session_id": "S2",
+      "planned_position": 3,
+      "planned_moke_traces": 3,
+      "xrd_planned": true,
+      "moke_raw_trace_retention": true
+    }
+  ]
+}
