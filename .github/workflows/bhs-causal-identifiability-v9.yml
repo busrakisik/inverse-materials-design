@@ -6,6 +6,9 @@ on:
       - "bhs/decisions/causal_nonidentifiability_v9.py"
       - "tests/test_causal_nonidentifiability_v9.py"
       - "research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md"
+      - "research/bhs_v9_exact_counterexample.json"
+      - "research/RESEARCH_OVERVIEW.md"
+      - "README.md"
       - "README.md"
       - "research/RESEARCH_OVERVIEW.md"
       - ".github/workflows/bhs-causal-identifiability-v9.yml"
@@ -35,6 +38,25 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_causal_nonidentifiability_v9.py' -v
       - name: Generate exact synthetic proof independently of any UCI source
         run: python -m bhs.decisions.causal_nonidentifiability_v9 --out runs/bhs_v9_nonidentifiability.json
+      - name: Verify source syntax and professor-facing research references
+        run: |
+          python -m compileall -q bhs/decisions tests/test_causal_nonidentifiability_v9.py
+          python - <<'PY'
+          from pathlib import Path
+          expected=[
+              "research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md",
+              "research/bhs_v9_exact_counterexample.json",
+              "bhs/decisions/causal_nonidentifiability_v9.py",
+              "tests/test_causal_nonidentifiability_v9.py",
+              "research/BHS_PROSPECTIVE_DECISION_RELIABILITY_STUDY_DESIGN.md",
+          ]
+          for path in expected:
+              assert Path(path).is_file(), "Missing documented source: "+path
+          readme=Path("README.md").read_text()
+          assert "exactly the same observational distribution" in readme
+          assert "not universally optimal" in readme
+          print("Verified documented science and source layout.")
+          PY
       - name: Verify mathematical counterexample and evidence boundaries
         run: |
           python - <<'PY'
