@@ -70,6 +70,14 @@ The [v8 integrity preflight](research/BHS_PROVENANCE_INTEGRITY_V8.md) now makes 
 
 [Sixteen adversarial software contracts](tests/test_verified_review_v8.py) passed in [GitHub Actions](https://github.com/busrakisik/inverse-materials-design/actions/runs/42254473861). This is **not** evidence of superior laboratory decisions or real-world safety. The [prospective risk–coverage study design](research/BHS_PROSPECTIVE_DECISION_RELIABILITY_STUDY_DESIGN.md) defines how the practical value would have to be tested against simpler policies with genuinely independent outcomes.
 
+## Causal identifiability stress test (v9 — 7 November 2026)
+
+The [v9 constructive counterexample](research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md) tests an important scientific boundary: two explicitly specified causal worlds produce **exactly the same observational distribution**, yet an intervention has opposite mean effects (**+5** and **−5**, *invented response units*). A cryptographic review signature and a statistically convincing observational fit cannot resolve that ambiguity.
+
+The [exact, synthetic result](research/bhs_v9_exact_counterexample.json) and [16 v9 regression tests](tests/test_causal_nonidentifiability_v9.py) show the decision guard refusing to promote observational agreement into an actionable causal recommendation. In a strictly hypothetical two-world regret comparison, abstention is preferable only for a specified low abstention cost; it is **not universally optimal**.
+
+This is a reproducible illustration of **established causal-identification theory**, not a newly discovered theorem, real materials measurement or demonstrated benefit in a laboratory. The next empirical milestone remains expert-reviewed controlled interventions and independently measured selective risk at matched decision coverage.
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
