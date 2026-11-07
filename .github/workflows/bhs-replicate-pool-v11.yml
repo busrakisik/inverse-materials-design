@@ -7,6 +7,9 @@ on:
       - "scripts/bhs_replicate_pool_v11.py"
       - "tests/test_bhs_replicate_pool_v11.py"
       - "research/BHS_REPLICATE_POOL_V11_PREDECLARED_PROTOCOL.md"
+      - "research/BHS_REPLICATE_POOL_V11_RESULTS.md"
+      - "research/RESEARCH_OVERVIEW.md"
+      - "README.md"
       - ".github/workflows/bhs-replicate-pool-v11.yml"
   workflow_dispatch:
 
@@ -82,6 +85,28 @@ jobs:
                       'reserved_nist_seeds_used'):
               assert g[key] is False
           print('Verified authentic 3-repeat acquisitions, paired seeds, and independent-evidence boundaries.')
+          PY
+      - name: Confirm negative scientific finding is publicly and accurately reported
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_replicate_pool_v11.json').read_text())
+          d=r['aggregates']
+          assert d['bhs_v5_kernel_portfolio_ei']['mean_final_simple_regret_j'] > d['gp_ard_ei']['mean_final_simple_regret_j']
+          assert d['bhs_v5_kernel_portfolio_ei']['mean_final_simple_regret_j'] > d['rf_ucb']['mean_final_simple_regret_j']
+          assert d['bhs_v5_kernel_portfolio_ei']['mean_final_simple_regret_j'] < d['random']['mean_final_simple_regret_j']
+          for p in ('README.md','research/BHS_REPLICATE_POOL_V11_PREDECLARED_PROTOCOL.md',
+                    'research/BHS_REPLICATE_POOL_V11_RESULTS.md',
+                    'research/RESEARCH_OVERVIEW.md'):
+              assert Path(p).is_file(), p
+          page=Path('README.md').read_text(encoding='utf-8').lower()
+          study=Path('research/BHS_REPLICATE_POOL_V11_RESULTS.md').read_text(encoding='utf-8').lower()
+          assert 'did not outperform gp' in page
+          assert 'did not outperform' in study
+          assert 'not independent validation' in page
+          assert 'not an independent' in study or 'not independent' in study
+          print('Negative result, real-data limits and source documents match CI measurements.')
           PY
       - name: Preserve source-locked exact verified aggregate in research branch
         if: github.ref == 'refs/heads/bhs-v11-replicate-aware-pool-search'
