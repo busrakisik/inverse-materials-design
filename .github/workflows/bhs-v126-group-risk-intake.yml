@@ -1,0 +1,92 @@
+name: BHS v12.6 Group Risk and Physical Intake Contracts
+
+on:
+  push:
+    branches: [bhs-v126-group-risk-intake-contracts]
+    paths:
+      - 'scripts/bhs_v126_group_risk_intake_contracts.py'
+      - 'tests/test_bhs_v126_group_risk_intake_contracts.py'
+      - 'research/BHS_V126_GROUP_RISK_AND_PHYSICAL_INTAKE_PROTOCOL.md'
+      - '.github/workflows/bhs-v126-group-risk-intake.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify existing research code and protocol identities
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V126_GROUP_RISK_AND_PHYSICAL_INTAKE_PROTOCOL.md)" = '73857a4dbb36aa7a8c45e455a0e677c77f568fb7'
+          test "$(git rev-parse HEAD:scripts/bhs_v125_disjoint_calibration.py)" = 'fa5419b0a65b7b83fafe214d2c18b9df4f0e04e7'
+          test "$(git rev-parse HEAD:research/BHS_V125_DISJOINT_CALIBRATION_PROTOCOL.md)" = '719431338ee9cd0b3ecc50d197b946aeb79c4701'
+          test "$(git rev-parse HEAD:research/bhs_v125_first_calibration.json.xz)" = '5ce6a050eb889e293e5632fa8f4195ebdc645255'
+          test "$(git rev-parse HEAD:research/bhs_v125_first_evaluation.json.xz)" = '531d1abd76a3887f541eee4655f58f4883e5e904'
+      - name: Install pinned numerical dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify inherited acquisition and evaluation contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+      - name: Verify group-risk and prospective intake failure controls
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m scripts.bhs_v126_group_risk_intake_contracts
+      - name: Verify original archive checksums without refitting
+        run: |
+          mkdir -p runs
+          xz -dc research/bhs_v125_first_calibration.json.xz > runs/bhs_v125_frozen_calibration.json
+          xz -dc research/bhs_v125_first_evaluation.json.xz > runs/bhs_v125_frozen_evaluation.json
+          echo 'fe47b0f79d04ff45df39498559d59dbfc941796c2d195dec4b1cfa4e406cfd48  runs/bhs_v125_frozen_calibration.json' | sha256sum --check
+          echo '654def586730c51793cf4040752770349a25dbcd4c808da86469a5f649e7b831  runs/bhs_v125_frozen_evaluation.json' | sha256sum --check
+      - name: Run read-only group-dependence diagnostic
+        run: |
+          python -m scripts.bhs_v126_group_risk_intake_contracts --calibration runs/bhs_v125_frozen_calibration.json --evaluation runs/bhs_v125_frozen_evaluation.json --out runs/bhs_v126_group_risk_audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('runs/bhs_v126_group_risk_audit.json').read_text())
+          assert x['minimum_independent_zero_error_groups_illustration']==11
+          assert x['new_measurements_performed'] is False
+          assert x['thresholds_changed'] is False
+          assert x['iid_independence_verified'] is False
+          assert x['statistical_guarantee_supported'] is False
+          assert x['physical_recommendation_allowed'] is False
+          assert x['policies']['gp_pooled_noise_ivr']['accepted_decisions']==5
+          assert x['policies']['gp_pooled_noise_ivr']['failed_accepted_decisions']==2
+          assert x['policies']['gp_pooled_noise_ivr']['failed_covered_groups']==1
+          assert x['policies']['evidence_gate_completion']['accepted_decisions']==4
+          for item in x['policies'].values():
+              assert item['evaluation_groups']==4
+              assert not item['statistical_guarantee_supported']
+              assert not item['physical_recommendation_allowed']
+          print('Original data regrouped with no refitting and no release guarantee.')
+          PY
+          sha256sum runs/bhs_v126_group_risk_audit.json
+      - name: Preserve diagnostic report without copying measurement sources
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v126-group-dependence-posthoc-audit
+          path: runs/bhs_v126_group_risk_audit.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
