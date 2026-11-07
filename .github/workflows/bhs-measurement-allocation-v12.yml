@@ -2,7 +2,7 @@ name: BHS v12 Historical Measurement Allocation Contracts
 
 on:
   push:
-    branches: [bhs-v12-measurement-allocation]
+    branches: [bhs-v12-measurement-allocation, bhs-v12-locked-development-replay]
     paths:
       - "scripts/bhs_measurement_allocation_v12.py"
       - "tests/test_bhs_measurement_allocation_v12.py"
@@ -34,6 +34,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Verify frozen source and protocol hashes
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_measurement_allocation_v12.py)" = '25ad70029af5d3b9f67cff5b00749e7c2e1f2690'
+          test "$(git rev-parse HEAD:tests/test_bhs_measurement_allocation_v12.py)" = '2431e2fc5683c3697f018447a59f7928cc1394d1'
+          test "$(git rev-parse HEAD:research/BHS_MEASUREMENT_ALLOCATION_V12_DRAFT_PROTOCOL.md)" = '4e1d88ce7ad7fefdca58484ed7ccc3fb9ecf41b8'
+          echo 'Frozen research implementation and protocol confirmed.'
       - name: Pin numerical dependencies
         run: |
           python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
@@ -46,12 +52,12 @@ jobs:
           python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
           python -m scripts.bhs_measurement_allocation_v12
       - name: Run explicit development-only replay
-        if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
+        if: ((github.event_name == 'workflow_dispatch' && inputs.run_development == true) || (github.event_name == 'push' && github.ref == 'refs/heads/bhs-v12-locked-development-replay'))
         run: |
           python -m scripts.bhs_measurement_allocation_v12 --execute --out runs/bhs_measurement_allocation_v12.json
           sha256sum runs/bhs_measurement_allocation_v12.json
       - name: Confirm historical report contains no outcome rows or inflated claims
-        if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
+        if: ((github.event_name == 'workflow_dispatch' && inputs.run_development == true) || (github.event_name == 'push' && github.ref == 'refs/heads/bhs-v12-locked-development-replay'))
         run: |
           python - <<'PY'
           import json
@@ -85,7 +91,7 @@ jobs:
           print('Development evidence boundary verified; no source measurements in aggregate output.')
           PY
       - name: Archive aggregate-only development results even if parity verification fails
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_development == true }}
+        if: ${{ always() && ((github.event_name == 'workflow_dispatch' && inputs.run_development == true) || (github.event_name == 'push' && github.ref == 'refs/heads/bhs-v12-locked-development-replay')) }}
         uses: actions/upload-artifact@v4
         with:
           name: bhs-v12-historical-measurement-development-only
