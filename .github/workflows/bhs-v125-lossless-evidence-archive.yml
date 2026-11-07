@@ -1,0 +1,56 @@
+name: BHS v12.5 Lossless Evidence Archive
+
+on:
+  push:
+    branches: [bhs-v125-evidence-archive]
+    paths: ['.github/workflows/bhs-v125-lossless-evidence-archive.yml']
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  archive-verified-results:
+    if: github.ref == 'refs/heads/bhs-v125-evidence-archive'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact frozen source and written interpretation
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V125_FIRST_DISJOINT_EVALUATION_RESULTS.md)" = 'b857afea4f5a1a134277e6c4f65b0372c0062019'
+          test "$(git rev-parse HEAD:research/BHS_V125_DISJOINT_CALIBRATION_PROTOCOL.md)" = '719431338ee9cd0b3ecc50d197b946aeb79c4701'
+          test "$(git rev-parse HEAD:scripts/bhs_v125_disjoint_calibration.py)" = 'fa5419b0a65b7b83fafe214d2c18b9df4f0e04e7'
+      - name: Retrieve fixed evaluation artifact and check original bytes
+        run: |
+          mkdir -p runs
+          gh run download 42382439887 --repo busrakisik/inverse-materials-design --name bhs-v125-disjoint-evaluation-first-development --dir runs
+          echo 'fe47b0f79d04ff45df39498559d59dbfc941796c2d195dec4b1cfa4e406cfd48  runs/bhs_v125_calibration.json' | sha256sum --check
+          echo '654def586730c51793cf4040752770349a25dbcd4c808da86469a5f649e7b831  runs/bhs_v125_evaluation.json' | sha256sum --check
+      - name: Build reversible compressed copies
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, lzma, hashlib
+          for kind,filename in [('calibration','bhs_v125_calibration.json'),('evaluation','bhs_v125_evaluation.json')]:
+              raw=Path('runs',filename).read_bytes()
+              document=json.loads(raw)
+              assert document['stage']==kind and document['hard_gates']['development_only']
+              assert document['hard_gates']['claim_of_superiority'] is False
+              archive=Path('research') / ('bhs_v125_first_'+kind+'.json.xz')
+              archive.write_bytes(lzma.compress(raw,format=lzma.FORMAT_XZ,preset=9))
+              assert lzma.decompress(archive.read_bytes())==raw
+              print(kind,'uncompressed_sha256',hashlib.sha256(raw).hexdigest(),'compressed_sha256',hashlib.sha256(archive.read_bytes()).hexdigest())
+          PY
+      - name: Commit only two frozen evidence archives to isolated branch
+        run: |
+          test "$GITHUB_REF" = 'refs/heads/bhs-v125-evidence-archive'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/bhs_v125_first_calibration.json.xz research/bhs_v125_first_evaluation.json.xz
+          git diff --cached --name-only
+          test "$(git diff --cached --name-only | wc -l)" -eq 2
+          git commit -m 'evidence(v12.5): preserve two exact lossless development outputs'
+          git push origin HEAD:refs/heads/bhs-v125-evidence-archive
