@@ -1,0 +1,58 @@
+{
+  "study": "BHS v9 constructive causal non-identifiability demonstration",
+  "type": "EXACT_SYNTHETIC_STRUCTURAL_COUNTEREXAMPLE",
+  "source_observations": "fabricated mathematical example, no UCI observations used",
+  "observational_law_identical": true,
+  "observational_law": [
+    {
+      "action": 0,
+      "observed_response": 30.0,
+      "probability": 0.5
+    },
+    {
+      "action": 1,
+      "observed_response": 30.0,
+      "probability": 0.5
+    }
+  ],
+  "world_results": [
+    {
+      "name": "positive_intervention_effect",
+      "mean_do_zero": 30.0,
+      "mean_do_one": 35.0,
+      "average_intervention_effect": 5.0
+    },
+    {
+      "name": "negative_intervention_effect",
+      "mean_do_zero": 35.0,
+      "mean_do_one": 30.0,
+      "average_intervention_effect": -5.0
+    }
+  ],
+  "causal_effect_range_within_declared_world_set": [
+    -5.0,
+    5.0
+  ],
+  "opposite_effect_signs_present": true,
+  "status": "ABSTAIN_CAUSAL_EFFECT_NOT_IDENTIFIED",
+  "conditional_illustrative_regret": {
+    "always_choose_action_zero_worst": 5.0,
+    "always_choose_action_one_worst": 5.0,
+    "minimax_action_one_probability": 0.5,
+    "minimax_randomized_action_worst": 2.5,
+    "abstention_loss_assumed": 1.0,
+    "abstention_minimax_preferred_for_this_world_set": true,
+    "numbers_are_assumptions_not_measured_decision_costs": true
+  },
+  "assumption_failures": [
+    "UNOBSERVED_RELEVANT_CONTEXT",
+    "NO_ACTION_OVERLAP_CONDITIONAL_ON_LATENT_CONTEXT",
+    "OBSERVATIONAL_DISTRIBUTION_DOES_NOT_IDENTIFY_INTERVENTION_EFFECT"
+  ],
+  "identification_proven_from_observations": false,
+  "world_set_completeness_established": false,
+  "new_empirical_data_used": false,
+  "independent_holdout_used": false,
+  "physical_validation": false,
+  "automatic_laboratory_action_authorized": false
+}
