@@ -88,6 +88,14 @@ A fixed reference predictor had mean development MAE **3.81 J** with random meas
 
 The methodology now requires **replicate-aware, geometry-grouped evaluation** for claims about new physical designs. The data were collected by the original experimental group; BHS ran no new physical tests, independent holdout or laboratory intervention. [Protocol](research/BHS_REPLICATE_LEAKAGE_AUDIT_V10_PROTOCOL.md) · [source and tests](scripts/bhs_replicate_leakage_v10.py) · [verified aggregate result](research/bhs_replicate_leakage_v10.json).
 
+## Replicate-aware sequential materials selection (v11 — November 2026)
+
+A [new source-locked retrospective development comparison](research/BHS_REPLICATE_POOL_V11_RESULTS.md) replayed the **600 unique 3D-printed designs with three real historic toughness measurements per geometry**, revealing all three measurements only when a design was selected. Across five paired development seeds, each method acquired the same **16 geometries / 48 historical measurements**.
+
+Mean final simple regret against the highest **recorded triplicate mean** was **7.36 J for optimized GP–ARD EI**, **8.98 J for RF–UCB**, **9.37 J for the unchanged BHS v5 kernel-portfolio EI component**, and **15.95 J for random selection** (lower is better). **The inherited BHS kernel portfolio did not outperform GP–ARD or RF**, despite outperforming random on average. The portfolio is a group of statistical response models, *not* physically distinct scientific hypotheses. All negative findings and per-seed outcomes are preserved.
+
+The data were physically measured by the original research group, **not BHS**. This is development on an already-inspected historical pool, **not independent validation, a new experimental result, causal discovery or proof of a superior lab decision system**. [Pre-run protocol](research/BHS_REPLICATE_POOL_V11_PREDECLARED_PROTOCOL.md) · [tested implementation](scripts/bhs_replicate_pool_v11.py) · [exact source-locked aggregate](research/bhs_replicate_pool_v11.json).
+
 ## Reproduce the software checks
 
 The following commands exercise the **development-only synthetic and contract tests**; they do **not** download real NIST observations, run an independent holdout or demonstrate physical validation.
