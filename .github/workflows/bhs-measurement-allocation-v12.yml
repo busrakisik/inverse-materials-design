@@ -1,0 +1,94 @@
+name: BHS v12 Historical Measurement Allocation Contracts
+
+on:
+  push:
+    branches: [bhs-v12-measurement-allocation]
+    paths:
+      - "scripts/bhs_measurement_allocation_v12.py"
+      - "tests/test_bhs_measurement_allocation_v12.py"
+      - "research/BHS_MEASUREMENT_ALLOCATION_V12_DRAFT_PROTOCOL.md"
+      - ".github/workflows/bhs-measurement-allocation-v12.yml"
+  workflow_dispatch:
+    inputs:
+      run_development:
+        description: "Run exploratory source-pinned historical replay after reviewing the committed protocol"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin numerical dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Recheck previously accepted replicate acquisition contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+      - name: Check v12 measurement-level isolation and budget contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m scripts.bhs_measurement_allocation_v12
+      - name: Run explicit development-only replay
+        if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
+        run: |
+          python -m scripts.bhs_measurement_allocation_v12 --execute --out runs/bhs_measurement_allocation_v12.json
+          sha256sum runs/bhs_measurement_allocation_v12.json
+      - name: Confirm historical report contains no outcome rows or inflated claims
+        if: github.event_name == 'workflow_dispatch' && inputs.run_development == true
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x = json.loads(Path('runs/bhs_measurement_allocation_v12.json').read_text())
+          assert len(x['campaigns']) == 20
+          assert x['source']['source_sha256'] == '2c01f875f3c210e986ca6142bf20f417884c2ad7d6f008c2fc574b44a3d5f606'
+          assert x['source']['new_experiments_by_bhs'] is False
+          assert all(z['historical_measurements_revealed'] == 48 for z in x['campaigns'])
+          assert x['protocol']['one_action_one_historical_response'] is True
+          assert x['hard_gates']['development_only'] is True
+          for k in ('scored_validation_allowed','independent_holdout_used',
+                    'physical_validation_by_bhs','causal_identification',
+                    'calibrated_uncertainty_proven','claim_of_superiority',
+                    'real_savings_measured','reserved_nist_seeds_used'):
+              assert x['hard_gates'][k] is False
+          assert all('selected_ids' not in z and 'raw_values' not in z for z in x['campaigns'])
+          # Critical parity check: the three bundled reference methods must
+          # reproduce the already archived v11 historical geometry-level replay.
+          prior = json.loads(Path('research/bhs_replicate_pool_v11.json').read_text())
+          previous = {(r['seed'], r['policy']): r for r in prior['outcomes_by_development_seed']}
+          mapping = {'random_bundled': 'random', 'gp_ard_bundled': 'gp_ard_ei',
+                     'rf_ucb_bundled': 'rf_ucb'}
+          for r in x['campaigns']:
+              if r['policy'] not in mapping:
+                  continue
+              old = previous[(r['seed'], mapping[r['policy']])]
+              error = abs(r['regret_j'] - old['final_simple_regret_against_noisy_pool_best_j'])
+              assert error <= 1e-6, (r['seed'], r['policy'], error)
+          print('All bundled baseline campaigns agree with preserved v11 results.')
+          print('Development evidence boundary verified; no source measurements in aggregate output.')
+          PY
+      - name: Archive aggregate-only development results even if parity verification fails
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_development == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v12-historical-measurement-development-only
+          path: runs/bhs_measurement_allocation_v12.json
+          if-no-files-found: warn
+          retention-days: 90
