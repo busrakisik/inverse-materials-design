@@ -62,15 +62,14 @@ class ReplicateAwareContracts(unittest.TestCase):
 
     def test_wrong_geometry_count_rejected(self):
         X, y, _ = synthetic_triplicates()
-        X[0] = X[3]
+        X[:3] = X[3]
         with self.assertRaisesRegex(DataContractError, "UNEXPECTED_GEOMETRY_COUNT"):
             validate_measurements(X, y)
 
     def test_nontriplicate_geometry_rejected(self):
         X, y, _ = synthetic_triplicates()
         X[0] = X[3]
-        # A duplicate but preserve 600 distinct profiles by adding a new one.
-        X[1] = [22, 120, 2.0, 0.7]
+        # Keep all 600 geometries while changing two repeat counts from 3.
         with self.assertRaisesRegex(DataContractError, "NONTRIPLICATE_GEOMETRY"):
             validate_measurements(X, y)
 
