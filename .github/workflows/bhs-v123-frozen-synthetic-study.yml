@@ -1,0 +1,80 @@
+name: BHS v12.3 Frozen Synthetic Development Study
+
+on:
+  push:
+    branches: [bhs-v123-frozen-synthetic-study]
+    paths:
+      - ".github/workflows/bhs-v123-frozen-synthetic-study.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify preregistered sources and exact research code
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V123_CONTROLLED_SYNTHETIC_PROTOCOL.md)" = '2ee655408f392d51179280432f4ba1ef4489fc07'
+          test "$(git rev-parse HEAD:scripts/bhs_v123_synthetic_decision_audit.py)" = 'c467dd6b1c7ae22b3bb2ae37da61d4f857a8cbae'
+          test "$(git rev-parse HEAD:tests/test_bhs_v123_synthetic_decision_audit.py)" = '51fd5c09f3938c851a7d6840426967fb82676daf'
+          test "$(git rev-parse HEAD:scripts/bhs_v122_adaptive_gp_reference.py)" = 'b80b23e80ee0cd99503c85fbef59cb15c5cf6039'
+      - name: Install pinned numerical libraries
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Recheck controlled source and evaluator contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+      - name: Execute preregistered manufactured development campaigns
+        run: |
+          python -m scripts.bhs_v123_synthetic_decision_audit --execute --out runs/bhs_v123_synthetic_decision_audit.json
+          sha256sum runs/bhs_v123_synthetic_decision_audit.json
+      - name: Enforce fixed evaluation and no unsupported claims
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v123_synthetic_decision_audit.json').read_text())
+          assert r['regimes']==['constant','varying']
+          assert r['decision_seeds']==[7,13]
+          assert r['order_variants']==[0,1]
+          assert r['policies']==['random_bundled','gp_ard_bundled',
+            'evidence_gate_development','gp_pooled_noise_ivr','gp_pooled_noise_ei']
+          assert r['pool_size']==48 and r['measurements_per_campaign']==48
+          assert len(r['campaigns'])==40
+          assert len(set((x['regime'],x['policy'],x['seed'],x['order_variant']) for x in r['campaigns']))==40
+          for row in r['campaigns']:
+              assert row['measurement_count']==48
+              assert row['completed_geometries']>=6
+              assert row['completed_geometries']*3 + row['partial_geometries']<=48
+              assert row['selection_sees_latent_quality'] is False
+              assert row['unobserved_responses_used_by_selector'] is False
+              assert math.isfinite(row['latent_simple_regret'])
+              assert row['best_completed_latent_regret']<=row['latent_simple_regret']+1e-9
+          assert r['historical_physical_source_accessed'] is False
+          assert r['physical_measurements_performed'] is False
+          assert r['hard_gates']['development_only'] is True
+          assert all(v is False for k,v in r['hard_gates'].items() if k!='development_only')
+          print('All forty matched manufactured campaigns respect fixed protocol and evidence boundaries.')
+          PY
+      - name: Preserve complete aggregate-only manufactured development record
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v123-frozen-synthetic-development-only
+          path: runs/bhs_v123_synthetic_decision_audit.json
+          if-no-files-found: warn
+          retention-days: 90
