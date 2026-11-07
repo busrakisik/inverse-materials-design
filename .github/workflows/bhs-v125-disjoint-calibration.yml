@@ -1,0 +1,57 @@
+name: BHS v12.5 Disjoint Calibration Contracts
+
+on:
+  push:
+    branches: [bhs-v125-disjoint-calibration]
+    paths:
+      - "scripts/bhs_v125_disjoint_calibration.py"
+      - "tests/test_bhs_v125_disjoint_calibration.py"
+      - "research/BHS_V125_DISJOINT_CALIBRATION_PROTOCOL.md"
+      - ".github/workflows/bhs-v125-disjoint-calibration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-calibration-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen protocol and inherited source identities
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V125_DISJOINT_CALIBRATION_PROTOCOL.md)" = '719431338ee9cd0b3ecc50d197b946aeb79c4701'
+          test "$(git rev-parse HEAD:scripts/bhs_measurement_allocation_v12.py)" = '25ad70029af5d3b9f67cff5b00749e7c2e1f2690'
+          test "$(git rev-parse HEAD:scripts/bhs_v121_order_contracts.py)" = '863bf931844c4b6d44382f9bc55e6998de8ddd69'
+          test "$(git rev-parse HEAD:scripts/bhs_v122_adaptive_gp_reference.py)" = 'b80b23e80ee0cd99503c85fbef59cb15c5cf6039'
+          test "$(git rev-parse HEAD:scripts/bhs_v123_synthetic_decision_audit.py)" = 'c467dd6b1c7ae22b3bb2ae37da61d4f857a8cbae'
+          test "$(git rev-parse HEAD:scripts/bhs_v124_completion_coverage_audit.py)" = 'c7f04720e7a804c3f1e87a43cb34fb0c5834319f'
+      - name: Install pinned numeric dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify existing acquisition and decision boundaries
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -q
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -q
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -q
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -q
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -q
+      - name: Verify disjoint calibration and evaluation protection
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m scripts.bhs_v125_disjoint_calibration
+      - name: Verify that scored results were not produced
+        run: |
+          test ! -e runs/bhs_v125_calibration.json
+          test ! -e runs/bhs_v125_evaluation.json
+          echo 'No evaluation outcomes scored in this workflow.'
