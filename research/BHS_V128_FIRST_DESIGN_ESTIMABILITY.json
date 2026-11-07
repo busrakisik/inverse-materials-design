@@ -1,0 +1,27 @@
+{
+  "blocking_conditions": [
+    "ACTUAL_RANDOMIZATION_UNVERIFIED",
+    "EXTERNAL_LAB_APPROVAL_UNVERIFIED",
+    "INDEPENDENT_PHYSICAL_VALIDATION_ABSENT",
+    "INSTRUMENT_CALIBRATION_UNVERIFIED",
+    "NO_RESIDUAL_DEGREES_OF_FREEDOM",
+    "PHYSICAL_MINIMUM_MEANINGFUL_EFFECT_UNSET"
+  ],
+  "full_rank": 8,
+  "independent_physical_validation_established": false,
+  "laboratory_action_allowed": false,
+  "linear_contrast_estimable_under_declared_nuisance": true,
+  "measurement_session_count": 2,
+  "no_claim_of_causal_identification": true,
+  "nuisance_rank": 7,
+  "physical_outcomes_seen": false,
+  "physical_recommendation_allowed": false,
+  "planned_technical_traces": 24,
+  "residual_degrees_of_freedom": 0,
+  "source_sha256": "ad54b0d2f9a19685ee749b171b58cd045c5c08c061a527c56c91968c9704195b",
+  "specimen_rows": 8,
+  "statistical_risk_guarantee_supported": false,
+  "status": "NO_GO_PHYSICAL_DESIGN_NOT_EXTERNALLY_VALIDATED",
+  "study": "BHS v12.8 source-independent design estimability check",
+  "synthesis_batch_count": 4
+}

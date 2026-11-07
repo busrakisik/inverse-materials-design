@@ -1,0 +1,46 @@
+name: BHS v12.8 Frozen Design Evidence Integrity
+
+on:
+  push:
+    branches: [bhs-v128-design-evidence-archive]
+    paths:
+      - 'research/BHS_V128_FIRST_DESIGN_ESTIMABILITY.json'
+      - 'research/BHS_V128_FIRST_DESIGN_ESTIMABILITY_REPORT.md'
+      - '.github/workflows/bhs-v128-archive-integrity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  byte-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify first study input and original evidence bytes
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json)" = '3cde6a6ad809effdf21fcdd50ab737c8cfaf07e8'
+          test "$(git rev-parse HEAD:scripts/bhs_v128_design_estimability.py)" = 'de89ac8d63485afd59b0076c4ea075a12475f089'
+          test "$(git rev-parse HEAD:tests/test_bhs_v128_design_estimability.py)" = '144a287e4117394aa7c3733c40fc63e409439cb2'
+          test "$(git rev-parse HEAD:research/BHS_V128_FIRST_DESIGN_ESTIMABILITY.json)" = '8a3d9a4b1f6779fe627d09524f6e0edb82485205'
+          echo 'ad54b0d2f9a19685ee749b171b58cd045c5c08c061a527c56c91968c9704195b  research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json' | sha256sum --check
+          echo '700668f2a14f3146d00d5309caff6c6887b0c4d86dfc618b81990d21278602c2  research/BHS_V128_FIRST_DESIGN_ESTIMABILITY.json' | sha256sum --check
+      - name: Verify retained mathematical and physical decision boundaries
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json').read_text())
+          x=json.loads(Path('research/BHS_V128_FIRST_DESIGN_ESTIMABILITY.json').read_text())
+          assert len(p['specimens']) == 8 and x['specimen_rows'] == 8
+          assert x['planned_technical_traces'] == 24
+          assert x['synthesis_batch_count'] == 4
+          assert x['nuisance_rank'] == 7 and x['full_rank'] == 8
+          assert x['residual_degrees_of_freedom'] == 0
+          assert 'NO_RESIDUAL_DEGREES_OF_FREEDOM' in x['blocking_conditions']
+          assert x['physical_recommendation_allowed'] is False
+          assert x['independent_physical_validation_established'] is False
+          assert x['physical_outcomes_seen'] is False
+          assert x['status'] == 'NO_GO_PHYSICAL_DESIGN_NOT_EXTERNALLY_VALIDATED'
+          print('Exact original report retained, with no physical outcome or release.')
+          PY
