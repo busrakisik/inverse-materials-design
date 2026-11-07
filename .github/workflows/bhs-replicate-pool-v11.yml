@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   paired-real-materials-replay:
@@ -83,6 +83,31 @@ jobs:
               assert g[key] is False
           print('Verified authentic 3-repeat acquisitions, paired seeds, and independent-evidence boundaries.')
           PY
+      - name: Preserve source-locked exact verified aggregate in research branch
+        if: github.ref == 'refs/heads/bhs-v11-replicate-aware-pool-search'
+        run: |
+          echo "75be43b53e734f6fb54dc82154022ee315a76e1c0891727fd7e8fddcd1378db8  runs/bhs_replicate_pool_v11.json" | sha256sum -c -
+          cp runs/bhs_replicate_pool_v11.json research/bhs_replicate_pool_v11.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path("research/bhs_replicate_pool_v11.json").read_text())
+          assert len(o["outcomes_by_development_seed"])==20
+          assert o["source"]["raw_measurements_redistributed"] is False
+          assert o["hard_gates"]["independent_holdout_used"] is False
+          assert o["hard_gates"]["physical_validation_by_bhs"] is False
+          assert o["decision"]["algorithmic_superiority_proven"] is False
+          print("Matching byte-exact first development result; non-confirmatory guard preserved.")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/bhs_replicate_pool_v11.json
+          if git diff --cached --quiet; then
+            echo 'Aggregate already preserved.'
+          else
+            git commit -m 'evidence: preserve exact paired replicate-aware v11 negative development result'
+            git push origin HEAD:bhs-v11-replicate-aware-pool-search
+          fi
       - name: Upload full aggregate-only development report
         uses: actions/upload-artifact@v4
         with:
