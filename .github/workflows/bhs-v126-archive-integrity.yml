@@ -1,0 +1,47 @@
+name: BHS v12.6 Archived Group Risk Integrity
+
+on:
+  push:
+    branches: [bhs-v126-group-risk-evidence-archive]
+    paths:
+      - 'research/BHS_V126_POSTHOC_GROUP_RISK_RESULTS.md'
+      - 'research/bhs_v126_group_risk_audit.json.xz'
+      - '.github/workflows/bhs-v126-archive-integrity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  archive-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify code, original archive, and result file identities
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_v126_group_risk_intake_contracts.py)" = '19b2aa364a4677a20f20e69d30666ff0bf9a29f6'
+          test "$(git rev-parse HEAD:research/BHS_V126_GROUP_RISK_AND_PHYSICAL_INTAKE_PROTOCOL.md)" = '73857a4dbb36aa7a8c45e455a0e677c77f568fb7'
+          test "$(git rev-parse HEAD:research/bhs_v125_first_calibration.json.xz)" = '5ce6a050eb889e293e5632fa8f4195ebdc645255'
+          test "$(git rev-parse HEAD:research/bhs_v125_first_evaluation.json.xz)" = '531d1abd76a3887f541eee4655f58f4883e5e904'
+          test "$(git rev-parse HEAD:research/bhs_v126_group_risk_audit.json.xz)" = '80ac20533e18390aa902f3281c4e2f8c952bcc90'
+          echo 'a326dd927921a0b957992dda24a49701c1c8128f194489fc4fe0d9f13a783e04  research/bhs_v126_group_risk_audit.json.xz' | sha256sum --check
+      - name: Verify lossless result reconstruction and disabled release
+        run: |
+          xz -dc research/bhs_v126_group_risk_audit.json.xz > /tmp/bhs_v126_group_risk_audit.json
+          echo 'fa302c04e21385c3df3c48f69b01ed97dab0a770aecfeff954a9bc576254b6a1  /tmp/bhs_v126_group_risk_audit.json' | sha256sum --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x = json.loads(Path('/tmp/bhs_v126_group_risk_audit.json').read_text())
+          assert x['new_measurements_performed'] is False
+          assert x['thresholds_changed'] is False
+          assert x['minimum_independent_zero_error_groups_illustration'] == 11
+          assert x['iid_independence_verified'] is False
+          assert x['statistical_guarantee_supported'] is False
+          assert x['physical_recommendation_allowed'] is False
+          assert x['policies']['gp_pooled_noise_ivr']['accepted_decisions'] == 5
+          assert x['policies']['gp_pooled_noise_ivr']['failed_covered_groups'] == 1
+          assert x['policies']['evidence_gate_completion']['covered_groups'] == 2
+          assert all(not v['statistical_guarantee_supported'] for v in x['policies'].values())
+          print('Original read-only audit restored exactly; release remains prohibited.')
+          PY
