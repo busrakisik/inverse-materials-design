@@ -1,0 +1,92 @@
+name: BHS v11 Replicate-Aware Geometry Selection Development
+
+on:
+  push:
+    branches: [bhs-v11-replicate-aware-pool-search]
+    paths:
+      - "scripts/bhs_replicate_pool_v11.py"
+      - "tests/test_bhs_replicate_pool_v11.py"
+      - "research/BHS_REPLICATE_POOL_V11_PREDECLARED_PROTOCOL.md"
+      - ".github/workflows/bhs-replicate-pool-v11.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paired-real-materials-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin scientific numeric dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify original source and replicate group contracts (v10)
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_replicate_leakage_v10.py' -v
+      - name: Verify strict group-selection and label-isolation contracts (v11)
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+          python -m scripts.bhs_replicate_pool_v11
+      - name: Run five paired development seeds on pinned historical physical measurements
+        run: |
+          python -m scripts.bhs_replicate_pool_v11 --execute --out runs/bhs_replicate_pool_v11.json
+      - name: Enforce frozen scientific protocol and non-confirmatory evidence
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_replicate_pool_v11.json').read_text(encoding='utf-8'))
+          p=r['frozen_protocol']
+          assert r['source']['source_blob_sha1']=='b007fe5d8762233bbd23c8cf83858b169f05492a'
+          assert r['source']['pin_commit']=='7585c517ad88e676c42c6bf24a8ad278e01ddb21'
+          assert r['source']['raw_measurements_redistributed'] is False
+          assert r['source']['bhs_conducted_new_physical_experiments'] is False
+          assert p['seeds']==[7,13,23,31,43]
+          assert p['policies']==['random','gp_ard_ei','rf_ucb','bhs_v5_kernel_portfolio_ei']
+          assert p['initial_unique_geometries']==6
+          assert p['additional_geometry_acquisitions']==10
+          assert p['historical_measurements_revealed_per_campaign']==48
+          assert p['policy_action_interface_excludes_all_hidden_labels'] is True
+          assert p['empirical_noisy_pool_best_not_latent_physical_truth'] is True
+          assert len(r['outcomes_by_development_seed'])==20
+          assert set(r['aggregates'])==set(p['policies'])
+          assert all(x['development_campaigns']==5 for x in r['aggregates'].values())
+          for x in r['outcomes_by_development_seed']:
+              assert x['total_distinct_designs_acquired']==16
+              assert x['historical_measured_rows_revealed']==48
+              assert x['triplicate_group_integrity'] is True
+              assert x['unobserved_replicates_used_by_policy'] is False
+              assert x['global_optimum_used_by_policy'] is False
+              assert math.isfinite(x['final_simple_regret_against_noisy_pool_best_j'])
+              assert x['final_simple_regret_against_noisy_pool_best_j']>=0
+          assert r['decision']['algorithmic_superiority_proven'] is False
+          assert r['decision']['automatic_laboratory_action_authorized'] is False
+          g=r['hard_gates']
+          assert g['development_only'] is True
+          for key in ('scored_validation_allowed','independent_holdout_used',
+                      'physical_validation_by_bhs','causal_identification',
+                      'claim_of_superiority','real_savings_measured',
+                      'reserved_nist_seeds_used'):
+              assert g[key] is False
+          print('Verified authentic 3-repeat acquisitions, paired seeds, and independent-evidence boundaries.')
+          PY
+      - name: Upload full aggregate-only development report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v11-real-triplicate-paired-development-only
+          path: runs/bhs_replicate_pool_v11.json
+          if-no-files-found: error
+          retention-days: 21
