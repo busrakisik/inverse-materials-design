@@ -100,7 +100,7 @@ class ReplicateAwareContracts(unittest.TestCase):
 
     def test_group_holdout_cannot_share_geometry(self):
         X, y, group = synthetic_triplicates()
-        cases, result = audit_development(X, y, seeds=(7,))
+        cases, result = audit_development(X, y, group, seeds=(7,))
         row = next(x for x in cases if x["protocol"] == "measurement_row_random")
         grouped = next(x for x in cases if x["protocol"] == "geometry_grouped")
         self.assertGreater(row["test_measurement_fraction_with_geometry_seen_in_training"], 0.80)
