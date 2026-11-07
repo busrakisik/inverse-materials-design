@@ -1,0 +1,45 @@
+name: BHS v12.7 Pilot Readiness Archive Integrity
+
+on:
+  push:
+    branches: [bhs-v127-readiness-evidence-archive]
+    paths:
+      - 'research/BHS_V127_FIRST_READINESS_AUDIT.md'
+      - 'research/BHS_V127_FIRST_PILOT_READINESS.json'
+      - '.github/workflows/bhs-v127-readiness-archive.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  archive-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm original source and result identities
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V127_FECONI_PHYSICAL_PILOT_PROTOCOL.md)" = '4a31f403c580b91dca475c2fd373c93cb2350c87'
+          test "$(git rev-parse HEAD:research/BHS_V127_FECONI_PILOT_PASSPORT.json)" = 'd3fb4c46092ac8e51959d8cecbf0d2a365dec663'
+          test "$(git rev-parse HEAD:scripts/bhs_v127_hypothesis_readiness.py)" = '9902f5fe18b5e34afa061c90c856ae954bee87ec'
+          test "$(git rev-parse HEAD:research/BHS_V127_FIRST_PILOT_READINESS.json)" = 'd4d912fc99890e72ed5a98eaf8992a5e46361c52'
+          echo '5b817799e331b341bb306a25aae1a99d95322e38c46156ddc263ebf6784906e7  research/BHS_V127_FECONI_PILOT_PASSPORT.json' | sha256sum --check
+          echo 'f9a2674e68aca13daf8e944acdd7c140554c1c76d5e601c1741d32f4d55d7256  research/BHS_V127_FIRST_PILOT_READINESS.json' | sha256sum --check
+      - name: Check readiness is no-go without prospective evidence
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          raw = Path('research/BHS_V127_FECONI_PILOT_PASSPORT.json').read_bytes()
+          x = json.loads(Path('research/BHS_V127_FIRST_PILOT_READINESS.json').read_text())
+          assert x['passport_sha256'] == hashlib.sha256(raw).hexdigest()
+          assert x['blocking_count'] == len(x['blocking_fields']) == 27
+          assert x['decision'] == 'NO_GO_EXTERNAL_REVIEW_REQUIRED'
+          assert x['structural_contract_passed'] is True
+          assert x['physical_recommendation_allowed'] is False
+          assert x['laboratory_action_allowed'] is False
+          assert x['independent_physical_validation_established'] is False
+          assert x['statistical_risk_guarantee_established'] is False
+          print('First pilot readiness preserved byte-for-byte; all physical release gates closed.')
+          PY
