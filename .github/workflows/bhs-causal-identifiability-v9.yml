@@ -6,10 +6,12 @@ on:
       - "bhs/decisions/causal_nonidentifiability_v9.py"
       - "tests/test_causal_nonidentifiability_v9.py"
       - "research/BHS_CAUSAL_NONIDENTIFIABILITY_V9.md"
+      - "README.md"
+      - "research/RESEARCH_OVERVIEW.md"
       - ".github/workflows/bhs-causal-identifiability-v9.yml"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   exact-causal-counterexample:
     runs-on: ubuntu-latest
@@ -53,6 +55,31 @@ jobs:
           assert proof["automatic_laboratory_action_authorized"] is False
           print("Exact opposing causal effects with identical observations; no empirical claims.")
           PY
+      - name: Preserve the verified exact synthetic proof in research files
+        if: github.ref == 'refs/heads/bhs-v9-identifiability-counterexample'
+        run: |
+          cp runs/bhs_v9_nonidentifiability.json research/bhs_v9_exact_counterexample.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          obj=json.loads(Path("research/bhs_v9_exact_counterexample.json").read_text())
+          assert obj["new_empirical_data_used"] is False
+          assert obj["identification_proven_from_observations"] is False
+          assert obj["physical_validation"] is False
+          assert obj["automatic_laboratory_action_authorized"] is False
+          assert obj["status"]=="ABSTAIN_CAUSAL_EFFECT_NOT_IDENTIFIED"
+          print("Verified stored proof has no empirical or physical validation claims.")
+          PY
+          sha256sum research/bhs_v9_exact_counterexample.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research/bhs_v9_exact_counterexample.json
+          if git diff --cached --quiet; then
+            echo 'Deterministic symbolic proof unchanged.'
+          else
+            git commit -m 'evidence: preserve exact synthetic causal nonidentifiability witness'
+            git push origin HEAD:bhs-v9-identifiability-counterexample
+          fi
       - name: Archive deterministic synthetic counterexample
         uses: actions/upload-artifact@v4
         with:
