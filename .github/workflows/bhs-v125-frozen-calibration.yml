@@ -1,0 +1,67 @@
+name: BHS v12.5 Frozen Calibration Stage
+
+on:
+  push:
+    branches: [bhs-v125-locked-calibration]
+    paths:
+      - '.github/workflows/bhs-v125-frozen-calibration.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check frozen protocol and unchanged source
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V125_DISJOINT_CALIBRATION_PROTOCOL.md)" = '719431338ee9cd0b3ecc50d197b946aeb79c4701'
+          test "$(git rev-parse HEAD:scripts/bhs_v125_disjoint_calibration.py)" = 'fa5419b0a65b7b83fafe214d2c18b9df4f0e04e7'
+          test "$(git rev-parse HEAD:tests/test_bhs_v125_disjoint_calibration.py)" = '4a1f802f86050bea9f18f4d0475c895247158ee0'
+          test "$(git rev-parse HEAD:scripts/bhs_v124_completion_coverage_audit.py)" = 'c7f04720e7a804c3f1e87a43cb34fb0c5834319f'
+      - name: Install pinned numerical dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify calibration boundary and tampering checks
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+      - name: Run calibration only with no evaluation source creation
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v125_disjoint_calibration --stage calibration --out runs/bhs_v125_calibration.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('runs/bhs_v125_calibration.json')
+          x = json.loads(p.read_text())
+          assert x['stage'] == 'calibration'
+          assert len(x['calibration_rows']) == 48
+          assert {z['group'] for z in x['calibration_rows']} == {101, 103, 107, 109}
+          assert all(z['split'] == 'calibration' for z in x['calibration_rows'])
+          assert x['untouched_evaluation_groups'] == [211, 223, 227, 229]
+          assert len(x['thresholds']) == 6
+          assert not Path('runs/bhs_v125_evaluation.json').exists()
+          print('Frozen calibration rows and split boundary verified.')
+          PY
+          sha256sum runs/bhs_v125_calibration.json
+      - name: Retain exact calibration JSON
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v125-calibration-frozen-development
+          path: runs/bhs_v125_calibration.json
+          retention-days: 90
+          if-no-files-found: warn
+          compression-level: 0
