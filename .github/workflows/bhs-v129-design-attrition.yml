@@ -1,0 +1,99 @@
+name: BHS v12.9 Outcome-Free Design Attrition Contracts
+
+on:
+  push:
+    branches: [bhs-v129-design-attrition-review]
+    paths:
+      - 'scripts/bhs_v129_design_attrition.py'
+      - 'tests/test_bhs_v129_design_attrition.py'
+      - 'research/BHS_V129_ATTRITION_RESILIENCE_PROTOCOL.md'
+      - 'research/BHS_V129_DESIGN_VARIANTS.json'
+      - '.github/workflows/bhs-v129-design-attrition.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  design-attrition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert earlier evidence and precommitted fixtures unchanged
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V128_MANUFACTURED_DESIGN_FIXTURE.json)" = '3cde6a6ad809effdf21fcdd50ab737c8cfaf07e8'
+          test "$(git rev-parse HEAD:scripts/bhs_v128_design_estimability.py)" = 'de89ac8d63485afd59b0076c4ea075a12475f089'
+          test "$(git rev-parse HEAD:research/BHS_V129_ATTRITION_RESILIENCE_PROTOCOL.md)" = '317438b1b66cd68d71bd498e3a498ead8abcb98e'
+          test "$(git rev-parse HEAD:research/BHS_V129_DESIGN_VARIANTS.json)" = '0dbd73ce65c48239e94a8e611faa450056217f8d'
+          test "$(git rev-parse HEAD:scripts/bhs_v129_design_attrition.py)" = '32e8a47b93543336621289446b3ca89ec7dc78e6'
+          test "$(git rev-parse HEAD:tests/test_bhs_v129_design_attrition.py)" = '908c1cb65f7dd925c1e7e0bc480d458548946aae'
+      - name: Install fixed numerical test libraries
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Check all inherited measurement and design contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+      - name: Check novel batch and measurement-session loss contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m scripts.bhs_v129_design_attrition
+      - name: Run deterministic design-only audit and block all scientific release
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v129_design_attrition --designs research/BHS_V129_DESIGN_VARIANTS.json --out runs/bhs_v129_design_attrition.json
+          python - <<'PY'
+          import json
+          import hashlib
+          from pathlib import Path
+          p=Path('research/BHS_V129_DESIGN_VARIANTS.json')
+          report=json.loads(Path('runs/bhs_v129_design_attrition.json').read_text())
+          assert report['source_sha256']==hashlib.sha256(p.read_bytes()).hexdigest()
+          assert report['physical_measurements_performed'] is False
+          assert report['formal_power_or_precision_established'] is False
+          assert report['independent_physical_validation_established'] is False
+          assert report['physical_recommendation_allowed'] is False
+          assert report['laboratory_action_allowed'] is False
+          assert report['status']=='NO_GO_EXTERNAL_LAB_AND_PRECISION_REVIEW_REQUIRED'
+          a=report['variants']['cross_session_pairs']
+          b=report['variants']['within_session_pairs']
+          assert a['full_design']['residual_row_degrees_of_freedom']==4
+          assert b['full_design']['residual_row_degrees_of_freedom']==5
+          assert a['batch_loss_nominal_pass_count']==8
+          assert b['batch_loss_nominal_pass_count']==8
+          assert a['session_loss_nominal_pass_count']==0
+          assert b['session_loss_nominal_pass_count']==2
+          for v in (a,b):
+              assert v['full_design']['named_batch_count']==8
+              assert v['full_design']['coupon_rows']==16
+              assert v['full_design']['technical_trace_count']==48
+              assert not v['physical_recommendation_allowed']
+          print('Two outcome-free designs remain unapproved; all attrition cases retained.')
+          PY
+          sha256sum runs/bhs_v129_design_attrition.json
+      - name: Retain exact development-only audit report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v129-outcome-free-design-attrition
+          path: runs/bhs_v129_design_attrition.json
+          retention-days: 90
+          if-no-files-found: warn
+          compression-level: 0
