@@ -1,0 +1,44 @@
+name: BHS v12.11 Public Laboratory Evidence Archive Integrity
+
+on:
+  push:
+    branches: [bhs-v1211-public-lead-evidence-archive]
+    paths:
+      - 'research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.md'
+      - 'research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json'
+      - '.github/workflows/bhs-v1211-lead-archive-integrity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check unchanged sources and exact report bytes
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1211_LAB_FEASIBILITY_PROTOCOL.md)" = 'c8eac6886014e85cbc07112e88882138840746a5'
+          test "$(git rev-parse HEAD:research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json)" = '5dc299fccc76adc3266c53851999f35b790b9b3e'
+          test "$(git rev-parse HEAD:scripts/bhs_v1211_external_feasibility.py)" = 'c1222c8c6383dcb5660476714825d7a8c6fd6c4d'
+          test "$(git rev-parse HEAD:research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json)" = '464ddd8eb9c8cd238349a0062194abdbd4262860'
+          test "$(git rev-parse HEAD:research/BHS_V1210_ASSIGNMENT_UNIT_FIXTURES.json)" = 'e93e5630cbae7c63dcbb069a0a095b3182a3f349'
+          echo 'f49d6fe18b61e6130d7f1f8212d7ec6417be4b24f3c610338b6cbc4719d58671  research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json' | sha256sum --check
+      - name: Reject physical/permission conclusions from public lead
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          raw=Path('research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json').read_bytes()
+          x=json.loads(Path('research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json').read_text())
+          assert x['source_sha256']==hashlib.sha256(raw).hexdigest()
+          assert x['official_sources_count']==6
+          assert x['unverified_feasibility_gate_count']==15
+          assert x['decision']=='DOCUMENTED_LEAD_ONLY_NO_GO_PHYSICAL_EVALUATION'
+          for k in ('outreach_sent','partner_agreement_verified','physical_measurements_performed',
+                    'physical_recommendation_allowed','laboratory_action_allowed',
+                    'independent_physical_validation_established','measured_savings_established'):
+              assert x[k] is False
+          print('Archive matches original; no approval or physical result asserted.')
+          PY
