@@ -1,0 +1,128 @@
+{
+  "schema_version": "BHS-V12.11",
+  "status": "documented_uncontacted_lead_only",
+  "institution": "Gebze Technical University",
+  "location": "Gebze, Kocaeli, Türkiye",
+  "proposed_material": "Fe-Co-Ni magnetic thin films",
+  "retrieval_date": "2026-11-08",
+  "source_independence_note": "All observations are from the same university and are not independent laboratory confirmations.",
+  "evidence": [
+    {
+      "id": "gtnano-inventory-2025",
+      "evidence_class": "institutional_inventory",
+      "source_date": "2025-09-29",
+      "source_date_kind": "site_last_updated",
+      "url": "https://www.gtu.edu.tr/icerik/2676/758/display.aspx",
+      "material_system_scope": "multiple thin-film systems; not validated for Fe-Co-Ni",
+      "supports": [
+        "moke_listed",
+        "xrd_listed",
+        "sputter_listed"
+      ],
+      "summary": "Official laboratory inventory includes MOKE, Rigaku Smartlab XRD and magnetron sputtering; lists Leyla Colakerol Arslan as laboratory lead."
+    },
+    {
+      "id": "gtphysics-moke-role-2026",
+      "evidence_class": "institutional_directory",
+      "source_date": "2026-07-01",
+      "source_date_kind": "site_last_updated",
+      "url": "https://www.gtu.edu.tr/en/kategori/4270/0/display.aspx",
+      "material_system_scope": "department laboratory directory",
+      "supports": [
+        "current_moke_directory_role"
+      ],
+      "summary": "Physics laboratory directory associates the MOKE Laboratory with Erdem Demirci; contact role must be confirmed with the laboratory."
+    },
+    {
+      "id": "gtphysics-legacy-moke-2015",
+      "evidence_class": "conflicting_legacy_directory",
+      "source_date": "2015-06-29",
+      "source_date_kind": "site_last_updated",
+      "url": "https://www.gtu.edu.tr/en/kategori/1658/0/display.aspx",
+      "material_system_scope": "legacy room-temperature MOKE information",
+      "supports": [
+        "legacy_moke_directory_role"
+      ],
+      "summary": "Older MOKE listing associates laboratory responsibility with Numan Akdogan, and names Erdem Demirci as staff; outdated and divergent from the 2026 index."
+    },
+    {
+      "id": "gtresearch-como-2025",
+      "evidence_class": "historical_research_example",
+      "source_date": "2025-05-26",
+      "source_date_kind": "symposium_event_date",
+      "url": "https://www.gtu.edu.tr/fileman/Files/UserFiles/fbe/GTU%20Semp_Bildiri%20%C3%96zet.%20Kitap%C3%A7%C4%B1%C4%9F%C4%B1_2025%20%281%29.pdf",
+      "material_system_scope": "Co/Mo bilayer films, not Fe-Co-Ni",
+      "supports": [
+        "historical_sputter_moke_xrd_work"
+      ],
+      "summary": "Murat Kol, Erdem Demirci, Perihan Aksu and Mustafa Ozturk report sputtered Co/Mo bilayers characterized with XRD/XRR/XPS, MOKE and VSM; does not certify the proposed Fe-Co-Ni pilot."
+    },
+    {
+      "id": "gtnano-director-2026",
+      "evidence_class": "institutional_directory",
+      "source_date": "2026-04-16",
+      "source_date_kind": "site_last_updated",
+      "url": "https://www.gtu.edu.tr/en/kategori/2774/0/yonetim.aspx",
+      "material_system_scope": "institute administration and official contact",
+      "supports": [
+        "institute_contact_documented"
+      ],
+      "summary": "Institute administration lists Leyla Colakerol Arslan as director and lcolakerol@gtu.edu.tr as the public institutional contact."
+    },
+    {
+      "id": "gtphysics-services-undated",
+      "evidence_class": "institutional_directory",
+      "source_date": null,
+      "source_date_kind": "undated",
+      "url": "https://www.gtu.edu.tr/kategori/3778/0/display.aspx",
+      "material_system_scope": "published service categories only",
+      "supports": [
+        "moke_service_category_listed",
+        "sputter_service_category_listed"
+      ],
+      "summary": "Physics analysis-service page lists room-temperature MOKE and thin-film coating categories; pricing requires direct consultation and availability is not certified."
+    }
+  ],
+  "role_date_conflict": {
+    "older_evidence_id": "gtphysics-legacy-moke-2015",
+    "newer_evidence_id": "gtphysics-moke-role-2026",
+    "status": "unresolved",
+    "requires_direct_confirmation": true
+  },
+  "required_feasibility_checks": {
+    "qualified_investigator_consent_verified": false,
+    "current_moke_operability_verified": false,
+    "current_xrd_operability_verified": false,
+    "current_sputter_operability_verified": false,
+    "feconi_composition_and_thickness_capability_verified": false,
+    "feconi_deposition_or_processing_intervention_approved": false,
+    "treatment_assignment_unit_verified": false,
+    "independent_synthesis_batch_feasibility_verified": false,
+    "raw_trace_and_instrument_provenance_agreed": false,
+    "instrument_field_calibration_verified": false,
+    "source_rights_verified": false,
+    "external_access_and_cost_verified": false,
+    "minimum_meaningful_effect_and_precision_reviewed": false,
+    "lab_safety_and_supervision_approved": false,
+    "prospective_split_and_failure_logging_agreed": false
+  },
+  "communication": {
+    "initial_inquiry_sent": false,
+    "reply_received": false,
+    "facility_agreement_signed": false,
+    "independent_review_completed": false
+  },
+  "conclusions": {
+    "institutional_moke_inventory_documented": true,
+    "institutional_xrd_inventory_documented": true,
+    "institutional_sputtering_inventory_documented": true,
+    "historical_nonfeconi_joint_work_documented": true,
+    "current_feconi_specific_feasibility_verified": false,
+    "current_equipment_operability_verified": false,
+    "physical_measurements_performed": false,
+    "independent_physical_validation_established": false,
+    "physical_recommendation_allowed": false,
+    "laboratory_action_allowed": false,
+    "real_cost_savings_verified": false
+  }
+}
