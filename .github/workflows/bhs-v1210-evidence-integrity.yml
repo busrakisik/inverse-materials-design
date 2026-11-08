@@ -1,0 +1,51 @@
+name: BHS v12.10 Assignment Evidence Integrity
+
+on:
+  push:
+    branches: [bhs-v1210-assignment-evidence-archive]
+    paths:
+      - 'research/BHS_V1210_FIRST_ASSIGNMENT_UNIT_RESULTS.md'
+      - 'research/bhs_v1210_first_assignment_unit.json.xz'
+      - '.github/workflows/bhs-v1210-evidence-integrity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  original-bytes-and-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source and evidence Git identities
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1210_ASSIGNMENT_UNIT_FIXTURES.json)" = 'e93e5630cbae7c63dcbb069a0a095b3182a3f349'
+          test "$(git rev-parse HEAD:scripts/bhs_v1210_assignment_unit.py)" = 'a41a34962710d31965477b3533f2bba6ba5a7c2b'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1210_assignment_unit.py)" = '9c66286ca6fe93153909b3dd9f3fa9fc696ec030'
+          test "$(git rev-parse HEAD:research/BHS_V129_DESIGN_VARIANTS.json)" = '0dbd73ce65c48239e94a8e611faa450056217f8d'
+          test "$(git rev-parse HEAD:research/bhs_v1210_first_assignment_unit.json.xz)" = '7dbac569519e0c8e1ed48ca0a31242a52f03bf76'
+          echo 'ac21272ba9ae147eab24b24149051ed69ccaec30e57452e0667f2bc5b8af5ad3  research/bhs_v1210_first_assignment_unit.json.xz' | sha256sum --check
+      - name: Restore original result and prohibit physical release
+        run: |
+          xz -dc research/bhs_v1210_first_assignment_unit.json.xz > /tmp/bhs_v1210_assignment.json
+          echo '455cfee87698b6dabf2da95380ca82593c350ec21ad04dfd4f1a130f3bf94d80  /tmp/bhs_v1210_assignment.json' | sha256sum --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/bhs_v1210_assignment.json').read_text())
+          assert x['physical_measurements_performed'] is False
+          assert x['physical_recommendation_allowed'] is False
+          assert x['laboratory_action_allowed'] is False
+          assert x['formal_sample_size_established'] is False
+          assert x['independent_physical_validation_established'] is False
+          assert x['actual_treatment_assignability_verified'] is False
+          assert x['status']=='NO_GO_EXTERNAL_PROCESSING_SCOPE_AND_LAB_REVIEW_REQUIRED'
+          c=x['scenarios']['postdeposition_coupon']
+          b=x['scenarios']['deposition_run']
+          assert c['full_design']['named_deposition_runs']==8
+          assert b['full_design']['named_deposition_runs']==16
+          assert c['full_design']['residual_coupon_row_df']==4
+          assert b['full_design']['residual_coupon_row_df']==5
+          assert all(v['session_loss_nominal_pass_count']==2 for v in (c,b))
+          print('Original source-only audit restored; physical release remains prohibited.')
+          PY
