@@ -1,0 +1,93 @@
+name: BHS v12.11 External Laboratory Feasibility Evidence
+
+on:
+  push:
+    branches: [bhs-v1211-external-lab-evidence-gate]
+    paths:
+      - 'research/BHS_V1211_LAB_FEASIBILITY_PROTOCOL.md'
+      - 'research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json'
+      - 'scripts/bhs_v1211_external_feasibility.py'
+      - 'tests/test_bhs_v1211_external_feasibility.py'
+      - '.github/workflows/bhs-v1211-external-feasibility.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  external-evidence-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: \${{ github.workspace }}
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen public sources and inherited unchanged work
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1211_LAB_FEASIBILITY_PROTOCOL.md)" = 'c8eac6886014e85cbc07112e88882138840746a5'
+          test "$(git rev-parse HEAD:research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json)" = '5dc299fccc76adc3266c53851999f35b790b9b3e'
+          test "$(git rev-parse HEAD:scripts/bhs_v1211_external_feasibility.py)" = 'c1222c8c6383dcb5660476714825d7a8c6fd6c4d'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1211_external_feasibility.py)" = '357987792c8d7094a1ca46d56c917b6be314588c'
+          test "$(git rev-parse HEAD:scripts/bhs_v1210_assignment_unit.py)" = 'a41a34962710d31965477b3533f2bba6ba5a7c2b'
+          test "$(git rev-parse HEAD:research/BHS_V1210_ASSIGNMENT_UNIT_FIXTURES.json)" = 'e93e5630cbae7c63dcbb069a0a095b3182a3f349'
+          test "$(git rev-parse HEAD:research/bhs_v1210_first_assignment_unit.json.xz)" = '7dbac569519e0c8e1ed48ca0a31242a52f03bf76'
+      - name: Install pinned numerical libraries for inherited checks
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Verify unchanged historical research contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1210_assignment_unit.py' -v
+      - name: Reject fabricated physical feasibility and outreach claims
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1211_external_feasibility.py' -v
+      - name: Audit GTU public evidence without instrument access
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1211_external_feasibility --dossier research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json --out runs/bhs_v1211_lead_audit.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          raw=Path('research/BHS_V1211_GTU_PUBLIC_CAPABILITY_DOSSIER.json').read_bytes()
+          r=json.loads(Path('runs/bhs_v1211_lead_audit.json').read_text())
+          assert r['source_sha256']==hashlib.sha256(raw).hexdigest()
+          assert r['official_sources_count']==6
+          assert r['unverified_feasibility_gate_count']==15
+          assert r['decision']=='DOCUMENTED_LEAD_ONLY_NO_GO_PHYSICAL_EVALUATION'
+          assert r['legacy_contact_role_conflict_unresolved']
+          assert r['same_institution_sources_not_independent_confirmations']
+          assert r['historical_material_system_is_not_proposed_system']
+          for k in ('outreach_sent','partner_agreement_verified',
+                    'proposed_material_capability_verified','current_instrument_operability_verified',
+                    'external_scientific_approval_verified','physical_measurements_performed',
+                    'physical_recommendation_allowed','laboratory_action_allowed',
+                    'independent_physical_validation_established','measured_savings_established'):
+              assert r[k] is False, k
+          print('No physical collaboration or result claimed.')
+          PY
+          sha256sum runs/bhs_v1211_lead_audit.json
+      - name: Retain exact public-source-only review
+        if: \${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1211-public-evidence-review
+          path: runs/bhs_v1211_lead_audit.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
