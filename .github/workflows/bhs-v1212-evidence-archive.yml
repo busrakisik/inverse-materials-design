@@ -1,0 +1,52 @@
+name: BHS v12.12 Evidence Archive Integrity
+
+on:
+  push:
+    branches: [bhs-v1212-paired-variance-evidence-archive]
+    paths:
+      - 'research/BHS_V1212_FIRST_PAIRED_SENSITIVITY_REPORT.md'
+      - 'research/bhs_v1212_first_paired_sensitivity.json.xz'
+      - '.github/workflows/bhs-v1212-evidence-archive.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  first-evidence-preservation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify immutable first result and previous sources
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1212_FIRST_PAIRED_SENSITIVITY_REPORT.md)" = 'eae3273bc657e65ce5e52ba6f80dc5f42d736307'
+          test "$(git rev-parse HEAD:research/bhs_v1212_first_paired_sensitivity.json.xz)" = 'af53847ffb8c5c69e4d121b30c1ee619944800af'
+          test "$(git rev-parse HEAD:scripts/bhs_v1212_precision_sensitivity.py)" = '2140c109f0540a32a8559808fc79ca1874cb16a6'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1212_precision_sensitivity.py)" = 'bc2a93a7bfb97a61a6f130ef0636efdae9ac239a'
+          test "$(git rev-parse HEAD:research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json)" = '464ddd8eb9c8cd238349a0062194abdbd4262860'
+      - name: Reproduce and verify original exact-byte result
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+          python -m scripts.bhs_v1212_precision_sensitivity --root . --out runs/bhs_v1212_archive_replay.json
+          python - <<'PY'
+          import hashlib,json,lzma
+          from pathlib import Path
+          packed=Path('research/bhs_v1212_first_paired_sensitivity.json.xz').read_bytes()
+          assert hashlib.sha256(packed).hexdigest() == '7052af7581b7a27b5e1dd50abc864fdf53b0f3b856ee75ed830cd38df5928ecc'
+          original=lzma.decompress(packed)
+          replay=Path('runs/bhs_v1212_archive_replay.json').read_bytes()
+          expected='6dc26a852774b9cf2785971c99203d4b4ad52b4954fb79bad82253a44ed178c4'
+          assert hashlib.sha256(original).hexdigest() == expected
+          assert replay == original
+          result=json.loads(original)
+          assert len(result['findings']) == 4
+          assert result['physical_validation_by_bhs'] is False
+          assert result['independent_holdout_used'] is False
+          assert result['claim_of_superiority'] is False
+          assert result['laboratory_action_allowed'] is False
+          print('Historical first result byte-identical; physical NO-GO unchanged.')
+          PY
