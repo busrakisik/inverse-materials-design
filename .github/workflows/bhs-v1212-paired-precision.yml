@@ -1,0 +1,87 @@
+name: BHS v12.12 Paired Precision Sensitivity
+
+on:
+  push:
+    branches: [bhs-v1212-paired-variance-sensitivity]
+    paths:
+      - 'research/BHS_V1212_PAIRED_PRECISION_PROTOCOL.md'
+      - 'scripts/bhs_v1212_precision_sensitivity.py'
+      - 'tests/test_bhs_v1212_precision_sensitivity.py'
+      - '.github/workflows/bhs-v1212-paired-precision.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conditional-variance-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen protocol and exact source provenance
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1212_PAIRED_PRECISION_PROTOCOL.md)" = '335e7e6b9698c6f9c80ef95954049776bcc28d4f'
+          test "$(git rev-parse HEAD:scripts/bhs_v1212_precision_sensitivity.py)" = '2140c109f0540a32a8559808fc79ca1874cb16a6'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1212_precision_sensitivity.py)" = 'bc2a93a7bfb97a61a6f130ef0636efdae9ac239a'
+          test "$(git rev-parse HEAD:research/BHS_V1210_ASSIGNMENT_UNIT_FIXTURES.json)" = 'e93e5630cbae7c63dcbb069a0a095b3182a3f349'
+          test "$(git rev-parse HEAD:research/BHS_V129_DESIGN_VARIANTS.json)" = '0dbd73ce65c48239e94a8e611faa450056217f8d'
+          test "$(git rev-parse HEAD:research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json)" = '464ddd8eb9c8cd238349a0062194abdbd4262860'
+      - name: Install pinned inherited numerical dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Test inherited scientific contracts without altering outputs
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1210_assignment_unit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1211_external_feasibility.py' -v
+      - name: Test conditional variance calculations and sensitivity assumptions
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+      - name: Produce deterministic conditional results without new measurements
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1212_precision_sensitivity --root . --out runs/bhs_v1212_first_sensitivity.json
+          test "$(sha256sum runs/bhs_v1212_first_sensitivity.json | cut -d' ' -f1)" = '6dc26a852774b9cf2785971c99203d4b4ad52b4954fb79bad82253a44ed178c4'
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1212_first_sensitivity.json').read_text())
+          assert len(r['findings']) == 4
+          assert r['physical_validation_by_bhs'] is False
+          assert r['independent_holdout_used'] is False
+          assert r['claim_of_superiority'] is False
+          assert r['laboratory_action_allowed'] is False
+          for name, design in r['findings'].items():
+              assert design['full']['complete_pairs'] == 8, name
+              assert len(design['loss_one_matched_block']['results']) == 8
+          print('Conditional algebra only; physical feasibility remains unresolved.')
+          PY
+      - name: Preserve exact outcome-free sensitivity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1212-outcome-free-variance-sensitivity
+          path: runs/bhs_v1212_first_sensitivity.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
