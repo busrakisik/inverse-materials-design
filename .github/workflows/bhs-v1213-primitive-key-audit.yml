@@ -1,0 +1,62 @@
+name: BHS v12.13 Primitive Identifier Recovery Audit
+
+on:
+  push:
+    branches: [bhs-v1213-source-eligibility-diagnostic]
+    paths:
+      - 'research/BHS_V1213_IDENTIFIER_RECOVERY_PROTOCOL.md'
+      - 'scripts/bhs_v1213_primitive_key_audit.py'
+      - 'tests/test_bhs_v1213_primitive_key_audit.py'
+      - '.github/workflows/bhs-v1213-primitive-key-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recoverability-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert the preregistered rule and original first failure remain unchanged
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1213_IDENTIFIER_RECOVERY_PROTOCOL.md)" = 'c02aa373fa82ac7d83399354335fba8267b81945'
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_primitive_key_audit.py)" = 'e2941ff5efa94bc4c5a8d2c60e6013243dec7314'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1213_primitive_key_audit.py)" = '2b4046526f77b70f0b4366ec00ca5cda27f0ab0f'
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_source_intake.py)" = '064a25de0c36af1413898e3e823dcdf7930fc59a'
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_identity_diagnostic.py)" = '66622bc2e0311179bcbd933e48b0dd0661eea4fe'
+      - name: Adversarial tests only
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1213_primitive_key_audit.py' -v
+      - name: Audit the original immutable data without evaluated outcomes
+        run: |
+          python -m scripts.bhs_v1213_primitive_key_audit --out runs/bhs_v1213_first_primitive_key_audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1213_first_primitive_key_audit.json').read_text())
+          assert r['total_source_records'] == 4289
+          assert r['missing_original_combined_identifiers'] == 110
+          assert r['source_sha256'] == '825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert r['raw_combined_identifiers_repaired'] is False
+          assert r['scored_benchmark_eligible'] is False
+          assert r['independent_holdout_used'] is False
+          assert r['physical_validation_by_bhs'] is False
+          print('Primitive key audit recorded; physical claims remain blocked.')
+          PY
+          sha256sum runs/bhs_v1213_first_primitive_key_audit.json
+      - name: Archive only original source metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1213-first-primitive-key-audit
+          path: runs/bhs_v1213_first_primitive_key_audit.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
