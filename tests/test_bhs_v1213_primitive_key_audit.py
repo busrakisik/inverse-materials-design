@@ -43,7 +43,7 @@ class PrimitiveIdentityTests(unittest.TestCase):
         s=self.inspect([item(), item()])
         self.assertEqual(s["total_source_records"], 2)
         self.assertEqual(s["duplicate_primitive_key_excess_rows"], 1)
-        self.assertEqual(s["duplicated_job_name_excess_rows"], 1)
+        self.assertEqual(s["duplicate_job_name_excess_rows"], 1)
         self.assertFalse(s["primitive_key_identifiable"])
 
     def test_missing_primitive_blocks_key_reconstruction(self):
