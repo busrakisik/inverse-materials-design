@@ -1,0 +1,87 @@
+name: BHS v12.13 Published DFT Source Intake
+
+on:
+  push:
+    branches: [bhs-v1213-fegb-source-intake]
+    paths:
+      - 'research/BHS_V1213_FERRITIC_GB_SOURCE_PROTOCOL.md'
+      - 'scripts/bhs_v1213_source_intake.py'
+      - 'tests/test_bhs_v1213_source_intake.py'
+      - '.github/workflows/bhs-v1213-source-intake.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-only-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check predeclared protocol and inherited evidence are unchanged
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1213_FERRITIC_GB_SOURCE_PROTOCOL.md)" = 'c11b473e1c55967e5041f5ca72c2589a76bd4305'
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_source_intake.py)" = '064a25de0c36af1413898e3e823dcdf7930fc59a'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1213_source_intake.py)" = '63a48e2bdd2ce4fd7bffa3e8f8ffe91a714f8227'
+          test "$(git rev-parse HEAD:research/BHS_V1212_FIRST_PAIRED_SENSITIVITY_REPORT.md)" = 'eae3273bc657e65ce5e52ba6f80dc5f42d736307'
+          test "$(git rev-parse HEAD:research/BHS_V1211_FIRST_EXTERNAL_LEAD_AUDIT.json)" = '464ddd8eb9c8cd238349a0062194abdbd4262860'
+      - name: Run source audit adversarial unit checks
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1213_source_intake.py' -v
+      - name: Install pinned inherited scientific dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Preserve inherited V12-V12.12 software contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1210_assignment_unit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1211_external_feasibility.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+      - name: Inspect exact upstream source without training a model
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1213_source_intake --out runs/bhs_v1213_first_source_intake.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1213_first_source_intake.json').read_text())
+          assert r['intake_status'] == 'SOURCE_ONLY_NOT_EVALUATION_READY', r['structural_problems']
+          assert r['source_bytes'] == 31745622
+          assert r['source_git_blob'] == 'fcd4e2ef24da093438030e3095469a679ed54d04'
+          assert r['boundary_count'] == 6 and r['row_count'] == 4289 and r['column_count'] == 90
+          assert r['scored_validation_allowed'] is False
+          assert r['physical_validation_by_bhs'] is False
+          assert r['independent_holdout_used'] is False
+          assert r['outcome_free_feature_whitelist'] == []
+          print('External DFT source verified; outcome scoring remains blocked.')
+          PY
+          sha256sum runs/bhs_v1213_first_source_intake.json
+      - name: Archive only the source metadata report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1213-pinned-external-source-intake
+          path: runs/bhs_v1213_first_source_intake.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0

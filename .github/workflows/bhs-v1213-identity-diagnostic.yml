@@ -1,0 +1,60 @@
+name: BHS v12.13 First Source Failure Explanation
+
+on:
+  push:
+    branches: [bhs-v1213-source-eligibility-diagnostic]
+    paths:
+      - 'scripts/bhs_v1213_identity_diagnostic.py'
+      - 'tests/test_bhs_v1213_identity_diagnostic.py'
+      - '.github/workflows/bhs-v1213-identity-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  explain-source-identity-rejection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Preserve the original failed source-intake code and exact upstream pin
+        run: |
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_source_intake.py)" = '064a25de0c36af1413898e3e823dcdf7930fc59a'
+          test "$(git rev-parse HEAD:scripts/bhs_v1213_identity_diagnostic.py)" = '66622bc2e0311179bcbd933e48b0dd0661eea4fe'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1213_identity_diagnostic.py)" = 'a40223f740b9de705cfa42e44c0b5de570652bb0'
+      - name: Unit tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1213_source_intake.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1213_identity_diagnostic.py' -v
+      - name: Diagnose original source identity failures without outcomes
+        run: |
+          python -m scripts.bhs_v1213_identity_diagnostic --out runs/bhs_v1213_first_identity_diagnostic.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('runs/bhs_v1213_first_identity_diagnostic.json')
+          r=json.loads(p.read_text())
+          assert r['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert r['source_git_blob']=='fcd4e2ef24da093438030e3095469a679ed54d04'
+          assert r['total_records']==4289
+          assert r['missing_identifier_records']==110
+          assert r['target_magnitudes_inspected'] is False
+          assert r['next_stage_eligible'] is False
+          print('First run failure is retained; stage remains blocked.')
+          PY
+          sha256sum runs/bhs_v1213_first_identity_diagnostic.json
+      - name: Archive only aggregated identity issues
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1213-first-identity-diagnostic
+          path: runs/bhs_v1213_first_identity_diagnostic.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
