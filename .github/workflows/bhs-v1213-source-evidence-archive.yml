@@ -1,0 +1,73 @@
+name: BHS v12.13 Immutable Source Evidence Archive
+
+on:
+  push:
+    branches: [bhs-v1213-source-evidence-archive]
+    paths:
+      - 'research/BHS_V1213_FIRST_EXTERNAL_DFT_SOURCE_AUDIT.md'
+      - 'research/bhs_v1213_first_source_intake_failed.json.xz'
+      - 'research/bhs_v1213_first_identity_diagnostic.json.xz'
+      - 'research/bhs_v1213_first_primitive_key_audit.json.xz'
+      - '.github/workflows/bhs-v1213-source-evidence-archive.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-first-records:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify report and exact first-run archived objects
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1213_FIRST_EXTERNAL_DFT_SOURCE_AUDIT.md)" = '3acf7ff53c1511cd57bf15df087d95c806a64478'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_source_intake_failed.json.xz)" = '2dfb322fd8bf1fa962e2e1e5b42a744a097d9d47'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_identity_diagnostic.json.xz)" = '82764023b455d3f35704d490138d8f3d05770691'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_primitive_key_audit.json.xz)" = 'de2e1a3265b83260421095e2c7e38e1c979e271b'
+          test "$(git rev-parse HEAD:research/BHS_V1213_FERRITIC_GB_SOURCE_PROTOCOL.md)" = 'c11b473e1c55967e5041f5ca72c2589a76bd4305'
+          test "$(git rev-parse HEAD:research/BHS_V1213_IDENTIFIER_RECOVERY_PROTOCOL.md)" = 'c02aa373fa82ac7d83399354335fba8267b81945'
+      - name: Decompress first source records and verify original exact SHA-256
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import lzma
+          from pathlib import Path
+          files=[
+            ("research/bhs_v1213_first_source_intake_failed.json.xz",
+             "af044166496f821c45c1399cc1a11f50a8db38ef8d9c5026df43a1ef85724ee9",
+             "45d4b114e26247aba16cdf5fcbd04cd5c64e4eecffceb0e701ce72f0c768d520"),
+            ("research/bhs_v1213_first_identity_diagnostic.json.xz",
+             "fb03bff945d0ec49b0ece524b65b59b448580069cd49308d9b67b2db94da1c75",
+             "cb546b036849110c7b155f190149eac59285721b8aaf437e101145300d1e5a05"),
+            ("research/bhs_v1213_first_primitive_key_audit.json.xz",
+             "19ffd078dadbe28a561ba814d5063b8de9f0fc0c41f1a0334421e6d2c10a178c",
+             "fc32ac91d4aea1c1f332cab2380a27b1c144f0e73502c010ad62e1597989e6be"),
+          ]
+          reports=[]
+          for path, compressed_digest, raw_digest in files:
+              raw_xz=Path(path).read_bytes()
+              assert hashlib.sha256(raw_xz).hexdigest()==compressed_digest, path
+              raw=lzma.decompress(raw_xz)
+              assert hashlib.sha256(raw).hexdigest()==raw_digest, path
+              reports.append(json.loads(raw))
+          a,b,c=reports
+          assert a['intake_status']=='INTAKE_BLOCKED'
+          assert b['total_records']==4289 and b['missing_identifier_records']==110
+          assert c['primitive_key_cardinality']==4289 and c['duplicated_primitive_key_types']==0
+          assert c['missing_target_strings_total']==30
+          assert c['missing_target_strings_with_missing_combined_id']==20
+          assert len({r['source_sha256'] for r in reports})==1
+          for r in reports:
+              assert r['physical_validation_by_bhs'] is False
+              assert r['independent_holdout_used'] is False
+              assert r['claim_of_superiority'] is False
+              assert r['scored_validation_allowed'] is False
+          print('All three first source-only results preserved byte-identically.')
+          print('Original rejection remains explicitly rejected.')
+          PY
