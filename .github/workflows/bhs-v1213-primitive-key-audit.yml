@@ -28,7 +28,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD:research/BHS_V1213_IDENTIFIER_RECOVERY_PROTOCOL.md)" = 'c02aa373fa82ac7d83399354335fba8267b81945'
           test "$(git rev-parse HEAD:scripts/bhs_v1213_primitive_key_audit.py)" = 'e2941ff5efa94bc4c5a8d2c60e6013243dec7314'
-          test "$(git rev-parse HEAD:tests/test_bhs_v1213_primitive_key_audit.py)" = '2b4046526f77b70f0b4366ec00ca5cda27f0ab0f'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1213_primitive_key_audit.py)" = 'e460bad7f6645c2b2cbc34276555c2d658110927'
           test "$(git rev-parse HEAD:scripts/bhs_v1213_source_intake.py)" = '064a25de0c36af1413898e3e823dcdf7930fc59a'
           test "$(git rev-parse HEAD:scripts/bhs_v1213_identity_diagnostic.py)" = '66622bc2e0311179bcbd933e48b0dd0661eea4fe'
       - name: Adversarial tests only
