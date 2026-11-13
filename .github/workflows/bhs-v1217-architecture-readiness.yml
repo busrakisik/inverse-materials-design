@@ -1,0 +1,79 @@
+name: BHS v12.17 Full Architecture Evaluation Readiness
+
+on:
+  push:
+    branches: [bhs-v1217-architecture-evaluation-readiness]
+    paths:
+      - 'research/BHS_V1217_IMPLEMENTATION_SCOPE_PROTOCOL.md'
+      - 'scripts/bhs_v1217_architecture_readiness.py'
+      - 'tests/test_bhs_v1217_architecture_readiness.py'
+      - '.github/workflows/bhs-v1217-architecture-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-architecture-honesty-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen audit protocol, implementation and adversarial tests
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1217_IMPLEMENTATION_SCOPE_PROTOCOL.md)" = 'd6bf0deb49cb447aea09397c5e69ac70fe2275ef'
+          test "$(git rev-parse HEAD:scripts/bhs_v1217_architecture_readiness.py)" = '04e5db2c568b696e13ed421dd4a7167a8c90c527'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1217_architecture_readiness.py)" = 'd31ab4c2ff4cf004a256ffdff1006473b8f269bf'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+          test "$(git rev-parse HEAD:research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md)" = '82d0fcab42dfcc0b2a15ee0cab769900a6201912'
+          test "$(git rev-parse HEAD:research/BHS_V1216_PER_FEATURE_PROVENANCE_PASSPORT.md)" = 'c3b0507bb1f67fa09e04e7eff3860bc5ea13aabf'
+      - name: Install pinned software contract dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3 pytest==8.3.4
+          python -m pip check
+      - name: Run implementation-scope tests and historical contract checks
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1217_architecture_readiness.py' -v
+          python -m pytest -q tests/test_legacy_hypothesis.py tests/test_legacy_bayesian.py tests/test_legacy_search_planner.py
+          python -m unittest discover -s tests -p 'test_bayesian_only_policy_v1.py' -v
+          python -m unittest discover -s tests -p 'test_mcts_puct_policy_v1.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+      - name: Produce first source-only BHS capability report
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1217_architecture_readiness --out runs/bhs_v1217_first_implementation_readiness.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('runs/bhs_v1217_first_implementation_readiness.json')
+          r=json.loads(p.read_text())
+          assert r['source_module_count']==11
+          assert r['status']=='FULL_BHS_NOT_EVALUABLE_YET_EXISTING_COMPONENT_RESULT_NEGATIVE'
+          assert r['v11_existing_measured_source_result']['bhs_minus_gp_ard_regret_j']==2.005
+          assert r['v11_existing_measured_source_result']['bhs_minus_rf_regret_j']==0.385
+          assert r['verified_component_capabilities']['single_end_to_end_full_bhs_policy_in_checked_entrypoints'] is False
+          assert r['scored_validation_allowed'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          assert r['new_scientific_performance_experiment_run'] is False
+          assert r['independent_holdout_used'] is False
+          print('Implementation code checked; scientific full-system score remains NO-GO.')
+          PY
+          sha256sum runs/bhs_v1217_first_implementation_readiness.json
+      - name: Preserve first exact result including any rejection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1217-first-source-architecture-readiness
+          path: runs/bhs_v1217_first_implementation_readiness.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
