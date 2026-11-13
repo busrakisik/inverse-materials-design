@@ -50,7 +50,7 @@ class ReadinessError(ValueError):
 
 
 def git_blob_sha1(raw: bytes) -> str:
-    return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
 
 
 def verify_pinned_sources(root: Path = ROOT) -> dict:
