@@ -1,0 +1,72 @@
+name: BHS v12.15 Source Feature Evidence Reproduction
+
+on:
+  push:
+    branches: [bhs-v1215-feature-provenance-evidence]
+    paths:
+      - 'research/BHS_V1215_FIRST_PRECOMPUTE_FEATURE_AUDIT.md'
+      - '.github/workflows/bhs-v1215-feature-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-byte-reproduction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen first-run source objects and first evidence text
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1215_FIRST_PRECOMPUTE_FEATURE_AUDIT.md)" = 'ef63bf83df1d4129d38fc536af12c25affedf977'
+          test "$(git rev-parse HEAD:research/BHS_V1215_FEATURE_PROVENANCE_PROTOCOL.md)" = 'dee8a1cc15f273ab3163cb3a4f489ebc538ed0c2'
+          test "$(git rev-parse HEAD:scripts/bhs_v1215_precompute_feature_provenance.py)" = 'e0d4076612b5bdd42fca9f39256d131be1e2a98b'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1215_precompute_feature_provenance.py)" = 'de1c4c8eba6f7656f4de024be922377851be4e30'
+          test "$(git rev-parse HEAD:research/BHS_V1214_FIRST_STRUCTURAL_SPLIT_RESULTS.md)" = '75d345d5ae3f77fb4331a4f6349bd6129af95d12'
+      - name: Source-only adversarial tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1215_precompute_feature_provenance.py' -v
+      - name: Reproduce first source-only report from immutable external source
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1215_precompute_feature_provenance --out runs/bhs_v1215_second_exact_coverage.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          raw=Path('runs/bhs_v1215_second_exact_coverage.json').read_bytes()
+          assert len(raw)==31827
+          assert hashlib.sha256(raw).hexdigest()=='e6316cf9fedde1abbc630a369f923b49a4f75458f4041422dab4cfc4c4f5cc5f'
+          a=json.loads(raw)
+          assert a['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert a['row_count']==4289 and a['header_count']==90
+          assert a['header_sha256']=='8ffd3f3678ab96963413b3a7f3ef8040d8f62e25bd8733c28ee0506ab1ad21c2'
+          assert a['geometry_candidate_column_count']==22
+          assert a['candidate_voronoi_column_count']==19
+          assert len(a['candidate_column_coverage'])==22
+          for c in a['candidate_column_coverage'].values():
+              assert c['populated_rows']==4285 and c['blank_rows']==4
+              assert c['by_gb']['S9_RA110_S2_21']['blank']==4
+              assert sum(v['blank'] for v in c['by_gb'].values())==4
+              x=c['paired_target_string_missingness']
+              assert x=={
+                'target_blank_and_feature_blank':0,
+                'target_blank_and_feature_present':30,
+                'target_present_and_feature_blank':4,
+                'target_present_and_feature_present':4255,
+              }
+              assert c['chronology_verified'] is False
+              assert c['predecision_feature_approved'] is False
+          assert a['approved_numerical_geometry_predictor_columns']==[]
+          assert a['raw_values_or_scientific_outcomes_inspected'] is False
+          assert a['precalculation_geometry_certified'] is False
+          assert a['scored_validation_allowed'] is False
+          assert a['claim_of_superiority'] is False
+          print('First 31,827-byte original result reproduced byte-for-byte. NO-GO retained.')
+          PY
