@@ -1,0 +1,58 @@
+name: BHS v12.19 Original Trace Source No-Go Evidence Replay
+
+on:
+  push:
+    branches: [bhs-v1219-trace-source-evidence-archive]
+    paths:
+      - 'research/BHS_V1219_FIRST_TRACE_SOURCE_ACCESS_AUDIT.md'
+      - '.github/workflows/bhs-v1219-first-trace-source-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-replay-source-access-no-go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin first report, source catalog, code, tests and inherited negative evidence
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1219_FIRST_TRACE_SOURCE_ACCESS_AUDIT.md)" = '9b4a22951e8b3f4ad003bee70eee582f21ded08b'
+          test "$(git rev-parse HEAD:research/BHS_V1219_TRACE_SOURCE_PROVENANCE_PROTOCOL.md)" = '00da2966ce476881f3d9b4df23617b136d19122f'
+          test "$(git rev-parse HEAD:research/BHS_V1219_SOURCE_ACCESS_INVENTORY.json)" = '858c782bb655e35911b1c5b8b3d6f4420867e14c'
+          test "$(git rev-parse HEAD:scripts/bhs_v1219_trace_source_lineage_gate.py)" = 'c1eca418ad0b98122c3a71be963d9ce3c5bb9858'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1219_trace_source_lineage_gate.py)" = '376f22d13cd3ab94d27eae890e4935279a39e3f5'
+          test "$(git rev-parse HEAD:research/BHS_V1218_FIRST_SYNTHETIC_HYPOTHESIS_RESULTS.md)" = '217b02ef744603dcda639140fcf99896f820fcfe'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - name: Recheck metadata-only source and nonleaking identity contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1219_trace_source_lineage_gate.py' -v
+      - name: Reproduce exact original NO-GO report and verify byte integrity
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1219_trace_source_lineage_gate --out runs/bhs_v1219_exact_source_no_go.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('runs/bhs_v1219_exact_source_no_go.json')
+          assert len(p.read_bytes())==1180
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='d330045387b3a2a43bf9fd91a6a8a174456e5ba63a9794b8704b3a3473e852e1'
+          r=json.loads(p.read_text())
+          assert r['source_entry_count']==4
+          assert r['original_2020_public_folder_link_found'] is True
+          assert r['original_2020_external_raw_trace_file_listing_accessible'] is False
+          assert r['original_2020_per_replicate_curve_matching_proven'] is False
+          assert r['raw_2020_trace_bytes_verified'] is False
+          assert r['scored_validation_allowed'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          assert r['status']=='NO_GO_ORIGINAL_2020_TRACE_MAPPING_UNVERIFIED'
+          print('First SOURCE ACCESS NO-GO report reproduced exactly; actual physical source data not scored.')
+          PY
