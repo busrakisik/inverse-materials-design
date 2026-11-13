@@ -1,0 +1,59 @@
+name: BHS v12.14 Structural Evidence Byte Reproduction
+
+on:
+  push:
+    branches: [bhs-v1214-structural-evidence-archive]
+    paths:
+      - 'research/BHS_V1214_FIRST_STRUCTURAL_SPLIT_RESULTS.md'
+      - '.github/workflows/bhs-v1214-structural-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independently-replay-first-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Preserve report and frozen source code exact Git objects
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1214_FIRST_STRUCTURAL_SPLIT_RESULTS.md)" = '75d345d5ae3f77fb4331a4f6349bd6129af95d12'
+          test "$(git rev-parse HEAD:research/BHS_V1214_CORRECTED_SPLIT_PROTOCOL.md)" = 'ffd69a39058ee482406505927f4fdab918f59605'
+          test "$(git rev-parse HEAD:scripts/bhs_v1214_group_split_readiness.py)" = '8eff5a38fcadb257849bdbfbea78bd9b03323bb1'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1214_group_split_readiness.py)" = 'fb352522a157bbec0c7d877ed1d56201e91ab9b1'
+          test "$(git rev-parse HEAD:research/BHS_V1213_FIRST_EXTERNAL_DFT_SOURCE_AUDIT.md)" = '3acf7ff53c1511cd57bf15df087d95c806a64478'
+      - name: Preserve current source-only tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1214_group_split_readiness.py' -v
+      - name: Byte-identical external source manifest reproduction
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1214_group_split_readiness --out runs/bhs_v1214_second_byte_reproduction.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          path=Path('runs/bhs_v1214_second_byte_reproduction.json')
+          raw=path.read_bytes()
+          expected='f0524c1e328cbd01af4f6a428229cead1e3b780c80d5cd9567c65aac3e4e675f'
+          assert hashlib.sha256(raw).hexdigest()==expected
+          assert len(raw)==775333
+          d=json.loads(raw)
+          assert d['status']=='STRUCTURAL_SPLIT_MANIFEST_ONLY_NOT_SCORING_READY'
+          assert d['fold_counts']=={'leave_one_gb_out':6,'leave_one_element_out':91,'crossed_gb_element':541}
+          assert d['gb_site_count']==54
+          assert d['crossed_test_target_all_blank_folds']==1
+          assert d['elements_with_only_blank_target_strings']==['Yb']
+          for k in ['scored_validation_allowed','independent_holdout_used',
+                    'physical_validation_by_bhs','claim_of_superiority',
+                    'real_savings_measured','laboratory_action_allowed']:
+              assert d[k] is False, k
+          print('First GitHub run result reproduced exactly; source-only no-go preserved.')
+          PY
