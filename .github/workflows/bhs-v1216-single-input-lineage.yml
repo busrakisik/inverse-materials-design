@@ -1,0 +1,82 @@
+name: BHS v12.16 One Original Input Geometry Lineage
+
+on:
+  push:
+    branches: [bhs-v1216-starting-input-lineage]
+    paths:
+      - 'research/BHS_V1216_SINGLE_INPUT_PROVENANCE_PROTOCOL.md'
+      - 'scripts/bhs_v1216_single_input_lineage.py'
+      - 'tests/test_bhs_v1216_single_input_lineage.py'
+      - '.github/workflows/bhs-v1216-single-input-lineage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  first-original-sample-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze protocol, code, tests and negative prior history
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1216_SINGLE_INPUT_PROVENANCE_PROTOCOL.md)" = 'd3946774704d1701eccfaea7d38e7e2495d22a3f'
+          test "$(git rev-parse HEAD:scripts/bhs_v1216_single_input_lineage.py)" = 'bad06311d1867f3ee97824179d6437a5b89607f6'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1216_single_input_lineage.py)" = '79ebaf1c7544007affcd7d9fb4c9471cf9edade7'
+          test "$(git rev-parse HEAD:research/BHS_V1215_FIRST_PRECOMPUTE_FEATURE_AUDIT.md)" = 'ef63bf83df1d4129d38fc536af12c25affedf977'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - name: Install original numerical structure-comparison dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Test strict original-input contract on synthetic fixtures
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1216_single_input_lineage.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1215_precompute_feature_provenance.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1214_group_split_readiness.py' -v
+      - name: Retain historic comparative science contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+      - name: Compare sole original author input without any scientific labels
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1216_single_input_lineage --out runs/bhs_v1216_first_one_input_lineage.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1216_first_one_input_lineage.json').read_text())
+          assert r['source_csv_integrity']['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert r['sample_poscar_git_blob']=='c1b92f972db85ebbce5bf9cc8e58a4d356ee27be'
+          assert r['sample_incar_git_blob']=='d0a1a818098b901317b1803eb20a4c1db95f54fd'
+          assert r['matched_record_exactly_one']
+          assert r['numerical_label_or_relaxed_structure_accessed'] is False
+          assert r['real_expensive_calculation_timing_documented'] is False
+          assert r['full_4289_row_input_lineage_certified'] is False
+          assert r['policy_time_access_certified'] is False
+          assert r['precalculation_geometry_certified'] is False
+          assert r['fair_comparison_authorized'] is False
+          assert r['scored_validation_allowed'] is False
+          print('Scientific decision remains NO-GO independent of geometry match.')
+          PY
+          sha256sum runs/bhs_v1216_first_one_input_lineage.json
+      - name: Preserve original first-run result including potential failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1216-first-original-input-geometry-audit
+          path: runs/bhs_v1216_first_one_input_lineage.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
