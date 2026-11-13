@@ -1,0 +1,67 @@
+name: BHS v12.16 Original Negative Geometry Result Reproduction
+
+on:
+  push:
+    branches: [bhs-v1216-first-lineage-evidence]
+    paths:
+      - 'research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md'
+      - '.github/workflows/bhs-v1216-first-lineage-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-source-mismatch-exactly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Confirm archived negative report, frozen source and prior negative findings
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md)" = '82d0fcab42dfcc0b2a15ee0cab769900a6201912'
+          test "$(git rev-parse HEAD:research/BHS_V1216_SINGLE_INPUT_PROVENANCE_PROTOCOL.md)" = 'd3946774704d1701eccfaea7d38e7e2495d22a3f'
+          test "$(git rev-parse HEAD:scripts/bhs_v1216_single_input_lineage.py)" = 'bad06311d1867f3ee97824179d6437a5b89607f6'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1216_single_input_lineage.py)" = '08dd954580293244f32df2691239eac9f6c744a9'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+          test "$(git rev-parse HEAD:research/BHS_V1215_FIRST_PRECOMPUTE_FEATURE_AUDIT.md)" = 'ef63bf83df1d4129d38fc536af12c25affedf977'
+      - name: Install frozen scientific dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Recheck all sample geometry contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1216_single_input_lineage.py' -v
+      - name: Independently reproduce EXACT first artifact and preserve NO-GO
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1216_single_input_lineage --out runs/bhs_v1216_replay_original_negative.json
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          p=Path('runs/bhs_v1216_replay_original_negative.json')
+          original='21e7a322f03bcdea9230e150a5a5a201ea5c0d5f092c2797fe8991997728ee8b'
+          assert len(p.read_bytes())==2007
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==original
+          a=json.loads(p.read_text())
+          g=a['input_geometry_comparison']
+          assert g['sample_geometry_match'] is False
+          assert g['atom_count']==42 and g['species_counts']=={'Fe':41,'He':1}
+          assert g['max_lattice_component_difference_angstrom']==0
+          assert g['max_species_matched_min_image_displacement_angstrom']>0.45
+          assert g['fixed_tolerance_angstrom']==0.001
+          for k in ('scored_validation_allowed','policy_time_access_certified',
+                    'precalculation_geometry_certified','full_4289_row_input_lineage_certified',
+                    'fair_comparison_authorized','claim_of_superiority'):
+              assert a[k] is False
+          print('Original NEGATIVE source evidence reproduced without scientific outcome labels.')
+          PY
