@@ -32,7 +32,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD:research/BHS_V1216_SINGLE_INPUT_PROVENANCE_PROTOCOL.md)" = 'd3946774704d1701eccfaea7d38e7e2495d22a3f'
           test "$(git rev-parse HEAD:scripts/bhs_v1216_single_input_lineage.py)" = 'bad06311d1867f3ee97824179d6437a5b89607f6'
-          test "$(git rev-parse HEAD:tests/test_bhs_v1216_single_input_lineage.py)" = '79ebaf1c7544007affcd7d9fb4c9471cf9edade7'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1216_single_input_lineage.py)" = '08dd954580293244f32df2691239eac9f6c744a9'
           test "$(git rev-parse HEAD:research/BHS_V1215_FIRST_PRECOMPUTE_FEATURE_AUDIT.md)" = 'ef63bf83df1d4129d38fc536af12c25affedf977'
           test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
       - name: Install original numerical structure-comparison dependencies
