@@ -1,0 +1,96 @@
+name: BHS v12.14 Group Split and Feature Gate
+
+on:
+  push:
+    branches: [bhs-v1214-group-split-readiness]
+    paths:
+      - 'research/BHS_V1214_GROUP_SPLIT_FEASIBILITY_PROTOCOL.md'
+      - 'scripts/bhs_v1214_group_split_readiness.py'
+      - 'tests/test_bhs_v1214_group_split_readiness.py'
+      - '.github/workflows/bhs-v1214-group-split-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  outcome-free-split-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify exact frozen protocol and all first source evidence
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1214_GROUP_SPLIT_FEASIBILITY_PROTOCOL.md)" = 'ef3588a8766a5bfe95747482b53c64ce3dd9acde'
+          test "$(git rev-parse HEAD:scripts/bhs_v1214_group_split_readiness.py)" = 'fa9ffab496e1a5c612f07a4074b600e460dea107'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1214_group_split_readiness.py)" = '048ebc2d264087cb73837a31b5344e4d289556fc'
+          test "$(git rev-parse HEAD:research/BHS_V1213_FIRST_EXTERNAL_DFT_SOURCE_AUDIT.md)" = '3acf7ff53c1511cd57bf15df087d95c806a64478'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_source_intake_failed.json.xz)" = '2dfb322fd8bf1fa962e2e1e5b42a744a097d9d47'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_identity_diagnostic.json.xz)" = '82764023b455d3f35704d490138d8f3d05770691'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_primitive_key_audit.json.xz)" = 'de2e1a3265b83260421095e2c7e38e1c979e271b'
+      - name: Source-only adversarial unit checks
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1213_source_intake.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1213_identity_diagnostic.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1213_primitive_key_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1214_group_split_readiness.py' -v
+      - name: Install pinned dependencies for prior scientific contracts
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Retain previous conditional scientific and source contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1210_assignment_unit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1211_external_feasibility.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+      - name: Run original pinned source with metadata only
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1214_group_split_readiness --out runs/bhs_v1214_first_group_split_manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('runs/bhs_v1214_first_group_split_manifest.json')
+          a=json.loads(p.read_text())
+          assert a['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert a['source_record_count']==4289
+          assert a['source_target_blank_rows']==30
+          assert a['gb_count']==6 and a['element_count']==90
+          assert a['fold_counts']=={'leave_one_gb_out':6,'leave_one_element_out':90,'crossed_gb_element':540}
+          assert a['scored_validation_allowed'] is False
+          assert a['independent_holdout_used'] is False
+          assert a['claim_of_superiority'] is False
+          assert a['physical_validation_by_bhs'] is False
+          assert all(x['train']['rows']+x['test']['rows']+x['embargo']['rows']==4289
+                     for folds in a['folds'].values() for x in folds)
+          print('Outcome-free source structural report only.')
+          PY
+          sha256sum runs/bhs_v1214_first_group_split_manifest.json
+      - name: Preserve only first metadata manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1214-original-outcome-free-split-manifest
+          path: runs/bhs_v1214_first_group_split_manifest.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
