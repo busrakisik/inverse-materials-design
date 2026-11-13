@@ -1,0 +1,82 @@
+name: BHS v12.18 Rival Predictive Hypotheses Synthetic Contracts
+
+on:
+  push:
+    branches: [bhs-v1218-dual-predictive-hypothesis-prototype]
+    paths:
+      - 'research/BHS_V1218_RIVAL_PREDICTIVE_PROTOCOL.md'
+      - 'scripts/bhs_v1218_dual_predictive_hypotheses.py'
+      - 'tests/test_bhs_v1218_dual_predictive_hypotheses.py'
+      - '.github/workflows/bhs-v1218-dual-predictive.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  first-synthetic-hypothesis-policy-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin frozen protocol and exact source blobs
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1218_RIVAL_PREDICTIVE_PROTOCOL.md)" = '74e73368e202bc2ad88e5dadbae73c059a828a09'
+          test "$(git rev-parse HEAD:scripts/bhs_v1218_dual_predictive_hypotheses.py)" = 'ea20f1e2564db6d97e94e3823508918196ed5f61'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1218_dual_predictive_hypotheses.py)" = '48843b16eff1b24bbedf40cac859e6a01601c0b2'
+          test "$(git rev-parse HEAD:research/BHS_V1217_FIRST_ARCHITECTURE_READINESS_RESULTS.md)" = '60d29bc97919b54fdee4703e8663b16b6bc9e88f'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - name: Install exact numerical and test dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3 pytest==8.3.4
+          python -m pip check
+      - name: Test synthetic-only rival model inference and previous architecture
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1218_dual_predictive_hypotheses.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1217_architecture_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bayesian_only_policy_v1.py' -v
+          python -m unittest discover -s tests -p 'test_mcts_puct_policy_v1.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+          python -m pytest -q tests/test_legacy_hypothesis.py tests/test_legacy_bayesian.py tests/test_legacy_search_planner.py
+      - name: Run only a fabricated 4-candidate mathematical example
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1218_dual_predictive_hypotheses --out runs/bhs_v1218_first_synthetic_rival_hypotheses.json
+          python - <<'PY'
+          import json,math
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1218_first_synthetic_rival_hypotheses.json').read_text())
+          assert r['schema']=='BHS-V12.18-SYNTHETIC-DUAL-PREDICTIVE-HYPOTHESES'
+          assert r['fabricated_fixture_only'] is True
+          assert r['original_source_measurements_read'] is False
+          assert r['scored_benchmark'] is False
+          assert r['scored_validation_allowed'] is False
+          assert r['physical_mechanisms_identified'] is False
+          assert r['scientific_likelihood_calibrated'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          first=r['first_choice']
+          second=r['second_choice_after_only_manufactured_revealed_response']
+          assert first['selected_candidate_id']!=second['selected_candidate_id']
+          assert second['previously_revealed_count']==1
+          assert abs(sum(second['model_probabilities'].values())-1.0)<1e-12
+          print('Real science and physical performance remain UNTESTED.')
+          PY
+          sha256sum runs/bhs_v1218_first_synthetic_rival_hypotheses.json
+      - name: Retain original software-only output even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1218-first-synthetic-dual-hypothesis-component
+          path: runs/bhs_v1218_first_synthetic_rival_hypotheses.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
