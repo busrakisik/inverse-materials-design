@@ -1,0 +1,100 @@
+name: BHS v12.14 Observed Cell Split Readiness
+
+on:
+  push:
+    branches: [bhs-v1214-observed-cell-split-gate]
+    paths:
+      - 'research/BHS_V1214_CORRECTED_SPLIT_PROTOCOL.md'
+      - 'scripts/bhs_v1214_group_split_readiness.py'
+      - 'tests/test_bhs_v1214_group_split_readiness.py'
+      - '.github/workflows/bhs-v1214-observed-cell-split.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-only-evaluation-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze corrected protocol and previous source reports
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1214_CORRECTED_SPLIT_PROTOCOL.md)" = 'ffd69a39058ee482406505927f4fdab918f59605'
+          test "$(git rev-parse HEAD:scripts/bhs_v1214_group_split_readiness.py)" = '8eff5a38fcadb257849bdbfbea78bd9b03323bb1'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1214_group_split_readiness.py)" = 'fb352522a157bbec0c7d877ed1d56201e91ab9b1'
+          test "$(git rev-parse HEAD:research/BHS_V1214_ELEMENT_CARDINALITY_DIAGNOSTIC_PROTOCOL.md)" = '3279ec16fa87bd5c6c393105ceff87cecf20df34'
+          test "$(git rev-parse HEAD:research/BHS_V1213_FIRST_EXTERNAL_DFT_SOURCE_AUDIT.md)" = '3acf7ff53c1511cd57bf15df087d95c806a64478'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_source_intake_failed.json.xz)" = '2dfb322fd8bf1fa962e2e1e5b42a744a097d9d47'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_identity_diagnostic.json.xz)" = '82764023b455d3f35704d490138d8f3d05770691'
+          test "$(git rev-parse HEAD:research/bhs_v1213_first_primitive_key_audit.json.xz)" = 'de2e1a3265b83260421095e2c7e38e1c979e271b'
+      - name: Complete new and inherited source-only adversarial tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1213_source_intake.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1213_identity_diagnostic.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1213_primitive_key_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1214_element_cardinality_diagnostic.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1214_group_split_readiness.py' -v
+      - name: Install pinned inherited scientific dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3
+          python -m pip check
+      - name: Retain historical conditional research checks
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_measurement_allocation_v12.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v121_order_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v122_adaptive_gp_reference.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v123_synthetic_decision_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v124_completion_coverage_audit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v125_disjoint_calibration.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v126_group_risk_intake_contracts.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v127_hypothesis_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v128_design_estimability.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v129_design_attrition.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1210_assignment_unit.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1211_external_feasibility.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1212_precision_sensitivity.py' -v
+      - name: Produce first exact source-only observed-cell fold manifest
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1214_group_split_readiness --out runs/bhs_v1214_first_observed_cell_manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1214_first_observed_cell_manifest.json').read_text())
+          assert r['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert r['source_record_count']==4289 and r['source_target_blank_rows']==30
+          assert r['gb_count']==6 and r['element_count']==91
+          assert r['source_missing_original_combined_ids']==110
+          assert r['fold_counts']=={'leave_one_gb_out':6,'leave_one_element_out':91,'crossed_gb_element':541}
+          assert r['observed_gb_element_cells']==541
+          assert r['unobserved_gb_element_cells']==5
+          assert all(x['train']['rows']+x['test']['rows']+x['embargo']['rows']==4289
+                     for folds in r['folds'].values() for x in folds)
+          assert all(x['both_gb_and_element_disjoint']
+                     for x in r['folds']['crossed_gb_element'])
+          assert r['scored_validation_allowed'] is False
+          assert r['claim_of_superiority'] is False
+          assert r['independent_holdout_used'] is False
+          print('Unobserved cells kept absent; no model results, cost or laboratory data used.')
+          PY
+          sha256sum runs/bhs_v1214_first_observed_cell_manifest.json
+      - name: Retain first observed-cell metadata evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1214-first-observed-cell-structural-manifest
+          path: runs/bhs_v1214_first_observed_cell_manifest.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
