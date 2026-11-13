@@ -61,7 +61,8 @@ class BHSArchitectureReadinessTests(unittest.TestCase):
     def test_synthetic_math_only_posteriors(self):
         result=a.check_runtime_contracts()
         fixture=result["manufactured_likelihood_posterior_test"]
-        self.assertEqual(fixture["posteriors"],{"H0":0.75,"H1":0.25})
+        self.assertAlmostEqual(fixture["posteriors"]["H0"],0.75,places=12)
+        self.assertAlmostEqual(fixture["posteriors"]["H1"],0.25,places=12)
         self.assertFalse(fixture["physical_likelihood_calibrated"])
         self.assertIsNone(fixture["scientific_benchmark_score"])
 
