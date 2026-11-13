@@ -1,0 +1,79 @@
+name: BHS v12.19 Source Curve Identity and Chronology Gate
+
+on:
+  push:
+    branches: [bhs-v1219-raw-curve-source-lineage-gate]
+    paths:
+      - 'research/BHS_V1219_TRACE_SOURCE_PROVENANCE_PROTOCOL.md'
+      - 'research/BHS_V1219_SOURCE_ACCESS_INVENTORY.json'
+      - 'scripts/bhs_v1219_trace_source_lineage_gate.py'
+      - 'tests/test_bhs_v1219_trace_source_lineage_gate.py'
+      - '.github/workflows/bhs-v1219-trace-provenance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-2020-curves-not-yet-verified:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze source-catalog provenance, validator and negative history
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1219_TRACE_SOURCE_PROVENANCE_PROTOCOL.md)" = '00da2966ce476881f3d9b4df23617b136d19122f'
+          test "$(git rev-parse HEAD:research/BHS_V1219_SOURCE_ACCESS_INVENTORY.json)" = '858c782bb655e35911b1c5b8b3d6f4420867e14c'
+          test "$(git rev-parse HEAD:scripts/bhs_v1219_trace_source_lineage_gate.py)" = 'c1eca418ad0b98122c3a71be963d9ce3c5bb9858'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1219_trace_source_lineage_gate.py)" = '376f22d13cd3ab94d27eae890e4935279a39e3f5'
+          test "$(git rev-parse HEAD:research/BHS_V1218_FIRST_SYNTHETIC_HYPOTHESIS_RESULTS.md)" = '217b02ef744603dcda639140fcf99896f820fcfe'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - name: Install unchanged scientific test dependencies
+        run: |
+          python -m pip install numpy==1.26.4 scipy==1.13.1 scikit-learn==1.5.2 pandas==2.2.3 pytest==8.3.4
+          python -m pip check
+      - name: Test source identity, phantom curve rejection and prior components
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1219_trace_source_lineage_gate.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1218_dual_predictive_hypotheses.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_v1217_architecture_readiness.py' -v
+          python -m unittest discover -s tests -p 'test_bhs_replicate_pool_v11.py' -v
+          python -m pytest -q tests/test_legacy_hypothesis.py tests/test_legacy_bayesian.py tests/test_legacy_search_planner.py
+      - name: Produce original public-source-only NO-GO finding
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1219_trace_source_lineage_gate --out runs/bhs_v1219_first_public_trace_catalog.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('runs/bhs_v1219_first_public_trace_catalog.json').read_text())
+          assert r['source_entry_count']==4
+          assert r['original_2020_public_folder_link_found'] is True
+          assert r['original_2020_external_raw_trace_file_listing_accessible'] is False
+          assert r['original_2020_per_replicate_curve_matching_proven'] is False
+          assert r['source_measurements_read'] is False
+          assert r['scored_validation_allowed'] is False
+          assert r['raw_2020_trace_bytes_verified'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          assert r['status']=='NO_GO_ORIGINAL_2020_TRACE_MAPPING_UNVERIFIED'
+          print('Catalog exists; original per-trial curves still NOT independently verified.')
+          PY
+          sha256sum runs/bhs_v1219_first_public_trace_catalog.json
+      - name: Retain first original negative source-access artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1219-first-2020-curve-source-no-go
+          path: runs/bhs_v1219_first_public_trace_catalog.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
