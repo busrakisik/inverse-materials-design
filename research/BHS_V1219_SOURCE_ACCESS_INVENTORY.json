@@ -1,0 +1,73 @@
+{
+  "schema": "BHS-V12.19-PUBLIC-SOURCE-ACCESS-INVENTORY",
+  "catalog_date": "2026-11-13",
+  "scope": "PUBLIC_DOCUMENTATION_ONLY_NOT_INDIVIDUAL_MEASUREMENT_VERIFICATION",
+  "entries": [
+    {
+      "id": "CROSSED_BARREL_2020_ORIGINAL",
+      "domain": "crossed_barrel_2020",
+      "citation_doi": "10.1126/sciadv.aaz1708",
+      "source_article": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7148087/",
+      "author_catalog": "https://www.kablab.org/data",
+      "original_folder": "https://www.dropbox.com/scl/fo/94xtwr8lx6eaj2vymbpzw/AChuSgwzm6Vay8cMeDEwJVQ?rlkey=9c9n507l4jyg1lfe5o7yh3vwn&dl=0",
+      "institutional_record": "https://open.bu.edu/items/e64c20e4-0f56-4a90-ac14-db26698d5faf",
+      "institutional_handle": "2144/49164",
+      "source_status": "ARTICLE_CONFIRMS_TRACES_PRODUCED_LINK_FOUND_CONTENT_UNVERIFIED",
+      "observed_individual_file_names": false,
+      "raw_archive_bytes_downloaded": false,
+      "file_integrity_digest_independently_verified": false,
+      "per_trial_original_ids_verified": false,
+      "historical_v11_replicate_curve_join_verified": false,
+      "source_license_of_raw_files_verified": false,
+      "candidate_policy_time_visibility_verified": false,
+      "score_use_authorized": false
+    },
+    {
+      "id": "CROSSED_BARREL_2021_EXPANDED_FEA",
+      "domain": "crossed_barrel_2021_expanded",
+      "citation_doi": "10.1016/j.isci.2021.102262",
+      "source_article": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8010472/",
+      "author_catalog": "https://www.kablab.org/data",
+      "folder": "https://www.dropbox.com/scl/fo/bfext3906kdnvu82hrw5r/AMVo_oX-2VRdFPl0lGzmY4M?rlkey=8pqmsnyfobq0a5vrn4jqbat68&dl=0",
+      "source_status": "SIMULATION_EXPANDED_LINK_FOUND_FILE_CONTENT_UNVERIFIED",
+      "raw_archive_bytes_downloaded": false,
+      "original_2020_replicate_curve_join_verified": false,
+      "score_use_authorized": false
+    },
+    {
+      "id": "LATTICE_2022_SEPARATE",
+      "domain": "lattice_2022",
+      "citation_doi": "10.1016/j.matt.2022.06.051",
+      "institutional_record": "https://open.bu.edu/items/ff8a7bce-2907-4efa-aeed-943287988e8c",
+      "quasistatic_archive_label": "RawTestData_Quasistatic.zip",
+      "quasistatic_archive_mb_reported": 133.84,
+      "impact_archive_label": "RawTestData_Impact.zip",
+      "impact_archive_mb_reported": 120.54,
+      "author_reported_quasistatic_tests": 821,
+      "author_reported_impact_tests": 247,
+      "source_status": "SEPARATE_LATTICE_EXPERIMENT_NOT_ORIGINAL_CROSSED_BARREL",
+      "raw_archive_bytes_downloaded": false,
+      "score_use_authorized": false
+    },
+    {
+      "id": "ADTS_2024_SEPARATE",
+      "domain": "generalized_cylindrical_shells_2024",
+      "citation_doi": "10.1038/s41467-024-48534-4",
+      "institutional_record": "https://open.bu.edu/items/871d47cb-a12c-4ebb-8623-92df97353ea9",
+      "institutional_handle": "2144/46687",
+      "metadata_file_label": "CampaignData.csv",
+      "declared_trace_file_convention": "ADTS#.csv",
+      "reported_experiment_count": 25387,
+      "missing_traces_possible": true,
+      "source_reported_license": "CC-BY-NC-SA-4.0",
+      "source_status": "OTHER_PHYSICAL_DOMAIN_MAPPED_CURVES_CLAIMED_NOT_INDEPENDENTLY_VERIFIED",
+      "raw_archive_bytes_downloaded": false,
+      "original_2020_replicate_curve_join_verified": false,
+      "score_use_authorized": false
+    }
+  ],
+  "all_source_outcome_values_read": false,
+  "source_content_verification_complete": false,
+  "new_empirical_score_permitted": false,
+  "global_release": "NO_GO_2020_TRACE_LINKAGE_UNVERIFIED"
+}
