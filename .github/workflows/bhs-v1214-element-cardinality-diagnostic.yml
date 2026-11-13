@@ -1,0 +1,61 @@
+name: BHS v12.14 Element Cardinality First-Failure Diagnosis
+
+on:
+  push:
+    branches: [bhs-v1214-element-coverage-diagnostic]
+    paths:
+      - 'research/BHS_V1214_ELEMENT_CARDINALITY_DIAGNOSTIC_PROTOCOL.md'
+      - 'scripts/bhs_v1214_element_cardinality_diagnostic.py'
+      - 'tests/test_bhs_v1214_element_cardinality_diagnostic.py'
+      - '.github/workflows/bhs-v1214-element-cardinality-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-source-group-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze source and failed original code
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1214_ELEMENT_CARDINALITY_DIAGNOSTIC_PROTOCOL.md)" = '3279ec16fa87bd5c6c393105ceff87cecf20df34'
+          test "$(git rev-parse HEAD:scripts/bhs_v1214_element_cardinality_diagnostic.py)" = '329b102f00024116f791a69910a97dd8d73593fb'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1214_element_cardinality_diagnostic.py)" = 'ab6346bff4bcf62d5761a6f27afe715d01cee7bf'
+          test "$(git rev-parse HEAD:scripts/bhs_v1214_group_split_readiness.py)" = 'fa9ffab496e1a5c612f07a4074b600e460dea107'
+      - name: Adversarial source-only tests
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1214_element_cardinality_diagnostic.py' -v
+      - name: Compute external original source element sets only
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1214_element_cardinality_diagnostic --out runs/bhs_v1214_first_element_cardinality_diagnostic.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('runs/bhs_v1214_first_element_cardinality_diagnostic.json').read_text())
+          assert a['source_sha256']=='825f0b7c783c51213adb47bd1366023f0861e8a21b904113d9d3871c3daa0fc2'
+          assert a['total_records']==4289
+          assert a['missing_combined_id_records']==110
+          assert a['missing_target_strings']==30
+          assert a['scored_validation_allowed'] is False
+          assert a['scientific_outcomes_inspected'] is False
+          print('External source groups documented, no model scoring permitted.')
+          PY
+          sha256sum runs/bhs_v1214_first_element_cardinality_diagnostic.json
+      - name: Preserve first exact source metadata result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bhs-v1214-first-element-cardinality-diagnostic
+          path: runs/bhs_v1214_first_element_cardinality_diagnostic.json
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
