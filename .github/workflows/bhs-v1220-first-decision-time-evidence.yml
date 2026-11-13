@@ -1,0 +1,56 @@
+name: BHS v12.20 First Campaign Decision-Time No-Go Replay
+
+on:
+  push:
+    branches: [bhs-v1220-campaign-source-evidence-archive]
+    paths:
+      - 'research/BHS_V1220_FIRST_ADTS_DECISION_TIME_NO_GO.md'
+      - '.github/workflows/bhs-v1220-first-decision-time-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-original-information-no-go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify original protocol and entire negative chronology source
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1220_FIRST_ADTS_DECISION_TIME_NO_GO.md)" = 'dcac9aa458708b4e3133fb0b0e8c9661338b8f36'
+          test "$(git rev-parse HEAD:research/BHS_V1220_ADTS_DECISION_TIME_PROTOCOL.md)" = 'e8627160d67afba65d95c21aa9f68268117483d7'
+          test "$(git rev-parse HEAD:scripts/bhs_v1220_campaign_decision_time_gate.py)" = '1ea9891b554668076ffe4bd8edc799b20eee6031'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1220_campaign_decision_time_gate.py)" = 'aea4619cb7c1ddc30ddd3ede079764aeee1a944f'
+          test "$(git rev-parse HEAD:research/BHS_V1219_FIRST_TRACE_SOURCE_ACCESS_AUDIT.md)" = '9b4a22951e8b3f4ad003bee70eee582f21ded08b'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - name: Repeat source-only manufactured evidence-access contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1220_campaign_decision_time_gate.py' -v
+      - name: Recompute EXACT original first-source no-go artifact
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1220_campaign_decision_time_gate --out runs/bhs_v1220_exact_first_campaign_no_go.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('runs/bhs_v1220_exact_first_campaign_no_go.json')
+          assert len(p.read_bytes())==4338
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='40d81c21930a43869c1d0d4e1d1024b15f8cd004f573d124381225b7cd411341'
+          r=json.loads(p.read_text())
+          assert r['source_metadata_bytes_verified'] is False
+          assert r['original_campaign_csv_column_mapping_verified'] is False
+          assert r['counterfactual_responses_available'] is False
+          assert r['logging_propensities_verified'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          assert r['scored_validation_allowed'] is False
+          assert r['decision']=='NO_GO_ADTS_2024_POLICY_TIME_AND_COUNTERFACTUALS_UNVERIFIED'
+          print('Original source-only negative decision reproduced byte for byte without source outcomes.')
+          PY
