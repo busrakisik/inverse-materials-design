@@ -19,7 +19,7 @@ from scripts.bhs_v1213_source_intake import (
 
 EXPECTED_ROWS = 4289
 EXPECTED_GB = 6
-EXPECTED_ELEMENTS = 90
+EXPECTED_ELEMENTS = 91
 EXPECTED_MISSING_COMBINED = 110
 EXPECTED_MISSING_TARGET = 30
 REQUIRED = ("GB", "element", "Z", "site", "GB_site",
@@ -168,7 +168,20 @@ def one_fold(rows: list[dict], family: str, gb: str | None = None,
         "test": _group_metrics(test),
         "embargo": _group_metrics(embargo),
         "shared_gb_site_identifiers_train_test": len(train_sites & test_sites),
-        "group_disjoint": True if family != "leave_one_element_out" else False,
+        "gb_site_disjoint": len(train_sites & test_sites) == 0,
+        "shared_gb_labels_train_test": len(
+            {r["id"][0] for r in train} & {r["id"][0] for r in test}),
+        "shared_element_labels_train_test": len(
+            {r["id"][1] for r in train} & {r["id"][1] for r in test}),
+        "both_gb_and_element_disjoint": (
+            not ({r["id"][0] for r in train} & {r["id"][0] for r in test})
+            and not ({r["id"][1] for r in train} & {r["id"][1] for r in test})
+        ),
+        "test_target_status": (
+            "NOT_SCOREABLE_TARGETS_ABSENT"
+            if all(r["target_blank"] for r in test)
+            else "TARGET_EXISTS_NOT_SCORING_AUTHORIZED"
+        ),
         "tested_outcomes": False,
     }
 
@@ -178,6 +191,11 @@ def evaluate_metadata(rows: list[dict]) -> dict:
         raise SplitContractError("BAD_OR_DUPLICATE_INPUTS")
     gb = sorted({r["id"][0] for r in rows})
     elements = sorted({r["id"][1] for r in rows})
+    observed_cells = sorted({(r["id"][0], r["id"][1]) for r in rows})
+    unobserved_cells = [
+        (g, e) for g in gb for e in elements
+        if (g, e) not in set(observed_cells)
+    ]
     folds = {
         "leave_one_gb_out": [one_fold(rows, "leave_one_gb_out", gb=g) for g in gb],
         "leave_one_element_out": [
@@ -185,7 +203,7 @@ def evaluate_metadata(rows: list[dict]) -> dict:
         ],
         "crossed_gb_element": [
             one_fold(rows, "crossed_gb_element", gb=g, element=e)
-            for g in gb for e in elements
+            for g, e in observed_cells
         ],
     }
     source_identity = Counter(r["id"][0] for r in rows)
@@ -210,6 +228,21 @@ def evaluate_metadata(rows: list[dict]) -> dict:
         "gb_row_counts": dict(sorted(source_identity.items())),
         "element_row_counts": dict(sorted(source_element.items())),
         "fold_counts": {name: len(v) for name, v in folds.items()},
+        "possible_gb_element_cells": len(gb) * len(elements),
+        "observed_gb_element_cells": len(observed_cells),
+        "unobserved_gb_element_cells": len(unobserved_cells),
+        "unobserved_cells": [list(pair) for pair in unobserved_cells],
+        "source_missing_original_combined_ids": sum(r["combined_blank"] for r in rows),
+        "elements_with_only_blank_target_strings": sorted(
+            e for e in elements if not any(
+                r["id"][1] == e and not r["target_blank"] for r in rows
+            )
+        ),
+        "crossed_cells_with_only_blank_targets": [
+            [f["heldout_gb"], f["heldout_element"]]
+            for f in folds["crossed_gb_element"]
+            if f["test"]["target_nonblank_rows"] == 0
+        ],
         "crossed_test_rows_min": min(f["test"]["rows"] for f in cross),
         "crossed_test_rows_max": max(f["test"]["rows"] for f in cross),
         "crossed_test_target_nonblank_min": min(f["test"]["target_nonblank_rows"] for f in cross),
@@ -250,6 +283,10 @@ def main() -> None:
     print("Fold families:", report["fold_counts"])
     print("Crossed test group min/max:", report["crossed_test_rows_min"],
           report["crossed_test_rows_max"])
+    print("Observed / missing GB-element cells:",
+          report["observed_gb_element_cells"], report["unobserved_gb_element_cells"])
+    print("Element labels with only blank target strings:",
+          report["elements_with_only_blank_target_strings"])
     print("No target magnitude, model score or real cost assessed.")
 
 
