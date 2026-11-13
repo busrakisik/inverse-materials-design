@@ -1,0 +1,56 @@
+name: BHS v12.16 Per-Field Origin and Action-Time Gate
+
+on:
+  push:
+    branches: [bhs-v1216-first-lineage-evidence]
+    paths:
+      - 'research/BHS_V1216_PER_FEATURE_PROVENANCE_PASSPORT.md'
+      - '.github/workflows/bhs-v1216-feature-passport.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-every-conditional-feature-denied:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify immutable passport, first negative evidence and source code
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1216_PER_FEATURE_PROVENANCE_PASSPORT.md)" = 'c3b0507bb1f67fa09e04e7eff3860bc5ea13aabf'
+          test "$(git rev-parse HEAD:research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md)" = '82d0fcab42dfcc0b2a15ee0cab769900a6201912'
+          test "$(git rev-parse HEAD:scripts/bhs_v1215_precompute_feature_provenance.py)" = 'e0d4076612b5bdd42fca9f39256d131be1e2a98b'
+      - name: Independently compare each passport item with exact original source
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          from scripts.bhs_v1213_source_intake import download_upstream
+          from scripts.bhs_v1215_precompute_feature_provenance import source_feature_availability
+          report=source_feature_availability(download_upstream())
+          passport=Path('research/BHS_V1216_PER_FEATURE_PROVENANCE_PASSPORT.md').read_text()
+          lines=[line.strip() for line in passport.splitlines()
+                 if re.match(r'^\| `[^\u0060]+` \| Pinned', line)]
+          from_passport=set()
+          for line in lines:
+              field=re.match(r'^\| `([^\u0060]+)` \|',line).group(1)
+              assert field not in from_passport, 'DUPLICATE_FEATURE'
+              from_passport.add(field)
+              assert '| 4,285/4,289 | **UNVERIFIED** | **UNVERIFIED** | **NO** |' in line
+          source_fields=set(report['candidate_geometry_fields'])
+          assert len(lines)==22
+          assert from_passport==source_fields
+          assert all(report['candidate_column_coverage'][f]['populated_rows']==4285
+                     and report['candidate_column_coverage'][f]['blank_rows']==4
+                     and report['candidate_column_coverage'][f]['predecision_feature_approved'] is False
+                     for f in source_fields)
+          assert report['header_count']==90 and report['scored_validation_allowed'] is False
+          print('Exactly 22/22 candidate fields present with separate origin/timing/access statuses; all 22 fail the admission gate.')
+          PY
