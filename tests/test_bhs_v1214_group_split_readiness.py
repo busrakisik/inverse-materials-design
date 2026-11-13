@@ -63,13 +63,13 @@ class GroupSplitReadinessTests(unittest.TestCase):
     def test_leave_element_out_retains_shared_structure_warning(self):
         f = v.one_fold(metadata(grid()), "leave_one_element_out", element="Ti")
         self.assertEqual(f["shared_gb_site_identifiers_train_test"], 4)
-        self.assertFalse(f["group_disjoint"])
+        self.assertFalse(f["gb_site_disjoint"])
         self.assertEqual(f["embargo"]["rows"], 0)
 
     def test_leave_gb_out_has_zero_site_overlap(self):
         f = v.one_fold(metadata(grid()), "leave_one_gb_out", gb="B1")
         self.assertEqual(f["shared_gb_site_identifiers_train_test"], 0)
-        self.assertTrue(f["group_disjoint"])
+        self.assertTrue(f["gb_site_disjoint"])
 
     def test_untested_group_is_not_a_valid_fold(self):
         with self.assertRaisesRegex(v.SplitContractError, "EMPTY_TRAIN_OR_TEST"):
@@ -142,6 +142,37 @@ class GroupSplitReadinessTests(unittest.TestCase):
         a=[{"id":("A-B", "C", "D"),"gb_site":"A","target_blank":False}]
         b=[{"id":("A", "B-C", "D"),"gb_site":"B","target_blank":False}]
         self.assertNotEqual(v.canonical_digest(a), v.canonical_digest(b))
+
+
+    def test_rare_element_without_target_stays_in_source(self):
+        rows = grid() + [source_row("B1", "Yb", "70", "3", "")]
+        x = v.evaluate_metadata(metadata(rows))
+        self.assertEqual(x["element_count"], 3)
+        self.assertEqual(x["fold_counts"]["leave_one_element_out"], 3)
+        self.assertEqual(x["fold_counts"]["crossed_gb_element"], 5)
+        self.assertEqual(x["observed_gb_element_cells"], 5)
+        self.assertEqual(x["unobserved_gb_element_cells"], 1)
+        self.assertEqual(x["unobserved_cells"], [["B2", "Yb"]])
+        self.assertEqual(x["elements_with_only_blank_target_strings"], ["Yb"])
+        self.assertEqual(x["crossed_cells_with_only_blank_targets"], [["B1", "Yb"]])
+        self.assertEqual(x["source_target_blank_rows"], 1)
+        self.assertFalse(x["scored_validation_allowed"])
+
+    def test_crossed_fold_excludes_gb_and_element_labels(self):
+        f = v.one_fold(metadata(grid()), "crossed_gb_element", gb="B1", element="Ti")
+        self.assertTrue(f["both_gb_and_element_disjoint"])
+        self.assertEqual(f["shared_gb_labels_train_test"], 0)
+        self.assertEqual(f["shared_element_labels_train_test"], 0)
+
+    def test_gb_only_split_shares_element_labels(self):
+        f = v.one_fold(metadata(grid()), "leave_one_gb_out", gb="B1")
+        self.assertFalse(f["both_gb_and_element_disjoint"])
+        self.assertEqual(f["shared_element_labels_train_test"], 2)
+
+    def test_element_only_split_shares_gb_labels(self):
+        f = v.one_fold(metadata(grid()), "leave_one_element_out", element="Ti")
+        self.assertFalse(f["both_gb_and_element_disjoint"])
+        self.assertEqual(f["shared_gb_labels_train_test"], 2)
 
 
 if __name__ == "__main__":
