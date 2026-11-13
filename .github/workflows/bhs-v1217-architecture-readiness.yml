@@ -32,7 +32,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD:research/BHS_V1217_IMPLEMENTATION_SCOPE_PROTOCOL.md)" = 'd6bf0deb49cb447aea09397c5e69ac70fe2275ef'
           test "$(git rev-parse HEAD:scripts/bhs_v1217_architecture_readiness.py)" = '04e5db2c568b696e13ed421dd4a7167a8c90c527'
-          test "$(git rev-parse HEAD:tests/test_bhs_v1217_architecture_readiness.py)" = 'df7fa78e2e6aeb7205344a16ec24a2d152fc5b74'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1217_architecture_readiness.py)" = 'd31ab4c2ff4cf004a256ffdff1006473b8f269bf'
           test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
           test "$(git rev-parse HEAD:research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md)" = '82d0fcab42dfcc0b2a15ee0cab769900a6201912'
           test "$(git rev-parse HEAD:research/BHS_V1216_PER_FEATURE_PROVENANCE_PASSPORT.md)" = 'c3b0507bb1f67fa09e04e7eff3860bc5ea13aabf'
