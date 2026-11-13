@@ -1,0 +1,63 @@
+name: BHS v12.18 Original Synthetic Evidence Byte Reproduction
+
+on:
+  push:
+    branches: [bhs-v1218-first-synthetic-evidence-archive]
+    paths:
+      - 'research/BHS_V1218_FIRST_SYNTHETIC_HYPOTHESIS_RESULTS.md'
+      - '.github/workflows/bhs-v1218-first-synthetic-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-original-weak-mathematical-discrimination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin report and original frozen source
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1218_FIRST_SYNTHETIC_HYPOTHESIS_RESULTS.md)" = '217b02ef744603dcda639140fcf99896f820fcfe'
+          test "$(git rev-parse HEAD:research/BHS_V1218_RIVAL_PREDICTIVE_PROTOCOL.md)" = '74e73368e202bc2ad88e5dadbae73c059a828a09'
+          test "$(git rev-parse HEAD:scripts/bhs_v1218_dual_predictive_hypotheses.py)" = 'ea20f1e2564db6d97e94e3823508918196ed5f61'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1218_dual_predictive_hypotheses.py)" = '48843b16eff1b24bbedf40cac859e6a01601c0b2'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original numerical dependency and rerun strict synthetic tests
+        run: |
+          python -m pip install numpy==1.26.4
+          python -m unittest discover -s tests -p 'test_bhs_v1218_dual_predictive_hypotheses.py' -v
+      - name: Reproduce original weak first evidence exactly and preserve no-go
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1218_dual_predictive_hypotheses --out runs/bhs_v1218_replayed_synthetic.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('runs/bhs_v1218_replayed_synthetic.json')
+          assert len(p.read_bytes())==3518
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='c3aa0391b2442b3441e1960fb768328e0713b5fecbff9934abb230286d538093'
+          r=json.loads(p.read_text())
+          a=r['first_choice'];b=r['second_choice_after_only_manufactured_revealed_response']
+          assert a['selected_candidate_id']=='fabricated-b'
+          assert abs(a['selection_information_gain_nats']-2.947743603209929e-6)<1e-12
+          assert b['selected_candidate_id']=='fabricated-d'
+          assert abs(b['model_probabilities']['H_ADD']-0.500009491676837)<1e-12
+          assert r['original_source_measurements_read'] is False
+          assert r['scored_validation_allowed'] is False and r['physical_mechanisms_identified'] is False
+          assert r['full_bhs_fair_comparison_ready'] is False
+          print('Original WEAK synthetic hypothesis evidence reproduced exactly; no authentic performance measured.')
+          PY
