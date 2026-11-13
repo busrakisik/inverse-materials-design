@@ -141,7 +141,8 @@ class GeometryLineageTests(unittest.TestCase):
             v.extract_one_structure(gzip.compress(sio.getvalue().encode()),verify=False)
 
     def test_source_input_bytes_must_match_fixed_hash(self):
-        with self.assertRaisesRegex(v.GeometryContractError,"SAMPLE_INPUT_BLOB_MISMATCH"):
+        from scripts.bhs_v1213_source_intake import SourceContractError
+        with self.assertRaisesRegex(SourceContractError,"SOURCE_SIZE_MISMATCH"):
             v.audit_first_sample(b"forbidden", b"not original", b"not original")
 
     def test_tolerance_frozen(self):
