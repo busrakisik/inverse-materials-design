@@ -74,11 +74,13 @@ def extract_metadata(raw: bytes, require_original: bool = True) -> list[dict]:
                         raise SplitContractError("DUPLICATE_PRIMITIVE_KEY")
                     identities.add(key)
                     try:
-                        z = int(row["Z"])
+                        import math
+                        number = float(row["Z"])
+                        if not math.isfinite(number) or number < 1 or not number.is_integer():
+                            raise ValueError("noninteger")
+                        z = int(number)
                     except (ValueError, TypeError) as exc:
                         raise SplitContractError("INVALID_ATOMIC_NUMBER") from exc
-                    if z < 1 or str(z) != str(row["Z"]).strip():
-                        raise SplitContractError("INVALID_ATOMIC_NUMBER")
                     if el in atom_by_element and atom_by_element[el] != z:
                         raise SplitContractError("ATOMIC_NUMBER_CONFLICT")
                     atom_by_element[el] = z
