@@ -1,0 +1,56 @@
+name: BHS v12.17 First Architecture Readiness Evidence Replay
+
+on:
+  push:
+    branches: [bhs-v1217-architecture-evidence-archive]
+    paths:
+      - 'research/BHS_V1217_FIRST_ARCHITECTURE_READINESS_RESULTS.md'
+      - '.github/workflows/bhs-v1217-first-architecture-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independently-reproduce-first-architectural-verdict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check immutable first report, research protocol, implementation and original V11 negative
+        run: |
+          test "$(git rev-parse HEAD:research/BHS_V1217_FIRST_ARCHITECTURE_READINESS_RESULTS.md)" = '60d29bc97919b54fdee4703e8663b16b6bc9e88f'
+          test "$(git rev-parse HEAD:research/BHS_V1217_IMPLEMENTATION_SCOPE_PROTOCOL.md)" = 'd6bf0deb49cb447aea09397c5e69ac70fe2275ef'
+          test "$(git rev-parse HEAD:scripts/bhs_v1217_architecture_readiness.py)" = '04e5db2c568b696e13ed421dd4a7167a8c90c527'
+          test "$(git rev-parse HEAD:tests/test_bhs_v1217_architecture_readiness.py)" = 'd31ab4c2ff4cf004a256ffdff1006473b8f269bf'
+          test "$(git rev-parse HEAD:research/BHS_REPLICATE_POOL_V11_RESULTS.md)" = '400ac9271dbf24f229a8b50823af773d1c0b6ea5'
+          test "$(git rev-parse HEAD:research/BHS_V1216_FIRST_AUTHOR_INPUT_LINEAGE_AUDIT.md)" = '82d0fcab42dfcc0b2a15ee0cab769900a6201912'
+      - name: Recheck source-only architecture contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_bhs_v1217_architecture_readiness.py' -v
+      - name: Reproduce the exact previous report bytes, not only its conclusions
+        run: |
+          mkdir -p runs
+          python -m scripts.bhs_v1217_architecture_readiness --out runs/bhs_v1217_exact_reproduction.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('runs/bhs_v1217_exact_reproduction.json')
+          original='c6a04b61f88daa84e728eac358c26fede676b840cee4dbe3bcf1849eab458dcb'
+          assert len(p.read_bytes())==7424
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==original
+          a=json.loads(p.read_text())
+          assert a['source_module_count']==11
+          assert a['status']=='FULL_BHS_NOT_EVALUABLE_YET_EXISTING_COMPONENT_RESULT_NEGATIVE'
+          assert a['full_bhs_fair_comparison_ready'] is False
+          assert a['scored_validation_allowed'] is False
+          assert a['v11_existing_measured_source_result']['bhs_minus_gp_ard_regret_j']==2.005
+          assert a['v11_existing_measured_source_result']['full_hypothesis_centric_bhs_performance_evaluated'] is False
+          print('Exact original first negative full-system readiness report reproduced byte for byte.')
+          PY
